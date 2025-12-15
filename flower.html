@@ -14,61 +14,18 @@
       --border:#eaeaea;
       --shadow:0 10px 28px rgba(0,0,0,.10);
     }
-
     *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+    header{text-align:center;padding:26px 16px 12px}
+    .brand-logo{max-width:260px;width:72%;margin:0 auto;display:block}
+    .subtitle{margin-top:10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 46px}
+    .back{display:inline-block;margin-bottom:16px;text-decoration:none;font-weight:900;color:#111}
 
-    body{
-      font-family:Arial,sans-serif;
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-    }
-
-    header{
-      text-align:center;
-      padding:26px 16px 12px;
-    }
-
-    .brand-logo{
-      max-width:260px;
-      width:72%;
-      margin:0 auto;
-      display:block;
-    }
-
-    .subtitle{
-      margin-top:10px;
-      font-size:13px;
-      letter-spacing:2px;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
-
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:16px 16px 46px;
-    }
-
-    .back{
-      display:inline-block;
-      margin-bottom:16px;
-      text-decoration:none;
-      font-weight:900;
-      color:#111;
-    }
-
-    .group{
-      margin-bottom:36px;
-    }
-
+    .group{margin-bottom:36px}
     .group-title{
-      font-size:18px;
-      font-weight:900;
-      margin-bottom:10px;
-      border-bottom:2px solid #111;
-      display:inline-block;
-      padding-bottom:4px;
+      font-size:18px;font-weight:900;margin-bottom:10px;
+      border-bottom:2px solid #111;display:inline-block;padding-bottom:4px
     }
 
     .item{
@@ -81,76 +38,41 @@
       cursor:pointer;
       transition:transform .08s ease;
     }
+    .item:hover{transform:translateY(-2px)}
 
-    .item:hover{
-      transform:translateY(-2px);
-    }
-
-    .item-name{
-      font-weight:900;
-      font-size:16px;
-    }
-
-    .sale{
-      color:#b00000;
-      font-weight:900;
-      margin-left:6px;
-      font-size:13px;
-    }
+    .item-name{font-weight:900;font-size:16px}
+    .sale{color:#b00000;font-weight:900;margin-left:6px;font-size:13px}
 
     .prices{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:8px;
-      font-size:13px;
+      display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:13px
     }
-
     .price{
-      background:#f4f4f4;
-      border:1px solid #eee;
-      border-radius:999px;
-      padding:6px 10px;
+      background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:6px 10px
     }
 
-    footer{
-      text-align:center;
-      padding:18px;
-      font-size:14px;
-      color:var(--muted);
+    .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{
+      border:0;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer
     }
+    .btn.add{background:#111;color:#fff}
+    .btn.view{background:#eee;color:#111}
+
+    footer{text-align:center;padding:18px;font-size:14px;color:var(--muted)}
 
     /* Age gate */
-    .age-gate{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      background:rgba(0,0,0,.72);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
+    .age-gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px}
     .age-gate.show{display:flex}
-    .age-card{
-      background:#fff;
-      max-width:420px;
-      width:100%;
-      border-radius:18px;
-      padding:22px;
-      text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.35);
-    }
+    .age-card{background:#fff;max-width:420px;width:100%;border-radius:18px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
     .age-title{font-size:22px;font-weight:900;margin-bottom:8px}
     .age-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
     .age-btn{border:0;border-radius:999px;padding:12px;font-weight:900;cursor:pointer}
     .age-btn.yes{background:#111;color:#fff}
     .age-btn.no{background:#eee;color:#111}
 
-    @media(max-width:700px){
-      .brand-logo{width:86%}
-    }
+    @media(max-width:700px){.brand-logo{width:86%}}
   </style>
+
+  <script src="cart.js"></script>
 </head>
 
 <body>
@@ -180,6 +102,9 @@
 <footer>Updated Weekly • 21+</footer>
 
 <script>
+  // Cart pill
+  BBE_CART.mountCartPill();
+
   // Age gate
   (function(){
     const KEY="bbe_age_verified";
@@ -195,7 +120,7 @@
   fetch("content/products.json",{cache:"no-store"})
     .then(r=>r.json())
     .then(data=>{
-      const items=data.items.filter(i=>i.category==="Flower");
+      const items=(data.items||[]).filter(i=>i.category==="Flower");
       const groups={};
 
       items.forEach(i=>{
@@ -205,6 +130,7 @@
       });
 
       const container=document.getElementById("menu");
+      container.innerHTML = "";
 
       Object.keys(groups).forEach(groupName=>{
         const group=document.createElement("div");
@@ -218,17 +144,19 @@
         groups[groupName].forEach(item=>{
           const div=document.createElement("div");
           div.className="item";
-          div.onclick=()=>location.href="product.html?id="+item.id;
+          div.onclick=()=>location.href="product.html?id="+encodeURIComponent(item.id);
 
           const name=document.createElement("div");
           name.className="item-name";
           name.textContent=item.name;
+
           if(item.sale){
             const s=document.createElement("span");
             s.className="sale";
             s.textContent="🚨 SALE";
             name.appendChild(s);
           }
+
           div.appendChild(name);
 
           const prices=document.createElement("div");
@@ -239,11 +167,38 @@
             const price=item.prices?.[k];
             const p=document.createElement("span");
             p.className="price";
-            p.textContent=sizeLabel(k)+": "+(available && price?money(price):"N/A");
+            p.textContent=sizeLabel(k)+": "+(available && price ? money(price) : "N/A");
             prices.appendChild(p);
           });
 
           div.appendChild(prices);
+
+          // Actions: Add / View
+          const actions=document.createElement("div");
+          actions.className="actions-row";
+
+          const addBtn=document.createElement("button");
+          addBtn.className="btn add";
+          addBtn.type="button";
+          addBtn.textContent="Add";
+          addBtn.onclick=(e)=>{
+            e.stopPropagation();
+            BBE_CART.openAddFlow(item.id, "content/products.json");
+          };
+
+          const viewBtn=document.createElement("button");
+          viewBtn.className="btn view";
+          viewBtn.type="button";
+          viewBtn.textContent="View";
+          viewBtn.onclick=(e)=>{
+            e.stopPropagation();
+            location.href="product.html?id="+encodeURIComponent(item.id);
+          };
+
+          actions.appendChild(addBtn);
+          actions.appendChild(viewBtn);
+          div.appendChild(actions);
+
           group.appendChild(div);
         });
 
