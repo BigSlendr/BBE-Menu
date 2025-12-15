@@ -1,0 +1,60 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+publish_mode: simple
+
+collections:
+  - name: "menu"
+    label: "Menu Items"
+    files:
+      - name: "products"
+        label: "Products"
+        file: "content/products.json"
+        format: "json"
+        fields:
+          - name: "items"
+            label: "All Products"
+            widget: "list"
+            summary: "{{fields.name}} ({{fields.category}})"
+            fields:
+              - { name: "id", label: "ID (unique, no spaces)", widget: "string", hint: "example: sherbanger-22" }
+              - { name: "name", label: "Name", widget: "string" }
+              - name: "category"
+                label: "Category"
+                widget: "select"
+                options: ["Flower", "Concentrates", "Accessories"]
+              - { name: "subcategory", label: "Subcategory / Line", widget: "string", required: false, hint: "example: CA$H RULE$" }
+              - { name: "description", label: "Description", widget: "text", required: false }
+              - { name: "image", label: "Image", widget: "image", required: false }
+              - { name: "sale", label: "🚨 Sale Item", widget: "boolean", default: false, required: false }
+
+              - name: "pricingType"
+                label: "Pricing Type"
+                widget: "select"
+                options: ["By Size (3.5/7/14/28)", "Per Gram"]
+                default: "By Size (3.5/7/14/28)"
+
+              - name: "prices"
+                label: "Prices (store as numbers like 25; site displays $25)"
+                widget: "object"
+                required: false
+                fields:
+                  - { name: "g3_5", label: "3.5g Price", widget: "number", value_type: "int", required: false }
+                  - { name: "g7", label: "7g Price", widget: "number", value_type: "int", required: false }
+                  - { name: "g14", label: "14g Price", widget: "number", value_type: "int", required: false }
+                  - { name: "g28", label: "28g Price", widget: "number", value_type: "int", required: false }
+                  - { name: "perGram", label: "Per Gram Price (for concentrates)", widget: "number", value_type: "int", required: false }
+
+              - name: "availability"
+                label: "Availability (N/A per size)"
+                widget: "object"
+                required: false
+                fields:
+                  - { name: "g3_5", label: "3.5g Available", widget: "boolean", default: true, required: false }
+                  - { name: "g7", label: "7g Available", widget: "boolean", default: true, required: false }
+                  - { name: "g14", label: "14g Available", widget: "boolean", default: true, required: false }
+                  - { name: "g28", label: "28g Available", widget: "boolean", default: true, required: false }
