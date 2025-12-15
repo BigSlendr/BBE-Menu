@@ -1,0 +1,160 @@
+{
+  "items": [
+    {
+      "id": "sherbanger-22",
+      "name": "Sherbanger 22",
+      "category": "Flower",
+      "subcategory": "BOBBY BLACK EXCLUSIVE",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 40, "g7": 80, "g14": 140, "g28": 270 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "crazzzy",
+      "name": "CRAZZYY",
+      "category": "Flower",
+      "subcategory": "CA$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g7": 120, "g14": 220, "g28": 400 },
+      "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "jelly-fish",
+      "name": "JELLY FISH",
+      "category": "Flower",
+      "subcategory": "CA$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g7": 110, "g14": 200, "g28": 380 },
+      "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "frosted-peaches",
+      "name": "Frosted Peaches",
+      "category": "Flower",
+      "subcategory": "CA$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "sugar-shock",
+      "name": "SUGAR SHOCK",
+      "category": "Flower",
+      "subcategory": "CA$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "verzace",
+      "name": "Verzace",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "space-candy",
+      "name": "Space Candy",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "super-lemon-cherry",
+      "name": "Super Lemon Cherry",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "blow-pop",
+      "name": "Blow Pop",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "chronic-candy",
+      "name": "Chronic Candy",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": true,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "adl",
+      "name": "ADL",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": true,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 40, "g14": 70, "g28": 120 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "rainbow-belts",
+      "name": "Rainbow Belts",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g7": 35, "g14": 60, "g28": 90 },
+      "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "rosin-budder",
+      "name": "Rosin Budder",
+      "category": "Concentrates",
+      "subcategory": "Concentrates",
+      "sale": false,
+      "pricingType": "Per Gram",
+      "prices": { "perGram": 30 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    }
+  ]
+}
