@@ -1,9 +1,51 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>BBE Menu Admin</title>
-  <script src="https://unpkg.com/decap-cms@3.0.0/dist/decap-cms.js"></script>
+  <meta charset="UTF-8" />
+  <title>BBE Menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #fafafa; color: #111; }
+    header { padding: 18px 16px; text-align: center; font-weight: 800; font-size: 28px; letter-spacing: 1px; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 40px; }
+    .icons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    a.icon {
+      background: #fff;
+      border-radius: 999px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #111;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 10px 28px rgba(0,0,0,.10);
+      border: 1px solid #eee;
+      transition: transform .08s ease-in-out;
+    }
+    a.icon:hover { transform: translateY(-2px); }
+    footer { text-align: center; padding: 18px; color: #666; font-size: 14px; }
+    .tiny { text-align:center; color:#888; font-size:12px; margin-top:10px; }
+    @media (max-width: 700px) {
+      .icons { grid-template-columns: 1fr; }
+      a.icon { height: 90px; }
+    }
+  </style>
 </head>
-<body></body>
+<body>
+  <header>BBE MENU</header>
+
+  <div class="wrap">
+    <div class="icons">
+      <a class="icon" href="flower.html">Flower</a>
+      <a class="icon" href="concentrates.html">Concentrates</a>
+      <a class="icon" href="accessories.html">Accessories</a>
+    </div>
+
+    <div class="tiny">If you can read this, your homepage is working ✅</div>
+  </div>
+
+  <footer>Updated Weekly • 21+</footer>
+</body>
 </html>
