@@ -1,0 +1,25 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "items"
+    label: "Menu Items"
+    folder: "items"
+    create: true
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+      - { label: "Category", name: "category", widget: "select", options: ["flower", "concentrates", "accessories"] }
+      - { label: "Subcategory", name: "subcategory", widget: "string" }
+      - { label: "On Sale 🚨", name: "onSale", widget: "boolean", default: false }
+      - { label: "Active", name: "active", widget: "boolean", default: true }
+      - label: "Prices"
+        name: "prices"
+        widget: "list"
+        fields:
+          - { label: "Size (g)", name: "size", widget: "string" }
+          - { label: "Price", name: "price", widget: "number" }
+          - { label: "Available", name: "available", widget: "boolean" }
