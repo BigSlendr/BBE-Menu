@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BBE | Product</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{--bg:#fafafa;--text:#111;--muted:#666;--card:#fff;--border:#eaeaea;--shadow:0 10px 28px rgba(0,0,0,.10);}
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+    header{text-align:center;padding:22px 16px 10px}
+    .brand-logo{max-width:280px;width:72%;height:auto;display:block;margin:0 auto}
+    .subtitle{margin-top:10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    .wrap{max-width:1150px;margin:0 auto;padding:18px 16px 46px}
+    .topnav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 18px}
+    .pill{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:999px;padding:10px 14px;text-decoration:none;color:var(--text);font-weight:700;font-size:14px}
+    .detail{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
+    .panel{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:18px;padding:16px}
+    .imgbox{display:flex;align-items:center;justify-content:center;min-height:380px}
+    .imgbox img{max-width:100%;height:auto;border-radius:14px;border:1px solid #eee;background:#fff}
+    .title{font-size:22px;font-weight:900;margin:0}
+    .meta{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+    .tag{background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:6px 10px;font-size:12px}
+    .desc{margin-top:14px;color:#333;font-size:14px;line-height:1.5;white-space:pre-wrap}
+    .priceblock{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+    .kv{background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:8px 12px;font-size:13px}
+    .kv strong{font-weight:900}
+    .badge{display:inline-block;margin-left:8px;font-weight:900;font-size:12px;color:#b00000}
+    .back{display:inline-block;margin-top:14px;text-decoration:none;font-weight:900;color:#111}
+    footer{text-align:center;padding:18px;color:var(--muted);font-size:14px}
+
+    /* Age Gate */
+    .age-gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px}
+    .age-gate.show{display:flex}
+    .age-card{background:#fff;width:100%;max-width:420px;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+    .age-title{font-size:22px;font-weight:900;margin-bottom:8px}
+    .age-text{color:#444;font-size:14px;line-height:1.4}
+    .age-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+    .age-btn{border:0;border-radius:999px;padding:12px 14px;font-weight:900;cursor:pointer}
+    .age-btn.yes{background:#111;color:#fff}
+    .age-btn.no{background:#eee;color:#111}
+    .age-fineprint{margin-top:12px;font-size:12px;color:#777}
+
+    @media (max-width:900px){.detail{grid-template-columns:1fr}}
+    @media (max-width:700px){.brand-logo{width:86%}}
+  </style>
+</head>
+<body>
+
+  <!-- Age Gate -->
+  <div id="ageGate" class="age-gate" aria-hidden="true">
+    <div class="age-card" role="dialog" aria-modal="true">
+      <div class="age-title">21+ Only</div>
+      <div class="age-text">Please confirm you are 21 years of age or older to enter.</div>
+      <div class="age-actions">
+        <button class="age-btn yes" id="ageYes">I’m 21+</button>
+        <button class="age-btn no" id="ageNo">No</button>
+      </div>
+      <div class="age-fineprint">By entering, you agree you meet the legal age requirement in your area.</div>
+    </div>
+  </div>
+
+  <header>
+    <img class="brand-logo" src="bobby-black.png" alt="Bobby Black Exclusive" />
+    <div class="subtitle" id="pageSubtitle">Item Details</div>
+  </header>
+
+  <div class="wrap">
+    <div class="topnav">
+      <a class="pill" href="flower.html">Flower</a>
+      <a class="pill" href="concentrates.html">Concentrates</a>
+      <a class="pill" href="accessories.html">Accessories</a>
+    </div>
+
+    <div class="detail">
+      <div class="panel imgbox">
+        <img id="productImage" src="" alt="" />
+      </div>
+
+      <div class="panel">
+        <h1 class="title" id="productName">Loading…</h1>
+        <div class="meta" id="productMeta"></div>
+        <div class="desc" id="productDesc"></div>
+        <div class="priceblock" id="productPrices"></div>
+        <a class="back" id="backLink" href="flower.html">← Back</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>Updated Weekly • 21+</footer>
+
+  <script>
+    // Age gate
+    (function () {
+      const KEY = "bbe_age_verified";
+      const gate = document.getElementById("ageGate");
+      const yes = document.getElementById("ageYes");
+      const no = document.getElementById("ageNo");
+      function showGate(){ gate.classList.add("show"); document.body.style.overflow="hidden"; }
+      function hideGate(){ gate.classList.remove("show"); document.body.style.overflow=""; }
+      if (localStorage.getItem(KEY) !== "true") showGate();
+      yes.addEventListener("click", function(){ localStorage.setItem(KEY,"true"); hideGate(); });
+      no.addEventListener("click", function(){ window.location.href="https://www.google.com"; });
+    })();
+
+    function money(n){ return "$" + Number(n).toFixed(0); }
+
+    function sizeLabel(key){
+      return key === "g3_5" ? "3.5g" : key === "g7" ? "7g" : key === "g14" ? "14g" : "28g";
+    }
+
+    async function main(){
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+
+      const res = await fetch("content/products.json", { cache: "no-store" });
+      const data = await res.json();
+      const item = (data.items || []).find(x => x.id === id);
+
+      if(!item){
+        document.getElementById("productName").textContent = "Item not found";
+        document.getElementById("productDesc").textContent = "Check the link or ID.";
+        document.getElementById("productImage").style.display = "none";
+        return;
+      }
+
+      document.title = "BBE | " + item.name;
+      document.getElementById("pageSubtitle").textContent = (item.category || "Item") + " • Details";
+      document.getElementById("productName").textContent = item.name + (item.sale ? " " : "");
+      if(item.sale){
+        const saleSpan = document.createElement("span");
+        saleSpan.className = "badge";
+        saleSpan.textContent = "🚨 SALE";
+        document.getElementById("productName").appendChild(saleSpan);
+      }
+
+      const img = document.getElementById("productImage");
+      if(item.image){
+        img.src = item.image;
+        img.alt = item.name;
+      } else {
+        img.style.display = "none";
+      }
+
+      const meta = document.getElementById("productMeta");
+      meta.innerHTML = "";
+      const tag1 = document.createElement("span"); tag1.className="tag"; tag1.innerHTML="<strong>Category:</strong> " + item.category;
+      meta.appendChild(tag1);
+
+      if(item.subcategory){
+        const tag2 = document.createElement("span"); tag2.className="tag"; tag2.innerHTML="<strong>Line:</strong> " + item.subcategory;
+        meta.appendChild(tag2);
+      }
+
+      document.getElementById("productDesc").textContent = item.description || "";
+
+      const pricesEl = document.getElementById("productPrices");
+      pricesEl.innerHTML = "";
+
+      if(item.pricingType === "Per Gram"){
+        const pg = item.prices && item.prices.perGram;
+        const kv = document.createElement("span");
+        kv.className="kv";
+        kv.innerHTML = "<strong>$ / gram</strong>: " + (pg ? money(pg) : "N/A");
+        pricesEl.appendChild(kv);
+      } else {
+        const order = ["g3_5","g7","g14","g28"];
+        order.forEach(k=>{
+          const available = item.availability ? item.availability[k] !== false : true;
+          const priceVal = item.prices ? item.prices[k] : null;
+
+          const kv = document.createElement("span");
+          kv.className="kv";
+          kv.innerHTML = "<strong>" + sizeLabel(k) + "</strong>: " + (available && priceVal ? money(priceVal) : "N/A");
+          pricesEl.appendChild(kv);
+        });
+      }
+
+      const back = document.getElementById("backLink");
+      back.href = item.category === "Concentrates" ? "concentrates.html" : "flower.html";
+      back.textContent = "← Back to " + (item.category === "Concentrates" ? "Concentrates" : "Flower");
+    }
+
+    main();
+  </script>
+</body>
+</html>
