@@ -6,43 +6,296 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    :root{--bg:#fafafa;--text:#111;--muted:#666;--card:#fff;--border:#eaeaea;--shadow:0 10px 28px rgba(0,0,0,.10);}
+    :root{
+      --bg:#f5f5f5;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e6e6e6;
+      --card:#ffffff;
+      --black:#111;
+    }
     *{box-sizing:border-box}
-    body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
-    header{text-align:center;padding:26px 16px 12px}
-    .brand-logo{max-width:260px;width:72%;margin:0 auto;display:block}
-    .subtitle{margin-top:10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
-    .wrap{max-width:980px;margin:0 auto;padding:16px 16px 46px}
-    .back{display:inline-block;margin-bottom:16px;text-decoration:none;font-weight:900;color:#111}
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      border-radius:18px;
-      padding:16px;
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
-    .title{font-size:22px;font-weight:900}
-    .meta{margin-top:6px;color:#444;font-size:13px}
-    .sale{color:#b00000;font-weight:900;margin-left:6px;font-size:13px}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-    .imgwrap{
-      background:#f4f4f4;border:1px solid #eee;border-radius:16px;
-      min-height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px 16px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
     }
-    .imgwrap img{max-width:100%;height:auto;display:block}
-    .desc{color:#333;font-size:14px;line-height:1.5}
+    .brand-logo{height:34px;width:auto;display:block}
 
-    .prices{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-    .pill{background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:8px 12px;font-weight:900;font-size:13px}
+    .wrap{
+      max-width:1080px;
+      margin:0 auto;
+      padding:14px 14px 60px;
+    }
 
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .btn{border:0;border-radius:999px;padding:12px 16px;font-weight:900;cursor:pointer}
-    .btn.add{background:#111;color:#fff}
-    .btn.back{background:#eee;color:#111}
+    .crumb{
+      font-size:12px;
+      color:var(--muted);
+      margin:10px 0 12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .crumb a{
+      color:var(--muted);
+      text-decoration:none;
+      font-weight:900;
+    }
+    .crumb a:hover{color:#000}
 
-    footer{text-align:center;padding:18px;font-size:14px;color:var(--muted)}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .img-panel{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      min-height:520px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .img-panel img{
+      width:100%;
+      height:auto;
+      display:block;
+      object-fit:contain;
+      max-height:520px;
+    }
+    .img-placeholder{
+      color:var(--muted);
+      font-weight:900;
+      padding:40px;
+      text-align:center;
+    }
+
+    .info{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:14px;
+    }
+
+    .top-badges{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .badge{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      padding:8px 10px;
+      border-radius:4px;
+      border:1px solid var(--line);
+      background:#fff8cc;
+    }
+    .badge.type{
+      background:#2a2f3a;
+      color:#fff;
+      border-color:#2a2f3a;
+      margin-left:auto;
+      min-width:140px;
+      text-align:center;
+    }
+
+    .title{
+      font-weight:900;
+      letter-spacing:.5px;
+      font-size:16px;
+      text-transform:uppercase;
+      margin:6px 0 4px;
+    }
+    .brandline{
+      font-size:11px;
+      text-transform:uppercase;
+      color:var(--muted);
+      letter-spacing:1px;
+      margin-bottom:10px;
+    }
+
+    .ratingline{
+      font-size:11px;
+      color:var(--muted);
+      margin:6px 0 10px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .stars{letter-spacing:1px;color:#bbb;font-size:12px}
+
+    .size-row{display:flex;gap:10px;align-items:center;margin-top:6px}
+    .size-select{
+      flex:0 0 120px;
+      border:1px solid var(--line);
+      border-radius:3px;
+      padding:12px 10px;
+      font-weight:900;
+      background:#fff;
+    }
+
+    .price{
+      font-size:34px;
+      font-weight:900;
+      margin:12px 0 12px;
+    }
+
+    .buy-row{
+      display:grid;
+      grid-template-columns: 90px 1fr;
+      gap:12px;
+      align-items:stretch;
+      margin-bottom:12px;
+    }
+    .qty-select{
+      border:1px solid var(--line);
+      border-radius:3px;
+      padding:12px 10px;
+      font-weight:900;
+      background:#fff;
+      width:100%;
+    }
+    .add-btn{
+      border:0;
+      border-radius:3px;
+      background:#0e0e0e;
+      color:#fff;
+      font-weight:900;
+      letter-spacing:1px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-transform:uppercase;
+    }
+    .add-btn:active{transform:translateY(1px)}
+    .add-icon{
+      width:14px;height:14px;display:inline-block;
+      border:2px solid #fff;border-radius:3px;
+      position:relative;
+    }
+    .add-icon:before{
+      content:"";
+      position:absolute;left:50%;top:50%;
+      width:8px;height:2px;background:#fff;
+      transform:translate(-50%,-50%);
+    }
+    .add-icon:after{
+      content:"";
+      position:absolute;left:50%;top:50%;
+      width:2px;height:8px;background:#fff;
+      transform:translate(-50%,-50%);
+    }
+
+    .subnote{
+      font-size:12px;
+      color:var(--muted);
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:6px;
+      background:#fafafa;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:10px;
+    }
+
+    hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+    .section-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .about-title{
+      font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      color:#111;
+      margin-bottom:6px;
+    }
+    .about-by{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:1px;
+      margin-bottom:8px;
+    }
+    .about-text{
+      font-size:12px;
+      line-height:1.55;
+      color:#333;
+      white-space:pre-line;
+    }
+
+    .effects-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:8px;
+    }
+    .effect{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:4px;
+      padding:10px 10px;
+      font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .effect .icon{
+      width:18px;height:18px;border:1px solid #ccc;border-radius:4px;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;color:#777;
+    }
+
+    .canna{
+      border:1px solid var(--line);
+      border-radius:6px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .canna-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 12px;
+      font-size:12px;
+      border-top:1px solid var(--line);
+    }
+    .canna-row:first-child{border-top:0}
+    .canna-label{
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      color:#333;
+    }
+    .canna-val{font-weight:900;color:#111}
 
     /* Age gate */
     .age-gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px}
@@ -56,7 +309,9 @@
 
     @media(max-width:900px){
       .grid{grid-template-columns:1fr}
-      .brand-logo{width:86%}
+      .img-panel{min-height:360px}
+      .img-panel img{max-height:420px}
+      .badge.type{min-width:120px}
     }
   </style>
 
@@ -65,155 +320,343 @@
 
 <body>
 
-<!-- Age Gate -->
-<div id="ageGate" class="age-gate">
-  <div class="age-card">
-    <div class="age-title">21+ Only</div>
-    <p>Please confirm you are 21 years of age or older.</p>
-    <div class="age-actions">
-      <button class="age-btn yes" id="ageYes">I’m 21+</button>
-      <button class="age-btn no" id="ageNo">No</button>
+  <!-- Age Gate -->
+  <div id="ageGate" class="age-gate">
+    <div class="age-card">
+      <div class="age-title">21+ Only</div>
+      <p>Please confirm you are 21 years of age or older.</p>
+      <div class="age-actions">
+        <button class="age-btn yes" id="ageYes">I’m 21+</button>
+        <button class="age-btn no" id="ageNo">No</button>
+      </div>
     </div>
   </div>
-</div>
 
-<header>
-  <img src="bobby-black.png" class="brand-logo" alt="Bobby Black Exclusive" />
-  <div class="subtitle">Product Details</div>
-</header>
+  <header>
+    <img src="bobby-black.png" class="brand-logo" alt="Bobby Black Exclusive" />
+  </header>
 
-<div class="wrap">
-  <a href="index.html" class="back">← Back to Menu</a>
-
-  <div class="card">
-    <div class="title" id="pTitle">Loading…</div>
-    <div class="meta" id="pMeta"></div>
+  <div class="wrap">
+    <div class="crumb">
+      <a href="index.html">← Back</a>
+      <span id="crumbTrail">HOME • PRODUCT</span>
+    </div>
 
     <div class="grid">
-      <div class="imgwrap" id="pImgWrap">
-        <div style="color:#777;font-weight:900;">No Image</div>
+      <div class="img-panel" id="imgPanel">
+        <div class="img-placeholder">No Image</div>
       </div>
 
-      <div>
-        <div class="desc" id="pDesc"></div>
-        <div class="prices" id="pPrices"></div>
-
-        <div class="actions">
-          <button class="btn add" id="addToCartBtn">Add to Cart</button>
-          <button class="btn back" id="backBtn">Back</button>
+      <div class="info">
+        <div class="top-badges">
+          <div class="badge" id="thcBadge">THC: —</div>
+          <div class="badge type" id="typeBadge">—</div>
         </div>
 
-        <div style="margin-top:12px;color:#666;font-size:12px;">
-          Cart is for screenshot/sharing only — no checkout.
+        <div class="title" id="productTitle">Loading…</div>
+        <div class="brandline" id="brandLine">—</div>
+
+        <div class="ratingline">
+          <span class="stars">☆☆☆☆☆</span>
+          <span id="ratingText">0</span>
         </div>
+
+        <div class="size-row">
+          <select id="sizeSelect" class="size-select"></select>
+        </div>
+
+        <div class="price" id="price">$0</div>
+
+        <div class="buy-row">
+          <select id="qtySelect" class="qty-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+
+          <button id="addBtn" class="add-btn" type="button">
+            <span class="add-icon" aria-hidden="true"></span>
+            ADD TO CART
+          </button>
+        </div>
+
+        <div class="subnote">
+          <div style="font-weight:900;">🛒</div>
+          <div>Cart is for <b>screenshot/sharing</b> only. No checkout or delivery on this site.</div>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="about-title" id="aboutTitle">ABOUT: —</div>
+        <div class="about-by" id="aboutBy">BY: —</div>
+        <div class="about-text" id="aboutText"></div>
+
+        <hr class="sep" />
+
+        <div class="section-title">EFFECTS</div>
+        <div class="effects-grid" id="effectsGrid"></div>
+
+        <hr class="sep" />
+
+        <div class="section-title">CANNABINOIDS</div>
+        <div class="canna" id="cannaBox"></div>
       </div>
     </div>
   </div>
-</div>
 
-<footer>Updated Weekly • 21+</footer>
+  <script>
+    BBE_CART.mountCartPill();
 
-<script>
-  BBE_CART.mountCartPill();
+    // Age gate
+    (function(){
+      const KEY="bbe_age_verified";
+      const gate=document.getElementById("ageGate");
+      if(localStorage.getItem(KEY)!=="true"){gate.classList.add("show")}
+      document.getElementById("ageYes").onclick=()=>{localStorage.setItem(KEY,"true");gate.classList.remove("show")}
+      document.getElementById("ageNo").onclick=()=>{window.location.href="https://www.google.com"}
+    })();
 
-  // Age gate
-  (function(){
-    const KEY="bbe_age_verified";
-    const gate=document.getElementById("ageGate");
-    if(localStorage.getItem(KEY)!=="true"){gate.classList.add("show")}
-    document.getElementById("ageYes").onclick=()=>{localStorage.setItem(KEY,"true");gate.classList.remove("show")}
-    document.getElementById("ageNo").onclick=()=>{window.location.href="https://www.google.com"}
-  })();
+    function money(n){
+      if(n===null || n===undefined || n==="" || isNaN(Number(n))) return "N/A";
+      return "$" + Number(n).toFixed(0);
+    }
+    function pct(n){
+      if(n===null || n===undefined || n==="" || isNaN(Number(n))) return "—";
+      return Number(n).toFixed(1).replace(/\.0$/,"") + "%";
+    }
+    function safeUpper(s){ return (s || "—").toString().toUpperCase(); }
+    function getId(){ return new URLSearchParams(location.search).get("id"); }
 
-  function getId(){
-    const p=new URLSearchParams(location.search);
-    return p.get("id");
-  }
-  function money(n){ return "$"+Number(n).toFixed(0) }
+    // ✅ IMAGE FALLBACKS
+    const IMAGE_MAP = {
+      "adl": "ADL.JPG",
+      "cherry-candy": "CherryCandy.JPG",
+      "chronic-candy": "ChronicCandy.JPG",
+      "frosted-peaches": "FrostedPeaches.JPG",
+      "jelly-fish": "JellyFish.JPG",
+      "rainbow-belts": "RainbowBelts.JPG",
+      "space-candy": "SpaceCandy.JPG",
+      "sugar-shock": "SugarShock.JPG",
+      "zaamatic": "Zaamatic.JPG",
+      "blow-pop": "BlowPop.JPG",
+      "crazzy": "Crrazzy.JPG",
+      "crazzyy": "Crrazzy.JPG",
+      "fruit-snacks": "FruitStripes.JPG",
+      "ready-to-trap": "ReadytoTrap.JPG",
+      "sherbert": "Sherbet.JPG",
+      "verzace": "Verzace.JPG",
+      "rosin-budder": "RosinBudder.JPG"
+    };
 
-  const id=getId();
+    const NAME_MAP = {
+      "crazzyy": "Crrazzy.JPG",
+      "crazzy": "Crrazzy.JPG",
+      "adl": "ADL.JPG",
+      "cherrycandy": "CherryCandy.JPG",
+      "chroniccandy": "ChronicCandy.JPG",
+      "frostedpeaches": "FrostedPeaches.JPG",
+      "jellyfish": "JellyFish.JPG",
+      "rainbowbelts": "RainbowBelts.JPG",
+      "spacecandy": "SpaceCandy.JPG",
+      "sugarshock": "SugarShock.JPG",
+      "zaamatic": "Zaamatic.JPG",
+      "blowpop": "BlowPop.JPG",
+      "fruitsnacks": "FruitStripes.JPG",
+      "readytotrap": "ReadytoTrap.JPG",
+      "sherbert": "Sherbet.JPG",
+      "verzace": "Verzace.JPG",
+      "rosinbudder": "RosinBudder.JPG"
+    };
 
-  document.getElementById("backBtn").onclick=()=>{
-    history.length>1 ? history.back() : location.href="index.html";
-  };
+    function normalizeKey(s){
+      return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+    }
 
-  fetch("content/products.json",{cache:"no-store"})
-    .then(r=>r.json())
-    .then(data=>{
-      const items=(data.items||[]);
-      const item=items.find(x=>x.id===id);
+    function resolveImage(item){
+      if(item.image && item.image.trim()) return item.image.trim();
 
-      if(!item){
-        document.getElementById("pTitle").textContent="Not found";
-        document.getElementById("pMeta").textContent="This item does not exist.";
-        document.getElementById("addToCartBtn").style.display="none";
+      const byId = IMAGE_MAP[item.id];
+      if(byId) return "images/" + byId;
+
+      const byName = NAME_MAP[normalizeKey(item.name)];
+      if(byName) return "images/" + byName;
+
+      return "";
+    }
+
+    // UI refs
+    const id = getId();
+    const imgPanel = document.getElementById("imgPanel");
+    const crumbTrail = document.getElementById("crumbTrail");
+    const thcBadge = document.getElementById("thcBadge");
+    const typeBadge = document.getElementById("typeBadge");
+    const productTitle = document.getElementById("productTitle");
+    const brandLine = document.getElementById("brandLine");
+    const ratingText = document.getElementById("ratingText");
+    const sizeSelect = document.getElementById("sizeSelect");
+    const qtySelect = document.getElementById("qtySelect");
+    const priceEl = document.getElementById("price");
+    const addBtn = document.getElementById("addBtn");
+    const aboutTitle = document.getElementById("aboutTitle");
+    const aboutBy = document.getElementById("aboutBy");
+    const aboutText = document.getElementById("aboutText");
+    const effectsGrid = document.getElementById("effectsGrid");
+    const cannaBox = document.getElementById("cannaBox");
+
+    let currentItem = null;
+
+    function buildSizeOptions(item){
+      sizeSelect.innerHTML = "";
+
+      if(item.category === "Flower"){
+        const sizes = [
+          { key:"g3_5", label:"3.5g" },
+          { key:"g7",   label:"7g" },
+          { key:"g14",  label:"14g" },
+          { key:"g28",  label:"28g" }
+        ];
+        sizes.forEach(s=>{
+          const available = item.availability?.[s.key] !== false;
+          const p = item.prices?.[s.key];
+          const opt = document.createElement("option");
+          opt.value = s.key;
+          opt.textContent = s.label;
+          opt.disabled = !(available && p !== null && p !== undefined);
+          sizeSelect.appendChild(opt);
+        });
+        const firstEnabled = Array.from(sizeSelect.options).find(o=>!o.disabled);
+        if(firstEnabled) sizeSelect.value = firstEnabled.value;
+      }
+      else if(item.category === "Concentrates"){
+        const opt = document.createElement("option");
+        opt.value = "perGram";
+        opt.textContent = "1g";
+        opt.disabled = !(item.availability?.perGram !== false && item.prices?.perGram);
+        sizeSelect.appendChild(opt);
+        sizeSelect.value = "perGram";
+      }
+      else if(item.category === "Accessories"){
+        const opt = document.createElement("option");
+        opt.value = "single";
+        opt.textContent = "Single";
+        opt.disabled = !(item.availability?.single !== false && item.prices?.single);
+        sizeSelect.appendChild(opt);
+        sizeSelect.value = "single";
+      }
+      else{
+        const opt = document.createElement("option");
+        opt.value = "default";
+        opt.textContent = "Item";
+        sizeSelect.appendChild(opt);
+      }
+    }
+
+    function getUnitPrice(item, sizeKey){
+      if(item.category === "Flower") return item.prices?.[sizeKey];
+      if(item.category === "Concentrates") return item.prices?.perGram;
+      if(item.category === "Accessories") return item.prices?.single;
+      return null;
+    }
+
+    function renderPrice(){
+      if(!currentItem) return;
+      const unit = getUnitPrice(currentItem, sizeSelect.value);
+      priceEl.textContent = money(unit);
+    }
+
+    function renderEffects(item){
+      effectsGrid.innerHTML = "";
+      const effects = item.effects || [];
+      const shown = effects.length ? effects : ["Calm","Happy","Relaxed","Uplifted"];
+      shown.slice(0,6).forEach(e=>{
+        const div = document.createElement("div");
+        div.className = "effect";
+        div.innerHTML = `<span class="icon">✦</span><span>${String(e).toUpperCase()}</span>`;
+        effectsGrid.appendChild(div);
+      });
+    }
+
+    function renderCannabinoids(item){
+      cannaBox.innerHTML = "";
+      const rows = [];
+      if(item.tacPercent !== undefined) rows.push({ label: '"TAC" - Total Active Cannabinoids', val: pct(item.tacPercent) });
+      if(item.thcPercent !== undefined) rows.push({ label: "THC", val: pct(item.thcPercent) });
+      if(item.cbdPercent !== undefined) rows.push({ label: "CBD", val: pct(item.cbdPercent) });
+      if(rows.length === 0) rows.push({ label: "Cannabinoids", val: "—" });
+
+      rows.forEach(r=>{
+        const row = document.createElement("div");
+        row.className = "canna-row";
+        row.innerHTML = `<div class="canna-label">${r.label}</div><div class="canna-val">${r.val}</div>`;
+        cannaBox.appendChild(row);
+      });
+    }
+
+    function renderImage(item){
+      const imgPath = resolveImage(item);
+      if(!imgPath){
+        imgPanel.innerHTML = `<div class="img-placeholder">No Image</div>`;
         return;
       }
-
-      // Title + meta
-      document.getElementById("pTitle").textContent=item.name;
-      const metaBits=[];
-      if(item.category) metaBits.push(item.category);
-      if(item.subcategory) metaBits.push(item.subcategory);
-      document.getElementById("pMeta").textContent=metaBits.join(" • ");
-
-      // Image
-      if(item.image){
-        const wrap=document.getElementById("pImgWrap");
-        wrap.innerHTML="";
-        const img=document.createElement("img");
-        img.src=item.image;
-        img.alt=item.name;
-        wrap.appendChild(img);
-      }
-
-      // Description
-      document.getElementById("pDesc").textContent=item.description || "";
-
-      // Prices
-      const prices=document.getElementById("pPrices");
-      prices.innerHTML="";
-
-      if(item.category==="Flower"){
-        const order=["g3_5","g7","g14","g28"];
-        const labels={g3_5:"3.5g",g7:"7g",g14:"14g",g28:"28g"};
-        order.forEach(k=>{
-          const available=item.availability?.[k]!==false;
-          const price=item.prices?.[k];
-          const pill=document.createElement("div");
-          pill.className="pill";
-          pill.textContent = labels[k] + ": " + (available && price ? money(price) : "N/A");
-          prices.appendChild(pill);
-        });
-      } else if(item.category==="Concentrates"){
-        const pg=item.prices?.perGram;
-        const pill=document.createElement("div");
-        pill.className="pill";
-        pill.textContent = "$ / gram: " + (pg ? money(pg) : "N/A");
-        prices.appendChild(pill);
-      } else if(item.category==="Accessories"){
-        const s=item.prices?.single;
-        const pill=document.createElement("div");
-        pill.className="pill";
-        pill.textContent = "Price: " + (s ? money(s) : "N/A");
-        prices.appendChild(pill);
-      }
-
-      // Sale badge
-      if(item.sale){
-        const t=document.getElementById("pTitle");
-        const s=document.createElement("span");
-        s.className="sale";
-        s.textContent="🚨 SALE";
-        t.appendChild(s);
-      }
-
-      // Add to cart uses the same flow (Flower triggers size picker)
-      document.getElementById("addToCartBtn").onclick=()=>{
-        BBE_CART.openAddFlow(item.id, "content/products.json");
+      imgPanel.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = imgPath;
+      img.alt = item.name || "Product image";
+      img.onerror = () => {
+        imgPanel.innerHTML = `<div class="img-placeholder">No Image</div>`;
       };
-    });
-</script>
+      imgPanel.appendChild(img);
+    }
+
+    fetch("content/products.json", { cache:"no-store" })
+      .then(r=>r.json())
+      .then(data=>{
+        const items = data.items || [];
+        const item = items.find(x => x.id === id);
+
+        if(!item){
+          productTitle.textContent = "NOT FOUND";
+          brandLine.textContent = "This product ID does not exist.";
+          addBtn.disabled = true;
+          addBtn.style.opacity = ".5";
+          return;
+        }
+
+        currentItem = item;
+
+        crumbTrail.textContent = `HOME • ${safeUpper(item.category)} • ${safeUpper(item.subcategory || "ITEM")}`;
+
+        thcBadge.textContent = `THC: ${item.thcPercent !== undefined ? pct(item.thcPercent) : "—"}`;
+        typeBadge.textContent = safeUpper(item.type || item.category);
+
+        const brand = item.brand || "Bobby Black Exclusive";
+        productTitle.textContent = `${safeUpper(brand)} | ${safeUpper(item.name)}`;
+        brandLine.textContent = brand.toUpperCase();
+        ratingText.textContent = "0";
+
+        renderImage(item);
+
+        aboutTitle.textContent = `ABOUT: ${safeUpper(brand)} | ${safeUpper(item.name)}`;
+        aboutBy.textContent = `BY: ${brand.toUpperCase()}`;
+        aboutText.textContent = item.description || "Description coming soon.";
+
+        buildSizeOptions(item);
+        renderPrice();
+        sizeSelect.addEventListener("change", renderPrice);
+
+        renderEffects(item);
+        renderCannabinoids(item);
+
+        addBtn.onclick = () => {
+          const qty = Number(qtySelect.value || 1);
+          for(let i=0;i<qty;i++){
+            BBE_CART.openAddFlow(item.id, "content/products.json");
+          }
+        };
+      });
+  </script>
 
 </body>
 </html>
