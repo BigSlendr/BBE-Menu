@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,16 +11,31 @@
       --text:#111;
       --muted:#666;
       --card:#fff;
-      --border:#eaeaea;
+      --border:rgba(0,0,0,0.10);
       --shadow:0 10px 28px rgba(0,0,0,.10);
+
+      /* Luxury hover accents */
+      --gold:#D4AF37;
+      --gold-soft:rgba(212,175,55,0.35);
+      --black:#0E0E0E;
     }
     *{box-sizing:border-box}
     body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:var(--text)}
     header{text-align:center;padding:26px 16px 12px}
     .brand-logo{max-width:260px;width:72%;margin:0 auto;display:block}
     .subtitle{margin-top:10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
-    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 46px}
-    .back{display:inline-block;margin-bottom:16px;text-decoration:none;font-weight:900;color:#111}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 26px}
+
+    .back{
+      display:inline-block;
+      margin-bottom:16px;
+      text-decoration:none;
+      font-weight:900;
+      color:#111;
+      border-bottom:1px solid transparent;
+      transition:color .18s ease, border-color .18s ease;
+    }
+    .back:hover{color:var(--gold);border-color:var(--gold)}
 
     .group{margin-bottom:36px}
     .group-title{
@@ -36,12 +51,15 @@
       padding:14px;
       margin-top:12px;
       cursor:pointer;
-      transition:transform .08s ease;
+      transition:transform .08s ease, border-color .18s ease;
       display:flex;
       gap:14px;
       align-items:center;
     }
-    .item:hover{transform:translateY(-2px)}
+    .item:hover{
+      transform:translateY(-2px);
+      border-color:var(--gold-soft);
+    }
 
     .thumb{
       width:92px;height:92px;flex:0 0 92px;
@@ -52,7 +70,9 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      transition:border-color .18s ease;
     }
+    .item:hover .thumb{border-color:var(--gold-soft)}
     .thumb img{width:100%;height:100%;object-fit:cover;display:block}
     .noimg{
       font-size:11px;
@@ -67,24 +87,96 @@
     .sale{color:#b00000;font-weight:900;margin-left:6px;font-size:13px}
 
     .prices{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:13px}
-    .price{background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:6px 10px}
+    .price{
+      background:#f4f4f4;border:1px solid #eee;border-radius:999px;padding:6px 10px;
+      transition:border-color .18s ease;
+    }
+    .item:hover .price{border-color:var(--gold-soft)}
 
     .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .btn{border:0;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
-    .btn.add{background:#111;color:#fff}
-    .btn.view{background:#eee;color:#111}
+    .btn{
+      border:1px solid rgba(0,0,0,0.12);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:900;
+      cursor:pointer;
+      background:#fff;
+      transition:all .18s ease;
+    }
 
-    footer{text-align:center;padding:18px;font-size:14px;color:var(--muted)}
+    /* Add button: black normally, gold border on hover */
+    .btn.add{
+      background:var(--black);
+      color:#fff;
+      border-color:var(--black);
+    }
+    .btn.add:hover{
+      background:#fff;
+      color:var(--black);
+      border-color:var(--gold);
+    }
+
+    /* View button: light normally, gold border on hover */
+    .btn.view{
+      background:#eee;
+      color:#111;
+      border-color:#eee;
+    }
+    .btn.view:hover{
+      background:#fff;
+      color:var(--gold);
+      border-color:var(--gold);
+    }
+
+    footer{
+      text-align:center;
+      padding:18px 14px 28px;
+      font-size:11px;
+      color:#777;
+    }
 
     /* Age gate */
     .age-gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px}
     .age-gate.show{display:flex}
-    .age-card{background:#fff;max-width:420px;width:100%;border-radius:18px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .age-card{
+      background:#fff;
+      max-width:440px;width:100%;
+      border-radius:18px;
+      padding:22px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      border:1px solid rgba(0,0,0,0.12);
+    }
     .age-title{font-size:22px;font-weight:900;margin-bottom:8px}
     .age-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-    .age-btn{border:0;border-radius:999px;padding:12px;font-weight:900;cursor:pointer}
-    .age-btn.yes{background:#111;color:#fff}
-    .age-btn.no{background:#eee;color:#111}
+    .age-btn{
+      border:1px solid rgba(0,0,0,0.15);
+      border-radius:999px;
+      padding:12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#fff;
+      transition:all .18s ease;
+    }
+    .age-btn.yes{
+      background:var(--black);
+      color:#fff;
+      border-color:var(--black);
+    }
+    .age-btn.yes:hover{
+      background:#fff;
+      color:var(--black);
+      border-color:var(--gold);
+    }
+    .age-btn.no{
+      background:#eee;color:#111;border-color:#eee;
+    }
+    .age-btn.no:hover{
+      border-color:var(--gold);
+      color:var(--gold);
+      background:#fff;
+    }
+    .age-sub{font-size:12px;color:#666;line-height:1.5;margin:10px 0 0}
 
     @media(max-width:700px){
       .brand-logo{width:86%}
@@ -106,6 +198,10 @@
       <button class="age-btn yes" id="ageYes">I’m 21+</button>
       <button class="age-btn no" id="ageNo">No</button>
     </div>
+    <p class="age-sub">
+      All products, pricing, and descriptions are provided for reference only.
+      No transactions, checkout, or delivery occur through this site.
+    </p>
   </div>
 </div>
 
@@ -119,7 +215,10 @@
   <div id="menu"></div>
 </div>
 
-<footer>Updated Weekly • 21+</footer>
+<footer>
+  All products, pricing, and descriptions are provided for reference only.
+  No transactions, checkout, or delivery occur through this site. • 21+
+</footer>
 
 <script>
   BBE_CART.mountCartPill();
@@ -133,12 +232,6 @@
     document.getElementById("ageNo").onclick=()=>{window.location.href="https://www.google.com"}
   })();
 
-  // ✅ SINGLE navigation function (fixes the mismatch)
-  function openProduct(id){
-    const url = "product.html?id=" + encodeURIComponent(id);
-    window.location.assign(url);
-  }
-
   function money(n){ return "$" + Number(n).toFixed(0); }
   function sizeLabel(k){ return k==="g3_5"?"3.5g":k==="g7"?"7g":k==="g14"?"14g":"28g"; }
 
@@ -151,10 +244,12 @@
   }
 
   const GROUP_ORDER = ["BOBBY BLACK EXCLUSIVE","CA$$H RULE$","LOOSE LINEUP"];
-  function groupSortKey(name){
-    const idx = GROUP_ORDER.indexOf(name);
-    return idx === -1 ? 999 : idx;
-  }
+
+  // ✅ Remove items that are no longer on the menu (even if they still exist in products.json)
+  const HIDDEN_IDS = new Set([
+    "sherbanger-22",
+    "super-lemon-cherry"
+  ]);
 
   // Image filenames (must exist in /images/)
   const IMAGE_MAP = {
@@ -168,15 +263,7 @@
     "sugar-shock": "SugarShock.JPG",
     "zaamatic": "Zaamatic.JPG",
     "blow-pop": "BlowPop.JPG",
-
-    // ✅ IMPORTANT: your products.json uses id = "crazzzy"
     "crazzzy": "Crrazzy.JPG",
-
-    // extra safety if you ever change ids:
-    "crazzy": "Crrazzy.JPG",
-    "crazzyy": "Crrazzy.JPG",
-    "crazzyyy": "Crrazzy.JPG",
-
     "fruit-snacks": "FruitStripes.JPG",
     "ready-to-trap": "ReadytoTrap.JPG",
     "sherbert": "Sherbet.JPG",
@@ -184,9 +271,9 @@
   };
 
   const NAME_MAP = {
+    "crazzzy": "Crrazzy.JPG",
     "crazzyy": "Crrazzy.JPG",
     "crazzy": "Crrazzy.JPG",
-    "crazzzy": "Crrazzy.JPG",
     "adl": "ADL.JPG",
     "cherrycandy": "CherryCandy.JPG",
     "chroniccandy": "ChronicCandy.JPG",
@@ -219,19 +306,27 @@
     return "";
   }
 
+  // ✅ ONE navigation function (fixes your mismatch between "View" and clicking the card)
+  function openProduct(id){
+    location.href = "product.html?id=" + encodeURIComponent(id);
+  }
+
   fetch("content/products.json",{cache:"no-store"})
     .then(r=>r.json())
     .then(data=>{
       const items=(data.items||[])
-        .filter(i=>i.category==="Flower")
+        .filter(i => i.category === "Flower")
+        .filter(i => !HIDDEN_IDS.has(i.id))
         .slice()
         .sort((a,b)=>{
           const ga=(a.subcategory||"Other");
           const gb=(b.subcategory||"Other");
-          const ka=groupSortKey(ga);
-          const kb=groupSortKey(gb);
-          if(ka!==kb) return ka-kb;
-          if(ga!==gb) return ga.localeCompare(gb);
+          const ka=GROUP_ORDER.indexOf(ga);
+          const kb=GROUP_ORDER.indexOf(gb);
+          const ska = (ka === -1 ? 999 : ka);
+          const skb = (kb === -1 ? 999 : kb);
+          if(ska !== skb) return ska - skb;
+          if(ga !== gb) return ga.localeCompare(gb);
           return (a.name||"").localeCompare(b.name||"");
         });
 
@@ -262,7 +357,7 @@
         groups[groupName].forEach(item=>{
           const div=document.createElement("div");
           div.className="item";
-          div.onclick=()=>openProduct(item.id);   // ✅ unified
+          div.onclick=()=>openProduct(item.id);
 
           const thumb=document.createElement("div");
           thumb.className="thumb";
@@ -324,7 +419,7 @@
           viewBtn.textContent="View";
           viewBtn.onclick=(e)=>{
             e.stopPropagation();
-            openProduct(item.id);  // ✅ unified
+            openProduct(item.id);
           };
 
           actions.appendChild(addBtn);
