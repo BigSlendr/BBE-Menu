@@ -14,10 +14,10 @@
       --border:rgba(0,0,0,0.10);
       --shadow:0 14px 40px rgba(0,0,0,.12);
 
-      /* Luxury accents */
+      --black:#0E0E0E;
       --gold:#D4AF37;
       --gold-soft:rgba(212,175,55,0.35);
-      --black:#0E0E0E;
+      --gold-faint:rgba(212,175,55,0.18);
     }
     *{box-sizing:border-box}
     body{
@@ -27,35 +27,44 @@
       color:var(--text);
     }
 
-    header{
-      text-align:center;
-      padding:34px 16px 18px;
+    /* ✅ Full-width black header bar */
+    .site-header{
+      background:#000;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px 16px 18px;
+      border-bottom:1px solid var(--gold-soft);
     }
     .brand-logo{
       max-width:320px;
-      width:78%;
-      display:block;
-      margin:0 auto;
+      width:min(82%, 340px);
       height:auto;
+      display:block;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
     }
+
     .subtitle{
-      margin-top:12px;
-      font-size:13px;
+      text-align:center;
+      margin:14px 0 0;
+      font-size:12px;
       letter-spacing:3px;
       text-transform:uppercase;
       color:var(--muted);
+      font-weight:900;
     }
 
     .wrap{
       max-width:1100px;
       margin:0 auto;
-      padding:18px 16px 40px;
+      padding:22px 16px 46px;
     }
 
     .menu-grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
-      gap:22px;
+      gap:24px;
       margin-top:26px;
     }
 
@@ -64,7 +73,7 @@
       border:1px solid var(--border);
       box-shadow:var(--shadow);
       border-radius:999px;
-      padding:34px 22px;
+      padding:36px 24px;
       text-align:center;
       font-weight:900;
       font-size:18px;
@@ -75,25 +84,44 @@
       overflow:hidden;
     }
 
-    /* subtle gold ring on hover */
+    /* subtle gold “sheen” on hover */
+    .menu-card:after{
+      content:"";
+      position:absolute;
+      inset:-40px -60px auto -60px;
+      height:120px;
+      background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.10), rgba(212,175,55,0));
+      transform:rotate(-8deg);
+      opacity:0;
+      transition:opacity .18s ease;
+      pointer-events:none;
+    }
+
     .menu-card:hover{
       transform:translateY(-4px);
       box-shadow:0 22px 60px rgba(0,0,0,.18);
       border-color:var(--gold-soft);
     }
-    .menu-card:focus{
-      outline:none;
-      border-color:var(--gold);
-      box-shadow:0 0 0 3px rgba(212,175,55,.18), 0 22px 60px rgba(0,0,0,.18);
-    }
+    .menu-card:hover:after{opacity:1}
 
+    /* ✅ Footer with gold divider line */
     footer{
       text-align:center;
       padding:18px 14px 28px;
       font-size:11px;
       color:#777;
-      border-top:1px solid var(--border);
       background:#fff;
+      border-top:1px solid rgba(0,0,0,0.06);
+      position:relative;
+    }
+    footer:before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.55), rgba(212,175,55,0));
     }
 
     /* Age Gate */
@@ -108,49 +136,50 @@
       padding:20px;
     }
     .age-gate.show{display:flex}
+
     .age-card{
       background:#fff;
       max-width:460px;
       width:100%;
       border-radius:20px;
-      padding:24px 22px;
+      padding:24px;
       text-align:center;
       box-shadow:0 24px 80px rgba(0,0,0,.35);
       border:1px solid rgba(0,0,0,0.12);
     }
+
     .age-logo{
-      width:120px;
+      width:190px;
+      max-width:70%;
       height:auto;
       display:block;
-      margin:0 auto 12px;
+      margin:0 auto 10px;
     }
+
     .age-title{
       font-size:22px;
       font-weight:900;
-      margin-bottom:10px;
+      margin:6px 0 10px;
     }
-    .age-sub{
-      font-size:12px;
-      color:#666;
-      line-height:1.5;
-      margin:12px 0 0;
-    }
+
     .age-actions{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:12px;
-      margin-top:18px;
+      margin-top:16px;
     }
+
     .age-btn{
       border:1px solid rgba(0,0,0,0.15);
       border-radius:999px;
-      padding:13px 14px;
+      padding:14px;
       font-weight:900;
       cursor:pointer;
       font-size:14px;
       background:#fff;
       transition:all .18s ease;
     }
+
     .age-btn.yes{
       background:var(--black);
       color:#fff;
@@ -161,6 +190,7 @@
       color:var(--black);
       border-color:var(--gold);
     }
+
     .age-btn.no{
       background:#eee;
       color:#111;
@@ -172,75 +202,84 @@
       border-color:var(--gold);
     }
 
+    .age-sub{
+      font-size:12px;
+      color:#666;
+      line-height:1.5;
+      margin:12px 0 0;
+    }
+
     @media(max-width:900px){
       .menu-grid{grid-template-columns:1fr}
       .menu-card{border-radius:24px}
-      .brand-logo{width:90%}
+      .brand-logo{width:88%}
     }
   </style>
 
-  <!-- Cart logic -->
   <script src="cart.js"></script>
 </head>
 
 <body>
 
-<!-- Age Gate -->
-<div id="ageGate" class="age-gate">
-  <div class="age-card">
-    <!-- ✅ BBE.png logo inside the age verify modal -->
-    <img src="images/BBE.png" class="age-logo" alt="Bobby Black Exclusive" />
-    <div class="age-title">21+ Only</div>
-    <p>Please confirm you are 21 years of age or older.</p>
-    <div class="age-actions">
-      <button class="age-btn yes" id="ageYes">I’m 21+</button>
-      <button class="age-btn no" id="ageNo">No</button>
+  <!-- Age Gate -->
+  <div id="ageGate" class="age-gate">
+    <div class="age-card">
+      <!-- ✅ Age gate uses BBE.png -->
+      <img src="images/BBE.png" class="age-logo" alt="Bobby Black Exclusive" />
+
+      <div class="age-title">21+ Only</div>
+      <p>Please confirm you are 21 years of age or older.</p>
+
+      <div class="age-actions">
+        <button class="age-btn yes" id="ageYes">I’m 21+</button>
+        <button class="age-btn no" id="ageNo">No</button>
+      </div>
+
+      <p class="age-sub">
+        All products, pricing, and descriptions are provided for reference only.
+        No transactions, checkout, or delivery occur through this site.
+      </p>
     </div>
-    <p class="age-sub">
-      All products, pricing, and descriptions are provided for reference only.
-    </p>
   </div>
-</div>
 
-<header>
-  <!-- ✅ Home + category pages use BBE.png -->
-  <img src="images/BBE.png" alt="Bobby Black Exclusive" class="brand-logo" />
+  <!-- ✅ Black header bar with BBE.png -->
+  <header class="site-header">
+    <img src="images/BBE.png" alt="Bobby Black Exclusive" class="brand-logo" />
+  </header>
   <div class="subtitle">Menu</div>
-</header>
 
-<div class="wrap">
-  <div class="menu-grid">
-    <a href="flower.html" class="menu-card">Flower</a>
-    <a href="concentrates.html" class="menu-card">Concentrates</a>
-    <a href="accessories.html" class="menu-card">Accessories</a>
+  <div class="wrap">
+    <div class="menu-grid">
+      <a href="flower.html" class="menu-card">Flower</a>
+      <a href="concentrates.html" class="menu-card">Concentrates</a>
+      <a href="accessories.html" class="menu-card">Accessories</a>
+    </div>
   </div>
-</div>
 
-<footer>
-  All products, pricing, and descriptions are provided for reference only.
-                     • Updated Weekly • 21+ •
-</footer>
+  <footer>
+    All products, pricing, and descriptions are provided for reference only. No transactions, checkout, or delivery occur through this site. • Updated Weekly • 21+
+  </footer>
 
-<script>
-  // Show cart pill
-  BBE_CART.mountCartPill();
+  <script>
+    // Cart pill (if enabled)
+    BBE_CART.mountCartPill();
 
-  // Age gate logic
-  (function(){
-    const KEY="bbe_age_verified";
-    const gate=document.getElementById("ageGate");
-    if(localStorage.getItem(KEY)!=="true"){
-      gate.classList.add("show");
-    }
-    document.getElementById("ageYes").onclick=()=>{
-      localStorage.setItem(KEY,"true");
-      gate.classList.remove("show");
-    };
-    document.getElementById("ageNo").onclick=()=>{
-      window.location.href="https://www.google.com";
-    };
-  })();
-</script>
+    // Age gate logic
+    (function(){
+      const KEY="bbe_age_verified";
+      const gate=document.getElementById("ageGate");
+      if(localStorage.getItem(KEY)!=="true"){
+        gate.classList.add("show");
+      }
+      document.getElementById("ageYes").onclick=()=>{
+        localStorage.setItem(KEY,"true");
+        gate.classList.remove("show");
+      };
+      document.getElementById("ageNo").onclick=()=>{
+        window.location.href="https://www.google.com";
+      };
+    })();
+  </script>
 
 </body>
 </html>
