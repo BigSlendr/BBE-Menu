@@ -37,9 +37,39 @@
       margin-top:12px;
       cursor:pointer;
       transition:transform .08s ease;
+      display:flex;
+      gap:14px;
+      align-items:center;
     }
     .item:hover{transform:translateY(-2px)}
 
+    .thumb{
+      width:92px;
+      height:92px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#f3f3f3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 92px;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .noimg{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+
+    .item-main{flex:1 1 auto; min-width:0;}
     .item-name{font-weight:900;font-size:16px}
     .sale{color:#b00000;font-weight:900;margin-left:6px;font-size:13px}
 
@@ -69,7 +99,10 @@
     .age-btn.yes{background:#111;color:#fff}
     .age-btn.no{background:#eee;color:#111}
 
-    @media(max-width:700px){.brand-logo{width:86%}}
+    @media(max-width:700px){
+      .brand-logo{width:86%}
+      .thumb{width:78px;height:78px;flex-basis:78px}
+    }
   </style>
 
   <script src="cart.js"></script>
@@ -114,16 +147,8 @@
     document.getElementById("ageNo").onclick=()=>{window.location.href="https://www.google.com"}
   })();
 
-  function money(n){
-    return "$" + Number(n).toFixed(0);
-  }
-
-  function sizeLabel(k){
-    if(k==="g3_5") return "3.5g";
-    if(k==="g7") return "7g";
-    if(k==="g14") return "14g";
-    return "28g";
-  }
+  function money(n){ return "$" + Number(n).toFixed(0); }
+  function sizeLabel(k){ return k==="g3_5"?"3.5g":k==="g7"?"7g":k==="g14"?"14g":"28g"; }
 
   function showPriceOrNA(item, k){
     const available = item.availability?.[k] !== false;
@@ -133,16 +158,47 @@
     return "N/A";
   }
 
-  // Put your preferred category order here (optional)
-  const GROUP_ORDER = [
-    "BOBBY BLACK EXCLUSIVE",
-    "CA$$H RULE$",
-    "LOOSE LINEUP"
-  ];
-
+  // Your desired group order
+  const GROUP_ORDER = ["BOBBY BLACK EXCLUSIVE","CA$$H RULE$","LOOSE LINEUP"];
   function groupSortKey(name){
     const idx = GROUP_ORDER.indexOf(name);
     return idx === -1 ? 999 : idx;
+  }
+
+  // Map product IDs to image filenames (from your screenshot)
+  // NOTE: These files must exist at /images/<filename> in your repo
+  const IMAGE_MAP = {
+    "adl": "ADL.JPG",
+    "cherry-candy": "CherryCandy.JPG",
+    "chronic-candy": "ChronicCandy.JPG",
+    "frosted-peaches": "FrostedPeaches.JPG",
+    "jelly-fish": "JellyFish.JPG",
+    "rainbow-belts": "RainbowCandy.JPG",     // double-check: your file is RainbowBelts.JPG (see note below)
+    "space-candy": "SpaceCandy.JPG",
+    "sugar-shock": "SugarShock.JPG",
+    "zaamatic": "Zaamatic.JPG",
+    "blow-pop": "BlowPop.JPG",
+    "crazzy": "Crazzy.JPG",
+    "fruit-snacks": "FruitStripes.JPG",
+    "ready-to-trap": "ReadytoTrap.JPG",
+    "sherbert": "Sherbet.JPG",
+    "verzace": "Verzace.JPG"
+  };
+
+  // IMPORTANT FIXES based on your filenames:
+  // - Rainbow file is "RainbowBelts.JPG" (not RainbowCandy) in your list.
+  // - Fruit snacks file is "FruitStripes.JPG" in your list.
+  // If those are correct, adjust here:
+  IMAGE_MAP["rainbow-belts"] = "RainbowBelts.JPG";
+
+  function getImageForItem(item){
+    // Prefer explicit image field from products.json if you set it
+    if(item.image && item.image.trim()) return item.image.trim();
+
+    // Otherwise use IMAGE_MAP based on id
+    const file = IMAGE_MAP[item.id];
+    if(!file) return "";
+    return "images/" + file;
   }
 
   fetch("content/products.json",{cache:"no-store"})
@@ -171,7 +227,6 @@
       const container=document.getElementById("menu");
       container.innerHTML = "";
 
-      // Preserve group order (then any extras)
       const groupNames = [
         ...GROUP_ORDER.filter(g=>groups[g]),
         ...Object.keys(groups).filter(g=>!GROUP_ORDER.includes(g)).sort()
@@ -191,6 +246,29 @@
           div.className="item";
           div.onclick=()=>location.href="product.html?id="+encodeURIComponent(item.id);
 
+          // Thumbnail
+          const thumb=document.createElement("div");
+          thumb.className="thumb";
+          const imgPath = getImageForItem(item);
+
+          if(imgPath){
+            const img=document.createElement("img");
+            img.src = imgPath;
+            img.alt = item.name;
+            img.onerror = () => {
+              thumb.innerHTML = "<div class='noimg'>No Image</div>";
+            };
+            thumb.appendChild(img);
+          } else {
+            thumb.innerHTML = "<div class='noimg'>No Image</div>";
+          }
+
+          div.appendChild(thumb);
+
+          // Main
+          const main=document.createElement("div");
+          main.className="item-main";
+
           const name=document.createElement("div");
           name.className="item-name";
           name.textContent=item.name;
@@ -202,11 +280,10 @@
             name.appendChild(s);
           }
 
-          div.appendChild(name);
+          main.appendChild(name);
 
           const prices=document.createElement("div");
           prices.className="prices";
-
           ["g3_5","g7","g14","g28"].forEach(k=>{
             const p=document.createElement("span");
             p.className="price";
@@ -214,9 +291,9 @@
             prices.appendChild(p);
           });
 
-          div.appendChild(prices);
+          main.appendChild(prices);
 
-          // Actions: Add / View
+          // Actions
           const actions=document.createElement("div");
           actions.className="actions-row";
 
@@ -240,8 +317,9 @@
 
           actions.appendChild(addBtn);
           actions.appendChild(viewBtn);
-          div.appendChild(actions);
+          main.appendChild(actions);
 
+          div.appendChild(main);
           group.appendChild(div);
         });
 
