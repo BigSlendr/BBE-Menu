@@ -122,7 +122,6 @@
 <footer>Updated Weekly • 21+</footer>
 
 <script>
-  // Cart pill
   BBE_CART.mountCartPill();
 
   // Age gate
@@ -145,7 +144,6 @@
     return "N/A";
   }
 
-  // Group order
   const GROUP_ORDER = ["BOBBY BLACK EXCLUSIVE","CA$$H RULE$","LOOSE LINEUP"];
   function groupSortKey(name){
     const idx = GROUP_ORDER.indexOf(name);
@@ -153,6 +151,7 @@
   }
 
   // Image filenames (must exist in /images/)
+  // We support both old and new ids for CRAZZYY to avoid breakage.
   const IMAGE_MAP = {
     "adl": "ADL.JPG",
     "cherry-candy": "CherryCandy.JPG",
@@ -164,28 +163,56 @@
     "sugar-shock": "SugarShock.JPG",
     "zaamatic": "Zaamatic.JPG",
     "blow-pop": "BlowPop.JPG",
-    "crazzyy": "Crrazzy.JPG",      // ✅ renamed
+    "crazzy": "Crrazzy.JPG",
+    "crazzyy": "Crrazzy.JPG",      // ✅ if you changed id to crazzyy
+    "crazzyyy": "Crrazzy.JPG",     // ✅ extra safety if you triple-typed
     "fruit-snacks": "FruitStripes.JPG",
     "ready-to-trap": "ReadytoTrap.JPG",
     "sherbert": "Sherbet.JPG",
     "verzace": "Verzace.JPG"
   };
 
+  // Name-based fallback map (in case id doesn't match)
+  const NAME_MAP = {
+    "crazzyy": "Crrazzy.JPG",
+    "crazzy": "Crrazzy.JPG",
+    "adl": "ADL.JPG",
+    "cherrycandy": "CherryCandy.JPG",
+    "chroniccandy": "ChronicCandy.JPG",
+    "frostedpeaches": "FrostedPeaches.JPG",
+    "jellyfish": "JellyFish.JPG",
+    "rainbowbelts": "RainbowBelts.JPG",
+    "spacecandy": "SpaceCandy.JPG",
+    "sugarshock": "SugarShock.JPG",
+    "zaamatic": "Zaamatic.JPG",
+    "blowpop": "BlowPop.JPG",
+    "fruitsnacks": "FruitStripes.JPG",
+    "readytotrap": "ReadytoTrap.JPG",
+    "sherbert": "Sherbet.JPG",
+    "verzace": "Verzace.JPG"
+  };
+
+  function normalizeKey(s){
+    return String(s||"")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g,""); // remove spaces/punctuation
+  }
+
   function getImageForItem(item){
-    // Prefer explicit image path in products.json
     if(item.image && item.image.trim()) return item.image.trim();
 
-    // Otherwise use map by id
-    const file = IMAGE_MAP[item.id];
-    if(!file) return "";
-    return "images/" + file;
+    const byId = IMAGE_MAP[item.id];
+    if(byId) return "images/" + byId;
+
+    const byName = NAME_MAP[normalizeKey(item.name)];
+    if(byName) return "images/" + byName;
+
+    return "";
   }
 
   fetch("content/products.json",{cache:"no-store"})
     .then(r=>r.json())
     .then(data=>{
-      // IMPORTANT: this page shows exactly what is in products.json for Flower.
-      // To remove old items, delete them from products.json.
       const items=(data.items||[])
         .filter(i=>i.category==="Flower")
         .slice()
@@ -228,7 +255,6 @@
           div.className="item";
           div.onclick=()=>location.href="product.html?id="+encodeURIComponent(item.id);
 
-          // Thumbnail
           const thumb=document.createElement("div");
           thumb.className="thumb";
           const imgPath = getImageForItem(item);
@@ -237,9 +263,7 @@
             const img=document.createElement("img");
             img.src = imgPath;
             img.alt = item.name;
-            img.onerror = () => {
-              thumb.innerHTML = "<div class='noimg'>No Image</div>";
-            };
+            img.onerror = () => { thumb.innerHTML = "<div class='noimg'>No Image</div>"; };
             thumb.appendChild(img);
           } else {
             thumb.innerHTML = "<div class='noimg'>No Image</div>";
@@ -247,7 +271,6 @@
 
           div.appendChild(thumb);
 
-          // Main
           const main=document.createElement("div");
           main.className="item-main";
 
@@ -272,10 +295,8 @@
             p.textContent=sizeLabel(k)+": "+showPriceOrNA(item, k);
             prices.appendChild(p);
           });
-
           main.appendChild(prices);
 
-          // Actions
           const actions=document.createElement("div");
           actions.className="actions-row";
 
