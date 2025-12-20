@@ -10,9 +10,13 @@
       --bg:#f5f5f5;
       --text:#111;
       --muted:#6b6b6b;
-      --line:#e6e6e6;
+      --line:rgba(0,0,0,0.10);
       --card:#ffffff;
-      --black:#111;
+      --black:#0E0E0E;
+
+      /* Luxury hover accents */
+      --gold:#D4AF37;
+      --gold-soft:rgba(212,175,55,0.35);
     }
     *{box-sizing:border-box}
     body{
@@ -35,7 +39,7 @@
     .wrap{
       max-width:1080px;
       margin:0 auto;
-      padding:14px 14px 28px; /* slightly reduced so footer feels connected */
+      padding:14px 14px 30px;
     }
 
     .crumb{
@@ -50,8 +54,13 @@
       color:var(--muted);
       text-decoration:none;
       font-weight:900;
+      border-bottom:1px solid transparent;
+      transition:color .18s ease, border-color .18s ease;
     }
-    .crumb a:hover{color:#000}
+    .crumb a:hover{
+      color:var(--gold);
+      border-color:var(--gold);
+    }
 
     .grid{
       display:grid;
@@ -60,6 +69,7 @@
       align-items:start;
     }
 
+    /* Image panel */
     .img-panel{
       background:#fff;
       border:1px solid var(--line);
@@ -69,14 +79,18 @@
       align-items:center;
       justify-content:center;
       overflow:hidden;
+      transition:border-color .18s ease;
     }
+    .img-panel:hover{border-color:var(--gold-soft)}
     .img-panel img{
       width:100%;
       height:auto;
       display:block;
       object-fit:contain;
       max-height:520px;
+      transition:transform .2s ease;
     }
+    .img-panel:hover img{transform:scale(1.015)}
     .img-placeholder{
       color:var(--muted);
       font-weight:900;
@@ -84,14 +98,17 @@
       text-align:center;
     }
 
+    /* Info card */
     .info{
       background:#fff;
       border:1px solid var(--line);
       border-radius:10px;
       padding:14px;
+      transition:border-color .18s ease;
     }
+    .info:hover{border-color:var(--gold-soft)}
 
-    /* ✅ Only keep the right-side category badge (no THC badge) */
+    /* Only keep category badge (no THC badge) */
     .top-badges{
       display:flex;
       gap:10px;
@@ -106,8 +123,9 @@
       text-transform:uppercase;
       padding:8px 10px;
       border-radius:4px;
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.15);
       background:#fff;
+      transition:border-color .18s ease;
     }
     .badge.type{
       background:#2a2f3a;
@@ -116,6 +134,7 @@
       min-width:140px;
       text-align:center;
     }
+    .badge:hover{border-color:var(--gold)}
 
     .title{
       font-weight:900;
@@ -145,12 +164,14 @@
     .size-row{display:flex;gap:10px;align-items:center;margin-top:6px}
     .size-select{
       flex:0 0 140px;
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.15);
       border-radius:3px;
       padding:12px 10px;
       font-weight:900;
       background:#fff;
+      transition:border-color .18s ease;
     }
+    .size-select:hover{border-color:var(--gold)}
 
     .price{
       font-size:34px;
@@ -166,17 +187,20 @@
       margin-bottom:12px;
     }
     .qty-select{
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.15);
       border-radius:3px;
       padding:12px 10px;
       font-weight:900;
       background:#fff;
       width:100%;
+      transition:border-color .18s ease;
     }
+    .qty-select:hover{border-color:var(--gold)}
+
     .add-btn{
-      border:0;
+      border:1px solid var(--black);
       border-radius:3px;
-      background:#0e0e0e;
+      background:var(--black);
       color:#fff;
       font-weight:900;
       letter-spacing:1px;
@@ -186,23 +210,29 @@
       justify-content:center;
       gap:10px;
       text-transform:uppercase;
+      transition:all .18s ease;
+    }
+    .add-btn:hover{
+      background:#fff;
+      color:var(--black);
+      border-color:var(--gold);
     }
     .add-btn:active{transform:translateY(1px)}
     .add-icon{
       width:14px;height:14px;display:inline-block;
-      border:2px solid #fff;border-radius:3px;
+      border:2px solid currentColor;border-radius:3px;
       position:relative;
     }
     .add-icon:before{
       content:"";
       position:absolute;left:50%;top:50%;
-      width:8px;height:2px;background:#fff;
+      width:8px;height:2px;background:currentColor;
       transform:translate(-50%,-50%);
     }
     .add-icon:after{
       content:"";
       position:absolute;left:50%;top:50%;
-      width:2px;height:8px;background:#fff;
+      width:2px;height:8px;background:currentColor;
       transform:translate(-50%,-50%);
     }
 
@@ -217,7 +247,9 @@
       gap:10px;
       align-items:flex-start;
       margin-bottom:10px;
+      transition:border-color .18s ease;
     }
+    .subnote:hover{border-color:var(--gold-soft)}
 
     hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 
@@ -258,7 +290,7 @@
       margin-top:8px;
     }
     .effect{
-      border:1px solid var(--line);
+      border:1px solid rgba(0,0,0,0.12);
       background:#fff;
       border-radius:4px;
       padding:10px 10px;
@@ -269,7 +301,9 @@
       display:flex;
       gap:8px;
       align-items:center;
+      transition:border-color .18s ease;
     }
+    .effect:hover{border-color:var(--gold)}
     .effect .icon{
       width:18px;height:18px;border:1px solid #ccc;border-radius:4px;
       display:inline-flex;align-items:center;justify-content:center;
@@ -277,38 +311,59 @@
     }
 
     /* Age gate */
-    .age-gate{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px}
+    .age-gate{
+      position:fixed;inset:0;z-index:9999;
+      background:rgba(0,0,0,.72);
+      display:none;align-items:center;justify-content:center;padding:20px
+    }
     .age-gate.show{display:flex}
-    .age-card{background:#fff;max-width:420px;width:100%;border-radius:18px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .age-card{
+      background:#fff;
+      max-width:440px;width:100%;
+      border-radius:18px;
+      padding:22px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      border:1px solid rgba(0,0,0,0.12);
+    }
     .age-title{font-size:22px;font-weight:900;margin-bottom:8px}
-    .age-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-    .age-btn{border:0;border-radius:999px;padding:12px;font-weight:900;cursor:pointer}
-    .age-btn.yes{background:#111;color:#fff}
-    .age-btn.no{background:#eee;color:#111}
-
-    /* ✅ Disclaimer text inside age gate */
-    .age-disclaimer{
-      margin:10px 0 0;
-      font-size:12px;
-      line-height:1.35;
-      color:#444;
+    .age-sub{font-size:12px;color:#666;line-height:1.5;margin:10px 0 0}
+    .age-actions{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px
+    }
+    .age-btn{
+      border:1px solid rgba(0,0,0,0.15);
+      border-radius:999px;
+      padding:12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#fff;
+      transition:all .18s ease;
+    }
+    .age-btn.yes{
+      background:var(--black);
+      color:#fff;
+      border-color:var(--black);
+    }
+    .age-btn.yes:hover{
+      background:#fff;
+      color:var(--black);
+      border-color:var(--gold);
+    }
+    .age-btn.no{
+      background:#eee;color:#111;border-color:#eee;
+    }
+    .age-btn.no:hover{
+      border-color:var(--gold);
+      color:var(--gold);
+      background:#fff;
     }
 
-    /* ✅ Footer disclaimer */
     footer{
       text-align:center;
-      padding:18px 12px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .footer-disclaimer{
-      margin-top:8px;
-      font-size:12px;
-      line-height:1.35;
-      color:var(--muted);
-      max-width:920px;
-      margin-left:auto;
-      margin-right:auto;
+      padding:18px 14px 28px;
+      font-size:11px;
+      color:#777;
     }
 
     @media(max-width:900px){
@@ -329,13 +384,14 @@
     <div class="age-card">
       <div class="age-title">21+ Only</div>
       <p>Please confirm you are 21 years of age or older.</p>
-      <p class="age-disclaimer">
-        Reference only. No online ordering, checkout, delivery, or payments. Prices and availability may change.
-      </p>
       <div class="age-actions">
         <button class="age-btn yes" id="ageYes">I’m 21+</button>
         <button class="age-btn no" id="ageNo">No</button>
       </div>
+      <p class="age-sub">
+        All products, pricing, and descriptions are provided for reference only.
+        No transactions, checkout, or delivery occur through this site.
+      </p>
     </div>
   </div>
 
@@ -345,7 +401,7 @@
 
   <div class="wrap">
     <div class="crumb">
-      <a href="index.html">← Back</a>
+      <a id="backLink" href="index.html">← Back</a>
       <span id="crumbTrail">HOME • PRODUCT</span>
     </div>
 
@@ -403,17 +459,13 @@
 
         <div class="section-title">EFFECTS</div>
         <div class="effects-grid" id="effectsGrid"></div>
-
-        <!-- ✅ Cannabinoids removed -->
       </div>
     </div>
   </div>
 
   <footer>
-    <div>Updated Weekly • 21+</div>
-    <div class="footer-disclaimer">
-      Reference only. No online ordering, checkout, delivery, or payments. Prices and availability may change.
-    </div>
+    All products, pricing, and descriptions are provided for reference only.
+    No transactions, checkout, or delivery occur through this site. • 21+
   </footer>
 
   <script>
@@ -435,13 +487,12 @@
     function safeUpper(s){ return (s || "—").toString().toUpperCase(); }
     function getId(){ return new URLSearchParams(location.search).get("id"); }
 
-    // ✅ If product.html opened without ?id=..., send them back
     const id = getId();
     if(!id){
       window.location.replace("flower.html");
     }
 
-    // ✅ IMAGE FALLBACKS (includes your real id: crazzzy)
+    // Image fallbacks
     const IMAGE_MAP = {
       "adl": "ADL.JPG",
       "cherry-candy": "CherryCandy.JPG",
