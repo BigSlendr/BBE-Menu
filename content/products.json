@@ -19,7 +19,7 @@
   "subcategory": "LOOSE LINEUP",
   "sale": false,
   "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+  "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
   "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
   "description": "",
   "image": "images/CherryCandy.JPG"
@@ -31,8 +31,8 @@
   "subcategory": "CA$H RULE$",
   "sale": false,
   "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g7": 120, "g14": 220, "g28": 400 },
-  "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+  "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
+  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
   "description": "",
   "image": "images/Zaamatic.JPG"
 },
@@ -43,8 +43,8 @@
   "subcategory": "CA$H RULE$",
   "sale": false,
   "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g7": 120, "g14": 220, "g28": 400 },
-  "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+  "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
+  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
   "description": "",
   "image": "images/ReadytoTrap.JPG"
 },
