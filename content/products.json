@@ -13,6 +13,42 @@
       "image": "images/Crrazzy.JPG"
     },
     {
+  "id": "cherry-candy",
+  "name": "Cherry Candy",
+  "category": "Flower",
+  "subcategory": "LOOSE LINEUP",
+  "sale": false,
+  "pricingType": "By Size (3.5/7/14/28)",
+  "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+  "description": "",
+  "image": "images/CherryCandy.JPG"
+},
+{
+  "id": "zaamatic",
+  "name": "Zaamatic",
+  "category": "Flower",
+  "subcategory": "CA$H RULE$",
+  "sale": false,
+  "pricingType": "By Size (3.5/7/14/28)",
+  "prices": { "g7": 120, "g14": 220, "g28": 400 },
+  "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+  "description": "",
+  "image": "images/Zaamatic.JPG"
+},
+  {
+  "id": "ready-to-trap",
+  "name": "Ready to Trap",
+  "category": "Flower",
+  "subcategory": "CA$H RULE$",
+  "sale": false,
+  "pricingType": "By Size (3.5/7/14/28)",
+  "prices": { "g7": 120, "g14": 220, "g28": 400 },
+  "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+  "description": "",
+  "image": "images/ReadytoTrap.JPG"
+},
+    {
       "id": "jelly-fish",
       "name": "JELLY FISH",
       "category": "Flower",
