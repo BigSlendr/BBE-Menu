@@ -208,11 +208,77 @@
       "image": "images/RosinBudder.JPG"
     },
 
-    { "id": "bbl-havana-pearls-cigars", "name": "BBL Havana Pearls Cigars", "category": "Accessories", "subcategory": "Cigars", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
-    { "id": "brother-broad-leaf-barrel-series-havana-cigars", "name": "Brother Broad Leaf Barrel Series Havana Cigars", "category": "Accessories", "subcategory": "Cigars", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
-    { "id": "elements-rice-rolling-papers", "name": "Elements Rice Rolling Papers", "category": "Accessories", "subcategory": "Rolling Papers", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
-    { "id": "elements-phantom-papers", "name": "Elements Phantom Papers", "category": "Accessories", "subcategory": "Rolling Papers", "sale": false, "pricingType": "Single Price", "prices": { "single": 4 }, "availability": { "single": true }, "description": "", "image": "" },
-    { "id": "bic-lighter", "name": "Bic Lighter", "category": "Accessories", "subcategory": "Lighters & Tips", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
-    { "id": "raw-rolling-tips", "name": "RAW Rolling Tips", "category": "Accessories", "subcategory": "Lighters & Tips", "sale": false, "pricingType": "Single Price", "prices": { "single": 1 }, "availability": { "single": true }, "description": "", "image": "" }
+    {
+      "id": "bbl-havana-pearls-cigars",
+      "name": "BBL Havana Pearls Cigars",
+      "category": "Accessories",
+      "subcategory": "Cigars",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 3 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "brother-broad-leaf-barrel-series-havana-cigars",
+      "name": "Brother Broad Leaf Barrel Series Havana Cigars",
+      "category": "Accessories",
+      "subcategory": "Cigars",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 3 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "elements-rice-rolling-papers",
+      "name": "Elements Rice Rolling Papers",
+      "category": "Accessories",
+      "subcategory": "Rolling Papers",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 3 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "elements-phantom-papers",
+      "name": "Elements Phantom Papers",
+      "category": "Accessories",
+      "subcategory": "Rolling Papers",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 4 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "bic-lighter",
+      "name": "Bic Lighter",
+      "category": "Accessories",
+      "subcategory": "Lighters & Tips",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 3 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "raw-rolling-tips",
+      "name": "RAW Rolling Tips",
+      "category": "Accessories",
+      "subcategory": "Lighters & Tips",
+      "sale": false,
+      "pricingType": "Single Price",
+      "prices": { "single": 1 },
+      "availability": { "single": true },
+      "description": "",
+      "image": ""
+    }
   ]
 }
