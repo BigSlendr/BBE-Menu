@@ -1,89 +1,66 @@
 {
   "items": [
     {
-      "id": "crazzzy",
-      "name": "CRAZZYY",
-      "category": "Flower",
-      "subcategory": "CA$H RULE$",
-      "sale": false,
-      "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g7": 120, "g14": 220, "g28": 400 },
-      "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
-      "description": "",
-      "image": "images/Crrazzy.JPG"
-    },
-    {
-  "id": "cherry-candy",
-  "name": "Cherry Candy",
-  "category": "Flower",
-  "subcategory": "LOOSE LINEUP",
-  "sale": false,
-  "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
-  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
-  "description": "",
-  "image": "images/CherryCandy.JPG"
-},
-{
-  "id": "zaamatic",
-  "name": "Zaamatic",
-  "category": "Flower",
-  "subcategory": "CA$H RULE$",
-  "sale": false,
-  "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
-  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
-  "description": "",
-  "image": "images/Zaamatic.JPG"
-},
-  {
-  "id": "ready-to-trap",
-  "name": "Ready to Trap",
-  "category": "Flower",
-  "subcategory": "CA$H RULE$",
-  "sale": false,
-  "pricingType": "By Size (3.5/7/14/28)",
-  "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
-  "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
-  "description": "",
-  "image": "images/ReadytoTrap.JPG"
-},
-    {
       "id": "jelly-fish",
       "name": "JELLY FISH",
       "category": "Flower",
-      "subcategory": "CA$H RULE$",
+      "subcategory": "CA$$H RULE$",
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
       "prices": { "g7": 110, "g14": 200, "g28": 380 },
       "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/JellyFish.JPG"
     },
     {
       "id": "frosted-peaches",
       "name": "Frosted Peaches",
       "category": "Flower",
-      "subcategory": "CA$H RULE$",
+      "subcategory": "CA$$H RULE$",
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
       "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/FrostedPeaches.JPG"
     },
     {
       "id": "sugar-shock",
       "name": "SUGAR SHOCK",
       "category": "Flower",
-      "subcategory": "CA$H RULE$",
-      "sale": false,
+      "subcategory": "CA$$H RULE$",
+      "sale": true,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
+      "prices": { "g3_5": 45, "g7": 90, "g14": 160, "g28": 320 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/SugarShock.JPG"
     },
+    {
+      "id": "zaamatic",
+      "name": "Zaamatic",
+      "category": "Flower",
+      "subcategory": "CA$$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/Zaamatic.JPG"
+    },
+    {
+      "id": "ready-to-trap",
+      "name": "Ready to Trap",
+      "category": "Flower",
+      "subcategory": "CA$$H RULE$",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/ReadytoTrap.JPG"
+    },
+
     {
       "id": "verzace",
       "name": "Verzace",
@@ -94,7 +71,7 @@
       "prices": { "g3_5": 35, "g7": 60, "g14": 110, "g28": 200 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/Verzace.JPG"
     },
     {
       "id": "space-candy",
@@ -106,11 +83,35 @@
       "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/SpaceCandy.JPG"
     },
     {
-      "id": "blow-pop",
-      "name": "Blow Pop",
+      "id": "fruit-snacks",
+      "name": "Fruit Snacks",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/FruitStripes.JPG"
+    },
+    {
+      "id": "sherbert",
+      "name": "Sherbert",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/Sherbet.JPG"
+    },
+    {
+      "id": "peach-rings",
+      "name": "Peach Rings",
       "category": "Flower",
       "subcategory": "LOOSE LINEUP",
       "sale": false,
@@ -121,11 +122,23 @@
       "image": ""
     },
     {
-      "id": "chronic-candy",
-      "name": "Chronic Candy",
+      "id": "silver-back-gorilla",
+      "name": "Silver Back Gorilla",
       "category": "Flower",
       "subcategory": "LOOSE LINEUP",
-      "sale": true,
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "bubblegum-poppers",
+      "name": "Bubblegum Poppers",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
       "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
@@ -133,26 +146,51 @@
       "image": ""
     },
     {
-      "id": "adl",
-      "name": "ADL",
+      "id": "cherry-candy",
+      "name": "Cherry Candy",
       "category": "Flower",
       "subcategory": "LOOSE LINEUP",
-      "sale": true,
+      "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 40, "g14": 70, "g28": 120 },
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/CherryCandy.JPG"
+    },
+    {
+      "id": "pink-cadillac",
+      "name": "Pink Cadillac",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+
+    {
+      "id": "candy-fumez-shake",
+      "name": "Candy Fumez (shake)",
+      "category": "Flower",
+      "subcategory": "SHAKE",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 45, "g14": 80, "g28": 150 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
       "image": ""
     },
     {
-      "id": "rainbow-belts",
-      "name": "Rainbow Belts",
+      "id": "sherb-candy-shake",
+      "name": "Sherb Candy (shake)",
       "category": "Flower",
-      "subcategory": "LOOSE LINEUP",
+      "subcategory": "SHAKE",
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g7": 35, "g14": 60, "g28": 90 },
-      "availability": { "g3_5": false, "g7": true, "g14": true, "g28": true },
+      "prices": { "g3_5": 25, "g7": 40, "g14": 60, "g28": 100 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
       "image": ""
     },
@@ -168,79 +206,6 @@
       "availability": { "perGram": true },
       "description": "",
       "image": "images/RosinBudder.JPG"
-    },
-
-    {
-      "id": "bbl-havana-pearls-cigars",
-      "name": "BBL Havana Pearls Cigars",
-      "category": "Accessories",
-      "subcategory": "Cigars",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
-    },
-    {
-      "id": "brother-broad-leaf-barrel-series-havana-cigars",
-      "name": "Brother Broad Leaf Barrel Series Havana Cigars",
-      "category": "Accessories",
-      "subcategory": "Cigars",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
-    },
-    {
-      "id": "elements-rice-rolling-papers",
-      "name": "Elements Rice Rolling Papers",
-      "category": "Accessories",
-      "subcategory": "Rolling Papers",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
-    },
-    {
-      "id": "elements-phantom-papers",
-      "name": "Elements Phantom Papers",
-      "category": "Accessories",
-      "subcategory": "Rolling Papers",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 4 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
-    },
-    {
-      "id": "bic-lighter",
-      "name": "Bic Lighter",
-      "category": "Accessories",
-      "subcategory": "Lighters & Tips",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
-    },
-    {
-      "id": "raw-rolling-tips",
-      "name": "RAW Rolling Tips",
-      "category": "Accessories",
-      "subcategory": "Lighters & Tips",
-      "sale": false,
-      "pricingType": "Single Price",
-      "prices": { "single": 1 },
-      "availability": { "single": true },
-      "description": "",
-      "image": ""
     }
   ]
 }
