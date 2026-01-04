@@ -658,8 +658,6 @@
     const aboutText = document.getElementById("aboutText");
     const effectsGrid = document.getElementById("effectsGrid");
 
-    const casshWrap = document.getElementById("casshWrap");
-    const casshLogo = document.getElementById("casshLogo");
     const casshInline = document.getElementById("casshInline");
     const casshInlineImg = document.getElementById("casshInlineImg");
 
@@ -759,23 +757,18 @@
       return sub === "CA$$H RULE$" || sub === "CA$H RULE$" || norm === "casshrules";
     }
 
-    function applyCasshRulesBranding(item){
-      const cassh = isCasshRules(item);
+ function applyCasshRulesBranding(item){
+  const cassh = isCasshRules(item);
 
-      if(cassh){
-        casshWrap.style.display = "block";
-        casshInline.style.display = "flex";
+  if(cassh){
+    casshInline.style.display = "flex";
+    casshInlineImg.onerror = () => { casshInline.style.display = "none"; };
+  } else {
+    casshInline.style.display = "none";
+  }
 
-        // hide gracefully if the image path/case is wrong
-        casshLogo.onerror = () => { casshWrap.style.display = "none"; };
-        casshInlineImg.onerror = () => { casshInline.style.display = "none"; };
-      } else {
-        casshWrap.style.display = "none";
-        casshInline.style.display = "none";
-      }
-
-      return cassh;
-    }
+  return cassh;
+}
 
     fetch("content/products.json", { cache:"no-store" })
       .then(r=>r.json())
