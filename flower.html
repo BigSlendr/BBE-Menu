@@ -67,13 +67,41 @@
     .legend .sale-dot{color:#b00000;font-weight:900}
 
     .group{margin-bottom:36px}
+
+    /* ✅ group header now supports an optional logo */
+    .group-head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
     .group-title{
       font-size:18px;
       font-weight:900;
-      margin-bottom:10px;
       border-bottom:2px solid #111;
       display:inline-block;
-      padding-bottom:4px
+      padding-bottom:4px;
+      margin:0;
+    }
+    .group-mark{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      flex:0 0 36px;
+    }
+    .group-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      padding:4px;
     }
 
     .item{
@@ -238,6 +266,7 @@
     @media(max-width:700px){
       .brand-logo{width:86%}
       .thumb{width:78px;height:78px;flex-basis:78px}
+      .group-mark{width:34px;height:34px;flex-basis:34px}
     }
   </style>
 
@@ -272,7 +301,6 @@
   <div class="wrap">
     <a href="index.html" class="back">← Back to Menu</a>
 
-    <!-- ✅ Menu legend to match your screenshot -->
     <div class="legend">
       (<strong>8th</strong> / <strong>Q</strong> / <strong>Half</strong> / <strong>OZ</strong>) &nbsp; • &nbsp;
       (<span class="sale-dot">🚨</span> = <strong>SALE</strong>) &nbsp; • &nbsp;
@@ -299,11 +327,12 @@
       document.getElementById("ageNo").onclick=()=>{window.location.href="https://www.google.com"}
     })();
 
-    // ===== EXACT MENU (from your screenshot) =====
+    // ===== MENU (updated: shakes grouped on their own) =====
     // Prices correspond to: 8th(3.5g) / Q(7g) / Half(14g) / OZ(28g)
     const MENU_SPEC = [
       {
         group: "CA$$H RULE$",
+        groupLogo: "images/CasshrulesOfficial.png", // ✅ logo in header
         items: [
           { name: "JELLY FISH", prices: { g3_5: "N/A", g7: 110, g14: 200, g28: 380 } },
           { name: "Frosted peaches", prices: { g3_5: 50, g7: 100, g14: 180, g28: 340 } },
@@ -323,10 +352,10 @@
           { name: "Silver back gorilla", prices: { g3_5: 30, g7: 50, g14: 100, g28: 180 } },
           { name: "Bubblegum poppers", prices: { g3_5: 25, g7: 45, g14: 90, g28: 160 } },
           { name: "Cherry candy", prices: { g3_5: 25, g7: 45, g14: 90, g28: 160 } },
-          { name: "Pink Cadillac", prices: { g3_5: 25, g7: 45, g14: 90, g28: 160 } },
-         ]
+          { name: "Pink Cadillac", prices: { g3_5: 25, g7: 45, g14: 90, g28: 160 } }
+        ]
       },
-        {
+      {
         group: "SHAKE",
         items: [
           { name: "Candy fumez (shake)", prices: { g3_5: 30, g7: 45, g14: 80, g28: 150 } },
@@ -396,13 +425,12 @@
       location.href = "product.html?id=" + encodeURIComponent(id);
     }
 
-    // ===== Render EXACT menu, while still linking to product.html/cart if the item exists in products.json =====
+    // ===== Render MENU_SPEC, but keep Add/View if item exists in products.json =====
     fetch("content/products.json",{cache:"no-store"})
       .then(r=>r.json())
       .then(data=>{
         const all = (data.items||[]).filter(i => i.category === "Flower");
 
-        // lookup by normalized name & by id
         const byId = new Map(all.map(i => [i.id, i]));
         const byName = new Map(all.map(i => [normalizeKey(i.name), i]));
 
@@ -413,24 +441,35 @@
           const group=document.createElement("div");
           group.className="group";
 
-          const title=document.createElement("div");
+          // ✅ group header (with optional logo)
+          const head=document.createElement("div");
+          head.className="group-head";
+
+          if(groupSpec.groupLogo){
+            const mark=document.createElement("div");
+            mark.className="group-mark";
+            const img=document.createElement("img");
+            img.src = groupSpec.groupLogo;
+            img.alt = groupSpec.group + " logo";
+            img.onerror = () => { mark.style.display="none"; };
+            mark.appendChild(img);
+            head.appendChild(mark);
+          }
+
+          const title=document.createElement("h2");
           title.className="group-title";
           title.textContent=groupSpec.group;
-          group.appendChild(title);
+          head.appendChild(title);
+
+          group.appendChild(head);
 
           groupSpec.items.forEach(spec=>{
-            // try to match an existing json item (so Add/View work)
             const keyName = normalizeKey(spec.name);
             const guessId = slugifyName(spec.name);
             const found = byName.get(keyName) || byId.get(guessId) || null;
 
-            // build display item (fallback even if missing from json)
-            const item = found ? found : {
-              id: guessId,
-              name: spec.name
-            };
-
-            const canOpen = !!found; // only open product page if it exists in products.json
+            const item = found ? found : { id: guessId, name: spec.name };
+            const canOpen = !!found;
 
             const div=document.createElement("div");
             div.className="item" + (canOpen ? "" : " disabled");
