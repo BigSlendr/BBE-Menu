@@ -139,4 +139,80 @@
       "category": "Flower",
       "subcategory": "LOOSE LINEUP",
       "sale": false,
-      "pricingType": "By Size
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "cherry-candy",
+      "name": "Cherry Candy",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": "images/CherryCandy.JPG"
+    },
+    {
+      "id": "pink-cadillac",
+      "name": "Pink Cadillac",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+
+    {
+      "id": "candy-fumez-shake",
+      "name": "Candy Fumez (shake)",
+      "category": "Flower",
+      "subcategory": "SHAKE",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 30, "g7": 45, "g14": 80, "g28": 150 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+    {
+      "id": "sherb-candy-shake",
+      "name": "Sherb Candy (shake)",
+      "category": "Flower",
+      "subcategory": "SHAKE",
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": { "g3_5": 25, "g7": 40, "g14": 60, "g28": 100 },
+      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "description": "",
+      "image": ""
+    },
+
+    {
+      "id": "rosin-budder",
+      "name": "Rosin Budder",
+      "category": "Concentrates",
+      "subcategory": "Concentrates",
+      "sale": false,
+      "pricingType": "Per Gram",
+      "prices": { "perGram": 30 },
+      "availability": { "perGram": true },
+      "description": "",
+      "image": "images/RosinBudder.JPG"
+    },
+
+    { "id": "bbl-havana-pearls-cigars", "name": "BBL Havana Pearls Cigars", "category": "Accessories", "subcategory": "Cigars", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
+    { "id": "brother-broad-leaf-barrel-series-havana-cigars", "name": "Brother Broad Leaf Barrel Series Havana Cigars", "category": "Accessories", "subcategory": "Cigars", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
+    { "id": "elements-rice-rolling-papers", "name": "Elements Rice Rolling Papers", "category": "Accessories", "subcategory": "Rolling Papers", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
+    { "id": "elements-phantom-papers", "name": "Elements Phantom Papers", "category": "Accessories", "subcategory": "Rolling Papers", "sale": false, "pricingType": "Single Price", "prices": { "single": 4 }, "availability": { "single": true }, "description": "", "image": "" },
+    { "id": "bic-lighter", "name": "Bic Lighter", "category": "Accessories", "subcategory": "Lighters & Tips", "sale": false, "pricingType": "Single Price", "prices": { "single": 3 }, "availability": { "single": true }, "description": "", "image": "" },
+    { "id": "raw-rolling-tips", "name": "RAW Rolling Tips", "category": "Accessories", "subcategory": "Lighters & Tips", "sale": false, "pricingType": "Single Price", "prices": { "single": 1 }, "availability": { "single": true }, "description": "", "image": "" }
+  ]
+}
