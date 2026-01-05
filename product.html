@@ -123,7 +123,6 @@
       box-shadow:0 14px 34px rgba(0,0,0,.10);
     }
 
-    /* ✅ top row: Cassh logo on left (only for Cassh items), type badge on right */
     .top-badges{
       display:flex;
       gap:10px;
@@ -178,23 +177,6 @@
       color:var(--muted);
       letter-spacing:1px;
       margin-bottom:10px;
-    }
-
-    /* ✅ CA$$H RULE$ logo UNDER title (only shown when applicable) */
-    .collection-wrap{
-      display:none;
-      margin:10px 0 4px;
-      padding:10px 10px;
-      border:1px solid rgba(212,175,55,.18);
-      border-radius:10px;
-      background: linear-gradient(180deg, rgba(212,175,55,.06), rgba(212,175,55,0));
-    }
-    .collection-logo{
-      height:46px;
-      width:auto;
-      display:block;
-      margin:0 auto;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
     }
 
     .ratingline{
@@ -452,7 +434,6 @@
       .img-panel img{max-height:420px}
       .badge.type{min-width:120px}
       .brand-logo{height:40px}
-      .collection-logo{height:42px}
       .cassh-inline img{height:30px}
     }
   </style>
@@ -496,7 +477,6 @@
 
       <div class="info">
         <div class="top-badges">
-          <!-- ✅ inline Cassh logo (only when Cassh item) -->
           <div class="cassh-inline" id="casshInline">
             <img id="casshInlineImg" src="images/CasshrulesOfficial.png" alt="CA$$H RULE$" />
           </div>
@@ -505,9 +485,6 @@
         </div>
 
         <div class="title" id="productTitle">Loading…</div>
-
-        <!-- ✅ Cassh logo under title (only shown when Cassh item) -->
-       
 
         <div class="brandline" id="brandLine">—</div>
 
@@ -585,7 +562,7 @@
       window.location.replace("flower.html");
     }
 
-    // Image fallbacks
+    // ✅ Image fallbacks (by ID)
     const IMAGE_MAP = {
       "adl": "ADL.JPG",
       "cherry-candy": "CherryCandy.JPG",
@@ -602,9 +579,19 @@
       "ready-to-trap": "ReadytoTrap.JPG",
       "sherbert": "Sherbet.JPG",
       "verzace": "Verzace.JPG",
-      "rosin-budder": "RosinBudder.JPG"
+      "rosin-budder": "RosinBudder.JPG",
+
+      /* ✅ NEW IMAGES */
+      "bubblegum-poppers": "BubbleGumPoppers.jpg",
+      "candy-fumes-shake": "CandyFumesShake.jpg",
+      "pink-cadillac": "PinkCadillac.jpg",
+      "silver-back-gorilla": "SilverBackGorilla.jpg",
+      "sherb-candy-shake": "SherbCandyShake.jpg",
+      "peach-rings": "PeachRings.jpg"
     };
 
+    // ✅ Image fallbacks (by normalized NAME)
+    // normalizeKey("Peach Rings") -> "peachrings"
     const NAME_MAP = {
       "crazzzy": "Crrazzy.JPG",
       "crazzyy": "Crrazzy.JPG",
@@ -623,7 +610,16 @@
       "readytotrap": "ReadytoTrap.JPG",
       "sherbert": "Sherbet.JPG",
       "verzace": "Verzace.JPG",
-      "rosinbudder": "RosinBudder.JPG"
+      "rosinbudder": "RosinBudder.JPG",
+
+      /* ✅ NEW IMAGES (name-based) */
+      "bubblegumpoppers": "BubbleGumPoppers.jpg",
+      "candyfumesshake": "CandyFumesShake.jpg",
+      "candyfumes": "CandyFumesShake.jpg",
+      "pinkcadillac": "PinkCadillac.jpg",
+      "silverbackgorilla": "SilverBackGorilla.jpg",
+      "sherbcandyshake": "SherbCandyShake.jpg",
+      "peachrings": "PeachRings.jpg"
     };
 
     function normalizeKey(s){
@@ -750,25 +746,24 @@
       imgPanel.appendChild(img);
     }
 
-    /* ✅ robust Cassh detection (handles CA$$H RULE$, CA$H RULE$, etc.) */
     function isCasshRules(item){
       const sub = (item.subcategory || "").trim();
-      const norm = sub.toLowerCase().replace(/[^a-z0-9]/g,""); // "casshrules"
+      const norm = sub.toLowerCase().replace(/[^a-z0-9]/g,"");
       return sub === "CA$$H RULE$" || sub === "CA$H RULE$" || norm === "casshrules";
     }
 
- function applyCasshRulesBranding(item){
-  const cassh = isCasshRules(item);
+    function applyCasshRulesBranding(item){
+      const cassh = isCasshRules(item);
 
-  if(cassh){
-    casshInline.style.display = "flex";
-    casshInlineImg.onerror = () => { casshInline.style.display = "none"; };
-  } else {
-    casshInline.style.display = "none";
-  }
+      if(cassh){
+        casshInline.style.display = "flex";
+        casshInlineImg.onerror = () => { casshInline.style.display = "none"; };
+      } else {
+        casshInline.style.display = "none";
+      }
 
-  return cassh;
-}
+      return cassh;
+    }
 
     fetch("content/products.json", { cache:"no-store" })
       .then(r=>r.json())
@@ -786,13 +781,11 @@
 
         currentItem = item;
 
-        // Cassh branding first (also returns bool)
         const cassh = applyCasshRulesBranding(item);
 
         crumbTrail.textContent = `HOME • ${safeUpper(item.category)} • ${safeUpper(item.subcategory || "ITEM")}`;
         typeBadge.textContent = safeUpper(item.type || item.category);
 
-        // ✅ Change display name for Cassh products
         const displayBrand = cassh ? "CA$$H RULE$" : (item.brand || "Bobby Black Exclusive");
 
         productTitle.textContent = `${safeUpper(displayBrand)} | ${safeUpper(item.name)}`;
