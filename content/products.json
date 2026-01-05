@@ -119,7 +119,7 @@
       "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/PeachRings.jpg"
     },
     {
       "id": "silver-back-gorilla",
@@ -131,7 +131,7 @@
       "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/SilverBackGorilla.jpg"
     },
     {
       "id": "bubblegum-poppers",
@@ -143,7 +143,7 @@
       "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/BubbleGumPoppers.jpg"
     },
     {
       "id": "cherry-candy",
@@ -167,7 +167,7 @@
       "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/PinkCadillac.jpg"
     },
 
     {
@@ -180,7 +180,7 @@
       "prices": { "g3_5": 30, "g7": 45, "g14": 80, "g28": 150 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/CandyFumesShake.jpg"
     },
     {
       "id": "sherb-candy-shake",
@@ -192,7 +192,7 @@
       "prices": { "g3_5": 25, "g7": 40, "g14": 60, "g28": 100 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "image": ""
+      "image": "images/SherbCandyShake.jpg"
     },
 
     {
