@@ -110,7 +110,7 @@
       "prices": { "g3_5": 25, "g7": 40, "g14": 80, "g28": 140 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "effects": ["RELAXED", "BODY BUZZ", "UPLIFTED", "STRESS RELIEF"],
+      "effects": ["RELAXED", "BODY BUZZ", "CALM", "STRESS RELIEF"],
       "image": "images/Sherbet.JPG"
     },
     {
@@ -127,11 +127,12 @@
       "effects": ["UPLIFTED", "FOCUSED", "HAPPY", "MOTIVATED"],
       "image": "images/PinkCadillac.jpg"
     },
+
     {
       "id": "candy-fumez-shake",
       "name": "Candy fumez (exotic shake)",
       "category": "Flower",
-      "subcategory": "LOOSE LINEUP",
+      "subcategory": "SHAKE",
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
@@ -145,7 +146,7 @@
       "id": "sherb-candy-shake",
       "name": "Sherb candy (shake)",
       "category": "Flower",
-      "subcategory": "LOOSE LINEUP",
+      "subcategory": "SHAKE",
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
@@ -255,19 +256,5 @@
       "effects": [],
       "image": ""
     }
-
-    /*
-      Future items you don’t want visible yet:
-      Add them here with "live": false.
-      Example:
-      {
-        "id":"verzace",
-        "name":"Verzace",
-        "category":"Flower",
-        "subcategory":"CA$$H RULE$",
-        "live": false,
-        ...
-      }
-    */
   ]
 }
