@@ -24,7 +24,7 @@
       "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "effects": [],
+      "effects": ["RELAXED", "HAPPY", "CALM", "UPLIFTED"],
       "image": "images/Double-bubble.png"
     },
     {
@@ -37,7 +37,7 @@
       "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
       "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
       "description": "",
-      "effects": [],
+      "effects": ["EUPHORIC", "HAPPY", "RELAXED", "UPLIFTED"],
       "image": "images/Pink-Certz.png"
     },
     {
