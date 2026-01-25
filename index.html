@@ -2,434 +2,415 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Bobby Black Exclusive | Home</title>
+  <title>Bobby Black Exclusive | Menu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     :root{
-      --bg:#f6f6f6;
-      --card:#fff;
+      --bg:#fafafa;
       --text:#111;
-      --muted:#6b6b6b;
-      --border:rgba(0,0,0,.10);
+      --muted:#666;
+      --card:#fff;
+      --border:rgba(0,0,0,0.10);
+      --shadow:0 14px 40px rgba(0,0,0,.12);
 
       --black:#0E0E0E;
       --gold:#D4AF37;
       --gold-soft:rgba(212,175,55,0.35);
       --gold-faint:rgba(212,175,55,0.18);
-
-      --shadow:0 18px 60px rgba(0,0,0,.12);
-      --radius:18px;
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:Arial, sans-serif;
+      font-family:Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
     }
 
-    /* ===== Top Nav (Flowery-inspired) ===== */
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      background:rgba(255,255,255,.9);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid rgba(0,0,0,.06);
-    }
-    .topbar-inner{
-      max-width:1200px;
-      margin:0 auto;
-      padding:14px 16px;
+    /* ✅ Full-width black header bar */
+    .site-header{
+      background:#000;
+      width:100%;
       display:flex;
       align-items:center;
-      gap:16px;
+      justify-content:center;
+      padding:28px 16px 18px;
+      border-bottom:1px solid var(--gold-soft);
     }
-
-    .logo{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      text-decoration:none;
-      color:var(--text);
-      font-weight:900;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-      white-space:nowrap;
-    }
-    .logo-mark{
-      width:34px;height:34px;border-radius:10px;
-      background:linear-gradient(145deg,#111,#000);
-      border:1px solid rgba(212,175,55,.22);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-    }
-    .logo-text{font-size:14px}
-    .logo-sub{
+    .brand-logo{
+      max-width:320px;
+      width:min(82%, 340px);
+      height:auto;
       display:block;
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:2.2px;
-      color:var(--muted);
-      margin-top:2px;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
     }
 
-    .navlinks{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      flex:0 0 auto;
-      margin-left:4px;
-    }
-    .navlinks a{
-      text-decoration:none;
-      color:var(--muted);
-      font-weight:900;
+    .subtitle{
+      text-align:center;
+      margin:14px 0 0;
       font-size:12px;
-      letter-spacing:1.2px;
+      letter-spacing:3px;
       text-transform:uppercase;
-      border-bottom:1px solid transparent;
-      padding:6px 0;
-      transition:color .18s ease, border-color .18s ease;
-    }
-    .navlinks a:hover{
-      color:var(--gold);
-      border-color:var(--gold);
+      color:var(--muted);
+      font-weight:900;
     }
 
-    .search{
-      flex:1 1 auto;
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:22px 16px 46px;
+    }
+
+    .section-title{
+      margin:26px 0 10px;
+      font-size:12px;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      color:#222;
+      font-weight:900;
       display:flex;
       align-items:center;
       gap:10px;
-      background:#0f0f10;
-      border:1px solid rgba(255,255,255,.12);
+    }
+    .section-title:after{
+      content:"";
+      height:1px;
+      flex:1;
+      background:linear-gradient(90deg, rgba(0,0,0,0.06), rgba(212,175,55,.30), rgba(0,0,0,0.06));
+    }
+
+    /* ===== Featured carousel ===== */
+    .featured-wrap{
+      background:var(--card);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      border-radius:22px;
+      padding:16px;
+      overflow:hidden;
+      position:relative;
+    }
+    .featured-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .featured-kicker{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .featured-kicker b{
+      color:#111;
+      letter-spacing:3px;
+    }
+    .featured-controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .fc-btn{
+      border:1px solid rgba(0,0,0,0.12);
+      background:#fff;
       border-radius:999px;
       padding:10px 14px;
-      margin-left:auto;
-      max-width:520px;
-      box-shadow:0 10px 24px rgba(0,0,0,.10);
-    }
-    .search svg{flex:0 0 auto}
-    .search input{
-      width:100%;
-      border:0;
-      outline:none;
-      background:transparent;
-      color:#fff;
       font-weight:900;
-      letter-spacing:.4px;
-      font-size:12px;
+      cursor:pointer;
+      transition:all .18s ease;
     }
-    .search input::placeholder{color:rgba(255,255,255,.65)}
+    .fc-btn:hover{
+      border-color:var(--gold);
+      color:var(--gold);
+    }
 
-    .icons{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex:0 0 auto;
+    .carousel{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+      align-items:stretch;
     }
-    .icon-btn{
-      width:40px;height:40px;border-radius:999px;
-      border:1px solid rgba(0,0,0,.10);
+
+    .feature-card{
+      border:1px solid rgba(0,0,0,0.10);
+      border-radius:18px;
+      overflow:hidden;
       background:#fff;
-      display:flex;align-items:center;justify-content:center;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      min-height:240px;
       cursor:pointer;
       transition:transform .12s ease, border-color .18s ease, box-shadow .18s ease;
     }
-    .icon-btn:hover{
-      transform:translateY(-1px);
+    .feature-card:hover{
+      transform:translateY(-2px);
       border-color:var(--gold-soft);
-      box-shadow:0 14px 28px rgba(0,0,0,.10);
+      box-shadow:0 18px 44px rgba(0,0,0,.14);
     }
 
-    /* ===== Layout ===== */
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:18px 16px 60px;
-    }
-
-    /* ===== Hero ===== */
-    .hero{
-      background:var(--card);
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:var(--radius);
+    .feature-img{
+      background:#f4f4f4;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       overflow:hidden;
-      box-shadow:var(--shadow);
-    }
-    .hero-topline{
-      height:8px;
-      background:linear-gradient(90deg, #f0422a, #ff7b2b, #f0422a);
-    }
-    .hero-grid{
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:0;
-    }
-    .hero-media{
-      min-height:280px;
-      background:
-        radial-gradient(80% 120% at 30% 20%, rgba(212,175,55,.15), rgba(212,175,55,0) 60%),
-        linear-gradient(135deg, #161616, #0b0b0b);
       position:relative;
     }
-    .hero-media:before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.05)),
-        radial-gradient(60% 90% at 70% 30%, rgba(255,255,255,.08), rgba(255,255,255,0) 55%);
-      pointer-events:none;
+    .feature-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transform:scale(1.02);
+      transition:transform .22s ease;
     }
-    .hero-badge{
-      position:absolute;
-      left:18px; top:18px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(212,175,55,.30);
-      color:#fff;
+    .feature-card:hover .feature-img img{transform:scale(1.06)}
+    .feature-noimg{
+      font-size:12px;
       font-weight:900;
       letter-spacing:2px;
       text-transform:uppercase;
-      font-size:11px;
-      padding:10px 12px;
-      border-radius:999px;
-      backdrop-filter: blur(10px);
+      color:var(--muted);
     }
-    .hero-copy{
-      padding:26px 22px 26px;
+
+    .feature-info{
+      padding:18px 16px;
       display:flex;
       flex-direction:column;
       justify-content:center;
       gap:10px;
-      background:linear-gradient(180deg, #fff, #fbfbfb);
     }
-    .hero-title{
-      font-size:34px;
+
+    .feature-brand{
+      font-size:11px;
       font-weight:900;
-      letter-spacing:.6px;
+      letter-spacing:2px;
       text-transform:uppercase;
-      line-height:1.05;
-      margin:0;
-    }
-    .hero-sub{
-      margin:0;
       color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-      max-width:46ch;
     }
-    .hero-actions{
+    .feature-title{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      line-height:1.15;
+    }
+
+    .feature-meta{
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
+      gap:10px;
       margin-top:6px;
     }
-    .btn{
-      border-radius:999px;
-      padding:12px 16px;
+    .meta-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
       font-weight:900;
       letter-spacing:1px;
       text-transform:uppercase;
-      font-size:12px;
-      text-decoration:none;
-      display:inline-flex;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,0.10);
+      background:#fff;
+      transition:border-color .18s ease, color .18s ease;
+      white-space:nowrap;
+    }
+    .feature-card:hover .meta-pill{
+      border-color:var(--gold);
+      color:var(--gold);
+    }
+
+    .dots{
+      display:flex;
+      gap:8px;
       align-items:center;
       justify-content:center;
-      gap:10px;
-      border:1px solid rgba(0,0,0,.12);
-      transition:transform .12s ease, box-shadow .18s ease, border-color .18s ease;
+      margin-top:12px;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      border:1px solid rgba(0,0,0,0.20);
       background:#fff;
-      color:#111;
+      cursor:pointer;
+      transition:all .18s ease;
     }
-    .btn:hover{
-      transform:translateY(-1px);
-      border-color:var(--gold-soft);
-      box-shadow:0 18px 34px rgba(0,0,0,.12);
-    }
-    .btn.primary{
+    .dot.active{
       background:var(--black);
-      color:#fff;
       border-color:var(--black);
     }
-    .btn.primary:hover{
-      background:#fff;
-      color:var(--black);
-      border-color:var(--gold);
+
+    @media(max-width:820px){
+      .feature-card{grid-template-columns:1fr; min-height:0}
+      .feature-img{height:240px}
     }
 
-    /* ===== Sections ===== */
-    .section{
-      margin-top:26px;
-    }
-    .section h2{
-      margin:0 0 14px;
-      font-size:22px;
-      letter-spacing:2px;
-      text-transform:uppercase;
-      font-weight:900;
-      color:#111;
-      display:inline-block;
-      padding-bottom:8px;
-      border-bottom:2px solid rgba(0,0,0,.06);
-      position:relative;
-    }
-    .section h2:after{
-      content:"";
-      position:absolute;
-      left:0;
-      right:0;
-      bottom:-2px;
-      height:2px;
-      background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.55), rgba(212,175,55,0));
-      opacity:.8;
-    }
-
-    /* ===== Brands row ===== */
+    /* ===== Brand row ===== */
     .brands{
       display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:14px;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+      margin-top:14px;
     }
     .brand-card{
       background:var(--card);
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:var(--radius);
-      overflow:hidden;
-      box-shadow:0 14px 44px rgba(0,0,0,.10);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      padding:18px 16px;
       text-decoration:none;
       color:#111;
-      transition:transform .12s ease, border-color .18s ease, box-shadow .18s ease;
-      position:relative;
-      min-height:150px;
       display:flex;
-      align-items:stretch;
-    }
-    .brand-card:hover{
-      transform:translateY(-2px);
-      border-color:var(--gold-soft);
-      box-shadow:0 22px 60px rgba(0,0,0,.14);
-    }
-    .brand-left{
-      flex:1 1 auto;
-      padding:18px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:8px;
-    }
-    .brand-kicker{
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:2px;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
-    .brand-name{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:.8px;
-      text-transform:uppercase;
-      margin:0;
-    }
-    .brand-desc{
-      margin:0;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.55;
-      max-width:50ch;
-    }
-    .brand-right{
-      width:220px;
-      background:linear-gradient(135deg, #161616, #0b0b0b);
-      border-left:1px solid rgba(212,175,55,.18);
+      align-items:center;
+      gap:14px;
+      transition:transform .12s ease, box-shadow .12s ease, border-color .18s ease;
       position:relative;
+      overflow:hidden;
+      min-height:96px;
     }
-    .brand-right:before{
+    .brand-card:after{
       content:"";
       position:absolute;
-      inset:0;
-      background:radial-gradient(70% 120% at 30% 30%, rgba(212,175,55,.18), rgba(212,175,55,0) 60%);
+      inset:-50px -80px auto -80px;
+      height:140px;
+      background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.10), rgba(212,175,55,0));
+      transform:rotate(-8deg);
+      opacity:0;
+      transition:opacity .18s ease;
       pointer-events:none;
     }
+    .brand-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 22px 60px rgba(0,0,0,.18);
+      border-color:var(--gold-soft);
+    }
+    .brand-card:hover:after{opacity:1}
+
     .brand-mark{
-      position:absolute;
-      left:18px;
-      bottom:18px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
+      width:64px;height:64px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 64px;
+    }
+    .brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      padding:6px;
+    }
+    .brand-meta{min-width:0}
+    .brand-name{
       font-weight:900;
-      letter-spacing:1.4px;
+      letter-spacing:.3px;
       text-transform:uppercase;
+      font-size:14px;
+      line-height:1.1;
+    }
+    .brand-sub{
       font-size:12px;
-      backdrop-filter: blur(10px);
+      color:var(--muted);
+      margin-top:6px;
+      line-height:1.35;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      border:1px solid rgba(0,0,0,0.10);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      transition:border-color .18s ease, color .18s ease;
+      white-space:nowrap;
+    }
+    .brand-card:hover .pill{
+      border-color:var(--gold);
+      color:var(--gold);
     }
 
-    /* ===== Categories row (icon buttons) ===== */
-    .cats{
+    /* ===== Categories ===== */
+    .menu-grid{
       display:grid;
-      grid-template-columns:repeat(6, 1fr);
-      gap:16px;
-      align-items:stretch;
+      grid-template-columns:repeat(3,1fr);
+      gap:24px;
+      margin-top:16px;
     }
-    .cat{
+    .menu-card{
       background:var(--card);
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:var(--radius);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      border-radius:24px;
+      padding:26px 18px 22px;
+      text-align:center;
+      font-weight:900;
+      font-size:16px;
       text-decoration:none;
       color:#111;
-      padding:16px 14px;
+      transition:transform .12s ease, box-shadow .12s ease, border-color .18s ease;
+      position:relative;
+      overflow:hidden;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:10px;
-      text-align:center;
-      box-shadow:0 10px 30px rgba(0,0,0,.08);
-      transition:transform .12s ease, border-color .18s ease, box-shadow .18s ease;
-      min-height:140px;
+      gap:12px;
+      min-height:150px;
     }
-    .cat:hover{
-      transform:translateY(-2px);
-      border-color:var(--gold-soft);
-      box-shadow:0 18px 50px rgba(0,0,0,.12);
-    }
-    .cat-ico{
-      width:56px;height:56px;border-radius:999px;
-      border:1px solid rgba(0,0,0,.10);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;
-      background:#fafafa;
-      position:relative;
-      overflow:hidden;
-    }
-    .cat-ico:after{
+    .menu-card:after{
       content:"";
       position:absolute;
-      inset:-12px;
-      background:radial-gradient(circle at 30% 20%, rgba(212,175,55,.22), rgba(212,175,55,0) 50%);
+      inset:-40px -60px auto -60px;
+      height:120px;
+      background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.10), rgba(212,175,55,0));
+      transform:rotate(-8deg);
+      opacity:0;
+      transition:opacity .18s ease;
       pointer-events:none;
     }
-    .cat-label{
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:1.6px;
-      text-transform:uppercase;
-      color:#111;
+    .menu-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 22px 60px rgba(0,0,0,.18);
+      border-color:var(--gold-soft);
     }
+    .menu-card:hover:after{opacity:1}
+
+    .cat-icon{
+      width:58px;height:58px;
+      border-radius:18px;
+      border:1px solid rgba(0,0,0,0.10);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.08);
+    }
+    .cat-icon svg{width:34px;height:34px;display:block}
     .cat-sub{
       font-size:11px;
       color:var(--muted);
-      margin-top:-6px;
-      letter-spacing:.3px;
+      font-weight:900;
+      letter-spacing:1px;
+      text-transform:uppercase;
     }
 
-    /* ===== Footer ===== */
     footer{
       text-align:center;
       padding:18px 14px 28px;
@@ -438,17 +419,18 @@
       background:#fff;
       border-top:1px solid rgba(0,0,0,0.06);
       position:relative;
-      margin-top:40px;
     }
     footer:before{
       content:"";
       position:absolute;
-      top:0; left:0; right:0;
+      top:0;
+      left:0;
+      right:0;
       height:1px;
       background:linear-gradient(90deg, rgba(212,175,55,0), rgba(212,175,55,.55), rgba(212,175,55,0));
     }
 
-    /* ===== Age Gate ===== */
+    /* Age Gate */
     .age-gate{
       position:fixed;
       inset:0;
@@ -471,6 +453,7 @@
       box-shadow:0 24px 80px rgba(0,0,0,.35);
       border:1px solid rgba(0,0,0,0.12);
     }
+
     .age-logo{
       width:190px;
       max-width:70%;
@@ -478,17 +461,20 @@
       display:block;
       margin:0 auto 10px;
     }
+
     .age-title{
       font-size:22px;
       font-weight:900;
       margin:6px 0 10px;
     }
+
     .age-actions{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:12px;
       margin-top:16px;
     }
+
     .age-btn{
       border:1px solid rgba(0,0,0,0.15);
       border-radius:999px;
@@ -499,6 +485,7 @@
       background:#fff;
       transition:all .18s ease;
     }
+
     .age-btn.yes{
       background:var(--black);
       color:#fff;
@@ -509,6 +496,7 @@
       color:var(--black);
       border-color:var(--gold);
     }
+
     .age-btn.no{
       background:#eee;
       color:#111;
@@ -519,6 +507,7 @@
       color:var(--gold);
       border-color:var(--gold);
     }
+
     .age-sub{
       font-size:12px;
       color:#666;
@@ -526,19 +515,10 @@
       margin:12px 0 0;
     }
 
-    /* ===== Responsive ===== */
-    @media(max-width:1050px){
-      .hero-grid{grid-template-columns:1fr}
-      .brand-right{width:100%; min-height:120px; border-left:0; border-top:1px solid rgba(212,175,55,.18)}
-      .cats{grid-template-columns:repeat(3, 1fr)}
-      .navlinks{display:none}
-      .search{max-width:none}
-    }
-    @media(max-width:640px){
-      .cats{grid-template-columns:repeat(2, 1fr)}
-      .topbar-inner{gap:10px}
-      .icons{display:none}
-      .hero-title{font-size:28px}
+    @media(max-width:900px){
+      .menu-grid{grid-template-columns:1fr}
+      .brands{grid-template-columns:1fr}
+      .brand-logo{width:88%}
     }
   </style>
 
@@ -553,10 +533,12 @@
       <img src="images/BBE.png" class="age-logo" alt="Bobby Black Exclusive" />
       <div class="age-title">21+ Only</div>
       <p>Please confirm you are 21 years of age or older.</p>
+
       <div class="age-actions">
         <button class="age-btn yes" id="ageYes">I’m 21+</button>
         <button class="age-btn no" id="ageNo">No</button>
       </div>
+
       <p class="age-sub">
         All products, pricing, and descriptions are provided for reference only.
         No transactions, checkout, or delivery occur through this site.
@@ -564,145 +546,101 @@
     </div>
   </div>
 
-  <!-- Topbar -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <a class="logo" href="index.html" aria-label="Home">
-        <span class="logo-mark"></span>
-        <span>
-          BOBBY BLACK
-          <span class="logo-sub">EXCLUSIVE</span>
-        </span>
-      </a>
-
-      <nav class="navlinks" aria-label="Primary">
-        <a href="flower.html">Shop</a>
-        <a href="#brands">Brands</a>
-        <a href="#categories">Categories</a>
-        <a href="contact.html">Contact</a>
-      </nav>
-
-      <div class="search" role="search" aria-label="Search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
-          <path d="M16.5 16.5 21 21" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input id="searchInput" type="search" placeholder="WHAT CAN WE HELP YOU FIND?" autocomplete="off" />
-      </div>
-
-      <div class="icons" aria-hidden="true">
-        <button class="icon-btn" type="button" title="Account">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M20 21a8 8 0 0 0-16 0" stroke="#111" stroke-width="2" stroke-linecap="round"/>
-            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="#111" stroke-width="2"/>
-          </svg>
-        </button>
-        <button class="icon-btn" type="button" title="Cart" onclick="location.href='cart.html'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M6 8h15l-1.5 13h-12L6 8Z" stroke="#111" stroke-width="2" />
-            <path d="M8 8a4 4 0 0 1 8 0" stroke="#111" stroke-width="2"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- Header -->
+  <header class="site-header">
+    <img src="images/BBE.png" alt="Bobby Black Exclusive" class="brand-logo" />
+  </header>
+  <div class="subtitle">Menu</div>
 
   <div class="wrap">
 
-    <!-- Hero -->
-    <section class="hero" aria-label="Hero">
-      <div class="hero-topline"></div>
-      <div class="hero-grid">
-        <div class="hero-media">
-          <div class="hero-badge">LIVE MENU</div>
-        </div>
-        <div class="hero-copy">
-          <h1 class="hero-title">BOBBY BLACK MENU</h1>
-          <p class="hero-sub">
-            Browse brands, explore categories, and view product details with pricing by size.
-            Cart is for screenshot/sharing only — no checkout on this site.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="flower.html">Shop Flower</a>
-            <a class="btn" href="concentrates.html">Shop Concentrates</a>
-            <a class="btn" href="#categories">Browse Categories</a>
-          </div>
+    <!-- ===== FEATURED STRAINS ===== -->
+    <div class="section-title">Featured Strains</div>
+    <div class="featured-wrap">
+      <div class="featured-head">
+        <div class="featured-kicker"><b>LIVE</b> • 5 random picks</div>
+        <div class="featured-controls">
+          <button class="fc-btn" id="prevBtn" type="button">‹</button>
+          <button class="fc-btn" id="nextBtn" type="button">›</button>
         </div>
       </div>
-    </section>
 
-    <!-- Brands -->
-    <section class="section" id="brands">
-      <h2>Brands</h2>
-      <div class="brands">
-        <a class="brand-card" href="flower.html?brand=cassh" aria-label="Shop CA$$H RULE$">
-          <div class="brand-left">
-            <div class="brand-kicker">Featured Brand</div>
-            <h3 class="brand-name">CA$$H RULE$</h3>
-            <p class="brand-desc">Top-shelf lineup. Tap in for the current drop and pricing by size.</p>
-          </div>
-          <div class="brand-right">
-            <div class="brand-mark">CA$$H</div>
-          </div>
-        </a>
+      <div class="carousel" id="carousel"></div>
+      <div class="dots" id="dots"></div>
+    </div>
 
-        <a class="brand-card" href="flower.html?brand=bbe" aria-label="Shop Bobby Black Exclusive">
-          <div class="brand-left">
-            <div class="brand-kicker">House Brand</div>
-            <h3 class="brand-name">Bobby Black Exclusive</h3>
-            <p class="brand-desc">The core menu. Built for clean browsing and fast mid-week updates.</p>
-          </div>
-          <div class="brand-right">
-            <div class="brand-mark">BBE</div>
-          </div>
-        </a>
-      </div>
-    </section>
+    <!-- ===== BRANDS ===== -->
+    <div class="section-title">Brands</div>
+    <div class="brands">
+      <a class="brand-card" href="flower.html#cassh">
+        <div class="brand-mark">
+          <img src="images/CasshrulesOfficial.png" alt="CA$$H RULE$" onerror="this.parentElement.style.display='none';" />
+        </div>
+        <div class="brand-meta">
+          <div class="brand-name">CA$$H RULE$</div>
+          <div class="brand-sub">Featured drops + premium flower lineup</div>
+          <div class="pill">View Flower</div>
+        </div>
+      </a>
 
-    <!-- Categories -->
-    <section class="section" id="categories">
-      <h2>Categories</h2>
+      <a class="brand-card" href="flower.html#bobby">
+        <div class="brand-mark">
+          <img src="images/Bobbyb.png" alt="Bobby Black Exclusive" onerror="this.src='images/BBE.png';" />
+        </div>
+        <div class="brand-meta">
+          <div class="brand-name">Bobby Black Exclusive</div>
+          <div class="brand-sub">Menu hub for all categories + weekly updates</div>
+          <div class="pill">Browse Menu</div>
+        </div>
+      </a>
+    </div>
 
-      <div class="cats">
-        <a class="cat" href="flower.html" aria-label="Flower">
-          <div class="cat-ico">🌸</div>
-          <div class="cat-label">Flower</div>
-          <div class="cat-sub">3.5 / 7 / 14 / 28</div>
-        </a>
+    <!-- ===== CATEGORIES ===== -->
+    <div class="section-title">Categories</div>
+    <div class="menu-grid">
 
-        <a class="cat" href="concentrates.html" aria-label="Concentrates">
-          <div class="cat-ico">💧</div>
-          <div class="cat-label">Concentrates</div>
-          <div class="cat-sub">Per gram</div>
-        </a>
+      <a href="flower.html" class="menu-card" aria-label="Flower">
+        <div class="cat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 21c1.9 0 3.4-1.5 3.4-3.4 0-1.3-.7-2.4-1.7-3.0.3.0.6.1.9.1 1.9 0 3.4-1.5 3.4-3.4 0-1.4-.8-2.6-2-3.1 1.2-.5 2-1.7 2-3.1C20 3.9 18.5 2.4 16.6 2.4c-1.3 0-2.4.7-3 1.7 0-.3.1-.6.1-.9C13.7 1.5 12.2 0 10.3 0 8.4 0 6.9 1.5 6.9 3.4c0 .3 0 .6.1.9-.6-1-1.7-1.7-3-1.7C2.1 2.6.6 4.1.6 6c0 1.4.8 2.6 2 3.1-1.2.5-2 1.7-2 3.1 0 1.9 1.5 3.4 3.4 3.4.3 0 .6 0 .9-.1-1 .6-1.7 1.7-1.7 3 0 1.9 1.5 3.4 3.4 3.4 1.4 0 2.6-.8 3.1-2 .5 1.2 1.7 2 3.1 2Z"
+                  stroke="currentColor" stroke-width="1.6" opacity=".75"/>
+            <path d="M12 14.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z"
+                  stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div>Flower</div>
+        <div class="cat-sub">Strains + sizes</div>
+      </a>
 
-        <a class="cat" href="accessories.html" aria-label="Accessories">
-          <div class="cat-ico">🧰</div>
-          <div class="cat-label">Accessories</div>
-          <div class="cat-sub">All accessories</div>
-        </a>
+      <a href="concentrates.html" class="menu-card" aria-label="Concentrates">
+        <div class="cat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2s6 7 6 12a6 6 0 1 1-12 0c0-5 6-12 6-12Z"
+                  stroke="currentColor" stroke-width="1.8" />
+            <path d="M9 15c.6 1.7 2 3 4 3" stroke="currentColor" stroke-width="1.8" opacity=".6"/>
+          </svg>
+        </div>
+        <div>Concentrates</div>
+        <div class="cat-sub">Always available</div>
+      </a>
 
-        <!-- Split accessories into clean buttons -->
-        <a class="cat" href="accessories.html?sub=cigars" aria-label="Cigars">
-          <div class="cat-ico">🚬</div>
-          <div class="cat-label">Cigars</div>
-          <div class="cat-sub">Singles</div>
-        </a>
+      <a href="accessories.html" class="menu-card" aria-label="Accessories">
+        <div class="cat-icon" aria-hidden="true">
+          <!-- ✅ CIGAR icon (not cigarette) -->
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="10" y="28" width="42" height="10" rx="5" stroke="currentColor" stroke-width="2"/>
+            <rect x="26" y="28" width="10" height="10" rx="3" stroke="currentColor" stroke-width="2" opacity=".7"/>
+            <path d="M10 28v10" stroke="currentColor" stroke-width="2"/>
+            <rect x="52" y="28" width="6" height="10" rx="3" stroke="currentColor" stroke-width="2" opacity=".7"/>
+            <path d="M56 22c2 1 3 3 2 5-1 2 0 4 2 5" stroke="currentColor" stroke-width="2" opacity=".5" stroke-linecap="round"/>
+            <path d="M50 20c2 1 3 3 2 5-1 2 0 4 2 5" stroke="currentColor" stroke-width="2" opacity=".35" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>Accessories</div>
+        <div class="cat-sub">Cigars • papers • lighters</div>
+      </a>
 
-        <a class="cat" href="accessories.html?sub=lighters" aria-label="Lighters and Tips">
-          <div class="cat-ico">🔥</div>
-          <div class="cat-label">Lighters & Tips</div>
-          <div class="cat-sub">Bic / tips</div>
-        </a>
-
-        <a class="cat" href="accessories.html?sub=papers" aria-label="Rolling Papers">
-          <div class="cat-ico">📄</div>
-          <div class="cat-label">Rolling Papers</div>
-          <div class="cat-sub">Elements / RAW</div>
-        </a>
-      </div>
-    </section>
-
+    </div>
   </div>
 
   <footer>
@@ -711,7 +649,7 @@
   </footer>
 
   <script>
-    // Cart pill
+    // Cart pill (if enabled)
     if (window.BBE_CART && typeof BBE_CART.mountCartPill === "function") {
       BBE_CART.mountCartPill();
     }
@@ -732,21 +670,182 @@
       };
     })();
 
-    // Simple search behavior:
-    // - Enter sends to flower.html?search=...
-    // (You can later implement real filtering on the target pages)
-    (function(){
-      const input = document.getElementById("searchInput");
-      if(!input) return;
+    // ===== Featured Strains Carousel (random 5 Flower items) =====
+    const PRODUCT_JSON_PATH = "content/products.json";
+    const ROTATE_MS = 4500;
 
-      input.addEventListener("keydown", (e)=>{
-        if(e.key === "Enter"){
-          const q = (input.value || "").trim();
-          if(!q) return;
-          window.location.href = "flower.html?search=" + encodeURIComponent(q);
-        }
+    function normalizeKey(s){
+      return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+    }
+
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random() * (i+1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function money(n){
+      if(n===null || n===undefined || n==="" || isNaN(Number(n))) return "N/A";
+      return "$" + Number(n).toFixed(0);
+    }
+
+    function getBestPrice(item){
+      // Prefer 8th then Q then Half then OZ (or whatever exists)
+      const keys = ["g3_5","g7","g14","g28"];
+      for(const k of keys){
+        const a = item.availability ? item.availability[k] !== false : true;
+        const p = item.prices ? item.prices[k] : null;
+        if(a && p !== null && p !== undefined && p !== "") return { key:k, price:p };
+      }
+      return { key:null, price:null };
+    }
+
+    function isCasshRules(item){
+      const sub = (item.subcategory || "").trim();
+      const norm = sub.toLowerCase().replace(/[^a-z0-9]/g,"");
+      return sub === "CA$$H RULE$" || sub === "CA$H RULE$" || norm === "casshrules";
+    }
+
+    // Minimal fallback maps (uses item.image first; these are only backups)
+    const IMAGE_MAP = {
+      "zaamatic": "Zaamatic.JPG",
+      "double-bubble": "Double-bubble.png",
+      "pink-certz": "Pink-Certz.png",
+      "space-candy": "SpaceCandy.JPG",
+      "fruit-snacks": "FruitStripes.JPG",
+      "sherbert": "Sherbet.JPG",
+      "silver-back-gorilla": "SilverBackGorilla.jpg",
+      "bubblegum-poppers": "BubbleGumPoppers.jpg",
+      "pink-cadillac": "PinkCadillac.jpg",
+      "candy-fumez-shake": "CandyFumesShake.jpg",
+      "sherb-candy-shake": "SherbCandyShake.jpg"
+    };
+
+    const NAME_MAP = {
+      "zaamatic": "Zaamatic.JPG",
+      "doublebubble": "Double-bubble.png",
+      "pinkcertz": "Pink-Certz.png",
+      "spacecandy": "SpaceCandy.JPG",
+      "fruitsnacks": "FruitStripes.JPG",
+      "sherbert": "Sherbet.JPG",
+      "silverbackgorilla": "SilverBackGorilla.jpg",
+      "bubblegumpoppers": "BubbleGumPoppers.jpg",
+      "pinkcadillac": "PinkCadillac.jpg",
+      "candyfumezexoticshake": "CandyFumesShake.jpg",
+      "candyfumezshake": "CandyFumesShake.jpg",
+      "sherbcandyshake": "SherbCandyShake.jpg"
+    };
+
+    function resolveImage(item){
+      if(item && item.image && String(item.image).trim()) return String(item.image).trim();
+
+      const byId = IMAGE_MAP[item.id];
+      if(byId) return "images/" + byId;
+
+      const byName = NAME_MAP[normalizeKey(item.name)];
+      if(byName) return "images/" + byName;
+
+      return "";
+    }
+
+    const carouselEl = document.getElementById("carousel");
+    const dotsEl = document.getElementById("dots");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let featured = [];
+    let idx = 0;
+    let timer = null;
+
+    function renderSlide(i){
+      if(!featured.length) return;
+      idx = (i + featured.length) % featured.length;
+
+      const item = featured[idx];
+      const brand = isCasshRules(item) ? "CA$$H RULE$" : "Bobby Black Exclusive";
+      const imgPath = resolveImage(item);
+      const best = getBestPrice(item);
+
+      carouselEl.innerHTML = `
+        <div class="feature-card" role="button" tabindex="0" aria-label="Open ${item.name}">
+          <div class="feature-img">
+            ${imgPath
+              ? `<img src="${imgPath}" alt="${item.name}" loading="lazy" onerror="this.remove(); this.parentElement.innerHTML='<div class=\\'feature-noimg\\'>No Image</div>';">`
+              : `<div class="feature-noimg">No Image</div>`
+            }
+          </div>
+          <div class="feature-info">
+            <div class="feature-brand">${brand}</div>
+            <div class="feature-title">${String(item.name||"").toUpperCase()}</div>
+            <div class="feature-meta">
+              <span class="meta-pill">Flower</span>
+              <span class="meta-pill">${best.price!=null ? (money(best.price) + " • " + (best.key==="g3_5"?"8TH":best.key==="g7"?"Q":best.key==="g14"?"HALF":"OZ")) : "PRICE N/A"}</span>
+              <span class="meta-pill">Tap to view</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // click + keyboard support
+      const card = carouselEl.querySelector(".feature-card");
+      const go = ()=>{ window.location.href = "product.html?id=" + encodeURIComponent(item.id); };
+      card.addEventListener("click", go);
+      card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
+
+      // dots
+      dotsEl.innerHTML = featured.map((_,di)=>(
+        `<div class="dot ${di===idx ? "active":""}" data-i="${di}" aria-label="Go to slide ${di+1}"></div>`
+      )).join("");
+
+      Array.from(dotsEl.querySelectorAll(".dot")).forEach(d=>{
+        d.onclick = ()=>{ stopTimer(); renderSlide(Number(d.dataset.i)); startTimer(); };
       });
-    })();
+    }
+
+    function startTimer(){
+      stopTimer();
+      timer = setInterval(()=> renderSlide(idx+1), ROTATE_MS);
+    }
+    function stopTimer(){
+      if(timer){ clearInterval(timer); timer=null; }
+    }
+
+    prevBtn.onclick = ()=>{ stopTimer(); renderSlide(idx-1); startTimer(); };
+    nextBtn.onclick = ()=>{ stopTimer(); renderSlide(idx+1); startTimer(); };
+
+    // Load products and pick 5 random Flower strains
+    fetch(PRODUCT_JSON_PATH, { cache:"no-store" })
+      .then(r=>r.json())
+      .then(data=>{
+        const items = Array.isArray(data.items) ? data.items : [];
+        const flower = items.filter(x => x.category === "Flower");
+
+        // Only show "real" items (optional hard filter: must have image + at least 1 price)
+        const usable = flower.filter(x => x && x.id && x.name);
+
+        featured = shuffle(usable).slice(0,5);
+
+        if(!featured.length){
+          carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">No featured strains available.</div>`;
+          return;
+        }
+
+        renderSlide(0);
+        startTimer();
+
+        // Pause rotation if tab hidden
+        document.addEventListener("visibilitychange", ()=>{
+          if(document.hidden) stopTimer();
+          else startTimer();
+        });
+      })
+      .catch(err=>{
+        console.error(err);
+        carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">Error loading featured strains.</div>`;
+      });
   </script>
 
 </body>
