@@ -1,6 +1,35 @@
 {
   "items": [
     {
+      "id": "verzace-by-bobby-black-exclusive",
+      "name": "Verzace by Bobby Black Exclusive",
+      "category": "Flower",
+      "subcategory": "CA$H RULE$",
+      "live": true,
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": {
+        "g3_5": 40,
+        "g7": 80,
+        "g14": 140,
+        "g28": 260
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
+      "description": "",
+      "effects": [
+        "EUPHORIC",
+        "RELAXED",
+        "TINGLY",
+        "HAPPY"
+      ],
+      "image": ""
+    },
+    {
       "id": "zaamatic",
       "name": "Zaamatic",
       "category": "Flower",
@@ -8,13 +37,27 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 30,
+        "g7": 50,
+        "g14": 100,
+        "g28": 180
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["RELAXED", "BODY BUZZ", "CALM", "STRESS RELIEF"],
+      "effects": [
+        "RELAXED",
+        "BODY BUZZ",
+        "CALM",
+        "STRESS RELIEF"
+      ],
       "image": "images/Zaamatic.png"
     },
-
     {
       "id": "jelly-fish",
       "name": "Jelly Fish",
@@ -23,27 +66,27 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 50,
+        "g7": 100,
+        "g14": 180,
+        "g28": 340
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["RELAXED", "HAPPY", "MUNCHIES", "CALM"],
+      "effects": [
+        "RELAXED",
+        "HAPPY",
+        "MUNCHIES",
+        "CALM"
+      ],
       "image": "images/JellyFish.JPG"
     },
-    {
-      "id": "lipzz",
-      "name": "Lipzz",
-      "category": "Flower",
-      "subcategory": "CA$H RULE$",
-      "live": true,
-      "sale": false,
-      "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 50, "g7": 100, "g14": 180, "g28": 340 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
-      "description": "",
-      "effects": ["RELAXED", "HAPPY", "MUNCHIES", "CALM"],
-      "image": ""
-    },
-
     {
       "id": "double-bubble",
       "name": "Double bubble",
@@ -52,10 +95,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 30,
+        "g7": 50,
+        "g14": 100,
+        "g28": 180
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["RELAXED", "HAPPY", "MUNCHIES", "CALM"],
+      "effects": [
+        "RELAXED",
+        "HAPPY",
+        "MUNCHIES",
+        "CALM"
+      ],
       "image": "images/Double-bubble.png"
     },
     {
@@ -66,10 +124,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 25,
+        "g7": 45,
+        "g14": 90,
+        "g28": 160
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["EUPHORIC", "HAPPY", "RELAXED", "CREATIVE"],
+      "effects": [
+        "EUPHORIC",
+        "HAPPY",
+        "RELAXED",
+        "CREATIVE"
+      ],
       "image": "images/Pink-Certz.png"
     },
     {
@@ -80,10 +153,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 25,
+        "g7": 45,
+        "g14": 90,
+        "g28": 160
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["CREATIVE", "UPLIFTED", "EUPHORIC", "CLEAR-HEADED"],
+      "effects": [
+        "CREATIVE",
+        "UPLIFTED",
+        "EUPHORIC",
+        "CLEAR-HEADED"
+      ],
       "image": "images/Space-Candy.png"
     },
     {
@@ -94,10 +182,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 45, "g14": 90, "g28": 160 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 25,
+        "g7": 45,
+        "g14": 90,
+        "g28": 160
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["HAPPY", "GIGGLY", "UPLIFTED", "RELAXED"],
+      "effects": [
+        "HAPPY",
+        "GIGGLY",
+        "UPLIFTED",
+        "RELAXED"
+      ],
       "image": "images/Fruit-Stripes.png"
     },
     {
@@ -108,10 +211,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 30,
+        "g7": 50,
+        "g14": 100,
+        "g28": 180
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["RELAXED", "HEAVY BODY", "COUCH-LOCK", "CALM"],
+      "effects": [
+        "RELAXED",
+        "HEAVY BODY",
+        "COUCH-LOCK",
+        "CALM"
+      ],
       "image": "images/Strawberry.png"
     },
     {
@@ -122,10 +240,25 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 30, "g7": 50, "g14": 100, "g28": 180 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 30,
+        "g7": 50,
+        "g14": 100,
+        "g28": 180
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["CREATIVE", "SOCIAL", "HAPPY", "UPLIFTED"],
+      "effects": [
+        "CREATIVE",
+        "SOCIAL",
+        "HAPPY",
+        "UPLIFTED"
+      ],
       "image": "images/Bolo-Runtz.png"
     },
     {
@@ -136,27 +269,85 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 40, "g14": 80, "g28": 140 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 25,
+        "g7": 40,
+        "g14": 80,
+        "g28": 140
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["RELAXED", "BODY BUZZ", "CALM", "STRESS RELIEF"],
+      "effects": [
+        "RELAXED",
+        "BODY BUZZ",
+        "CALM",
+        "STRESS RELIEF"
+      ],
       "image": "images/Sherbert.png"
     },
     {
-      "id": "pink-cadillac",
-      "name": "Pink Cadillac",
+      "id": "gumbo",
+      "name": "Gumbo",
       "category": "Flower",
       "subcategory": "LOOSE LINEUP",
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 25, "g7": 40, "g14": 80, "g28": 140 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 25,
+        "g7": 40,
+        "g14": 80,
+        "g28": 140
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["UPLIFTED", "FOCUSED", "HAPPY", "MOTIVATED"],
-      "image": "images/PinkCadillac.jpg"
+      "effects": [
+        "UPLIFTED",
+        "FOCUSED",
+        "HAPPY",
+        "MOTIVATED"
+      ],
+      "image": ""
     },
-
+    {
+      "id": "peachtree",
+      "name": "Peachtree",
+      "category": "Flower",
+      "subcategory": "LOOSE LINEUP",
+      "live": true,
+      "sale": false,
+      "pricingType": "By Size (3.5/7/14/28)",
+      "prices": {
+        "g3_5": 30,
+        "g7": 50,
+        "g14": 100,
+        "g28": 180
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
+      "description": "",
+      "effects": [
+        "HEAVY BODY",
+        "RELAXED",
+        "CALM",
+        "SLEEPY"
+      ],
+      "image": ""
+    },
     {
       "id": "candy-fumez-shake",
       "name": "Candy fumez (exotic shake)",
@@ -165,13 +356,27 @@
       "live": true,
       "sale": false,
       "pricingType": "By Size (3.5/7/14/28)",
-      "prices": { "g3_5": 30, "g7": 45, "g14": 80, "g28": 150 },
-      "availability": { "g3_5": true, "g7": true, "g14": true, "g28": true },
+      "prices": {
+        "g3_5": 30,
+        "g7": 45,
+        "g14": 80,
+        "g28": 150
+      },
+      "availability": {
+        "g3_5": true,
+        "g7": true,
+        "g14": true,
+        "g28": true
+      },
       "description": "",
-      "effects": ["UPLIFTED", "EUPHORIC", "CREATIVE", "RELAXED"],
+      "effects": [
+        "UPLIFTED",
+        "EUPHORIC",
+        "CREATIVE",
+        "RELAXED"
+      ],
       "image": "images/CandyFumesShake.jpg"
     },
-
     {
       "id": "rosin-budder",
       "name": "Rosin Budder",
@@ -180,13 +385,21 @@
       "live": true,
       "sale": false,
       "pricingType": "Per Gram",
-      "prices": { "perGram": 30 },
-      "availability": { "perGram": true },
+      "prices": {
+        "perGram": 30
+      },
+      "availability": {
+        "perGram": true
+      },
       "description": "",
-      "effects": ["EUPHORIC", "RELAXED", "TINGLY", "HEAVY BODY"],
+      "effects": [
+        "EUPHORIC",
+        "RELAXED",
+        "TINGLY",
+        "HEAVY BODY"
+      ],
       "image": "images/RosinBudder.JPG"
     },
-
     {
       "id": "bbl-havana-pearls-cigars",
       "name": "BBL Havana Pearls Cigars",
@@ -195,8 +408,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 3
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
@@ -209,8 +426,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 3
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
@@ -223,8 +444,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 3
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
@@ -237,8 +462,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 4 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 4
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
@@ -251,8 +480,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 3 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 3
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
@@ -265,8 +498,12 @@
       "live": true,
       "sale": false,
       "pricingType": "Single Price",
-      "prices": { "single": 1 },
-      "availability": { "single": true },
+      "prices": {
+        "single": 1
+      },
+      "availability": {
+        "single": true
+      },
       "description": "",
       "effects": [],
       "image": ""
