@@ -27,7 +27,7 @@
         "TINGLY",
         "HAPPY"
       ],
-      "image": ""
+      "image": "images/verzace.png"
     },
     {
       "id": "zaamatic",
@@ -317,7 +317,7 @@
         "HAPPY",
         "MOTIVATED"
       ],
-      "image": ""
+      "image": "images/gumbo.png"
     },
     {
       "id": "peachtree",
@@ -346,7 +346,7 @@
         "CALM",
         "SLEEPY"
       ],
-      "image": ""
+      "image": "images/peachtree.png"
     },
     {
       "id": "candy-fumez-shake",
@@ -508,5 +508,6 @@
       "effects": [],
       "image": ""
     }
-  ]
+  ],
+  "imageFixNote": "Fixed missing images for Verzace/Peachtree/Gumbo (case/path alignment)."
 }
