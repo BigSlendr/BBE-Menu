@@ -448,6 +448,53 @@
       text-transform:uppercase;
     }
 
+
+    .suggestions-card{
+      margin-top:18px;
+      background:#fff;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      padding:18px;
+    }
+    .suggestions-copy{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.5}
+    .suggestions-form{display:grid;gap:10px}
+    .suggestions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sg-field{display:flex;flex-direction:column;gap:6px}
+    .sg-field label{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#333}
+    .sg-input,.sg-textarea{
+      border:1px solid rgba(0,0,0,0.14);
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:14px;
+      font-family:Arial,sans-serif;
+      color:#111;
+      background:#fff;
+      outline:none;
+    }
+    .sg-input:focus,.sg-textarea:focus{border-color:#111}
+    .sg-textarea{min-height:120px;resize:vertical}
+    .sg-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .sg-btn{
+      border:1px solid var(--black);
+      background:var(--black);
+      color:#fff;
+      border-radius:999px;
+      padding:12px 18px;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:all .18s ease;
+    }
+    .sg-btn:hover{background:#fff;color:#111;border-color:var(--gold)}
+    .sg-btn:disabled{opacity:0.7;cursor:not-allowed}
+    .sg-status{font-size:13px;line-height:1.4;min-height:18px}
+    .sg-status.success{color:#0a7a3f}
+    .sg-status.error{color:#a11f1f}
+
+
     footer{
       text-align:center;
       padding:18px 14px 28px;
@@ -555,6 +602,7 @@
     @media(max-width:900px){
       .menu-grid{grid-template-columns:1fr}
       .brands{grid-template-columns:1fr}
+      .suggestions-grid{grid-template-columns:1fr}
     }
 
     @media(max-width:768px){
@@ -702,6 +750,35 @@
       </a>
 
     </div>
+
+    <div class="section-title">Suggestions</div>
+    <div class="suggestions-card" id="suggestions">
+      <p class="suggestions-copy">Have an idea, flavor request, or feedback for the menu? Send it directly to the Bobby Black team.</p>
+      <form id="suggestionsForm" class="suggestions-form" novalidate>
+        <div class="suggestions-grid">
+          <div class="sg-field">
+            <label for="suggestionName">Name *</label>
+            <input class="sg-input" id="suggestionName" name="name" maxlength="80" required>
+          </div>
+          <div class="sg-field">
+            <label for="suggestionEmail">Email *</label>
+            <input class="sg-input" id="suggestionEmail" name="email" type="email" maxlength="120" required>
+          </div>
+        </div>
+        <div class="sg-field">
+          <label for="suggestionPhone">Phone (optional)</label>
+          <input class="sg-input" id="suggestionPhone" name="phone" maxlength="40">
+        </div>
+        <div class="sg-field">
+          <label for="suggestionMessage">Message *</label>
+          <textarea class="sg-textarea" id="suggestionMessage" name="message" maxlength="2000" required></textarea>
+        </div>
+        <div class="sg-actions">
+          <button class="sg-btn" id="suggestionsSubmit" type="submit">Send Suggestion</button>
+          <span class="sg-status" id="suggestionsStatus" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
   </div>
 
   <footer>
@@ -730,6 +807,72 @@
         window.location.href="https://www.google.com";
       };
     })();
+
+    const suggestionsForm = document.getElementById("suggestionsForm");
+    const suggestionsSubmit = document.getElementById("suggestionsSubmit");
+    const suggestionsStatus = document.getElementById("suggestionsStatus");
+
+    function setSuggestionStatus(message, type){
+      suggestionsStatus.textContent = message || "";
+      suggestionsStatus.className = "sg-status" + (type ? " " + type : "");
+    }
+
+    function validateSuggestion(payload){
+      if(!payload.name) return "Name is required.";
+      if(payload.name.length > 80) return "Name must be 80 characters or fewer.";
+      if(!payload.email) return "Email is required.";
+      if(payload.email.length > 120) return "Email must be 120 characters or fewer.";
+      if(payload.phone.length > 40) return "Phone must be 40 characters or fewer.";
+      if(!payload.message) return "Message is required.";
+      if(payload.message.length > 2000) return "Message must be 2000 characters or fewer.";
+      return "";
+    }
+
+    suggestionsForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = {
+        name: String(suggestionsForm.name.value || "").trim(),
+        email: String(suggestionsForm.email.value || "").trim(),
+        phone: String(suggestionsForm.phone.value || "").trim(),
+        message: String(suggestionsForm.message.value || "").trim(),
+      };
+
+      const validationError = validateSuggestion(payload);
+      if(validationError){
+        setSuggestionStatus(validationError, "error");
+        return;
+      }
+
+      suggestionsSubmit.disabled = true;
+      suggestionsSubmit.textContent = "Sending...";
+      setSuggestionStatus("", "");
+
+      try {
+        const response = await fetch("/api/suggestions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch {}
+
+        if(response.ok && data.ok){
+          suggestionsForm.reset();
+          setSuggestionStatus("Thanks for the suggestion — we got it.", "success");
+          return;
+        }
+
+        setSuggestionStatus(data.error || "We couldn't send your suggestion right now. Please try again.", "error");
+      } catch (error) {
+        console.error(error);
+        setSuggestionStatus("Network error. Please check your connection and try again.", "error");
+      } finally {
+        suggestionsSubmit.disabled = false;
+        suggestionsSubmit.textContent = "Send Suggestion";
+      }
+    });
+
 
     // ===== Featured Strains Carousel (random 5 Flower items) =====
     const PRODUCT_JSON_PATH = "content/products.json";
