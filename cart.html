@@ -82,17 +82,41 @@
     .total{margin-top:14px;font-weight:900;font-size:16px;display:flex;justify-content:space-between}
     .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 
+    .checkout-card{margin-top:14px}
+    .checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;font-weight:900;letter-spacing:0.05em;text-transform:uppercase;color:#333}
+    .input, .textarea{
+      width:100%;
+      border:1px solid rgba(0,0,0,0.12);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      font-family:Arial,sans-serif;
+      outline:none;
+      background:#fff;
+      color:#111;
+    }
+    .input:focus, .textarea:focus{border-color:#111}
+    .textarea{min-height:92px;resize:vertical}
+    .checkout-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center}
+    .status{margin-top:10px;font-size:13px;line-height:1.45}
+    .status.success{color:#0a7a3f}
+    .status.error{color:#a11f1f}
+
     /* Screenshot mode */
     body.screenshot header,
     body.screenshot .actions,
     body.screenshot .back,
-    body.screenshot .muted.smallhide{display:none !important;}
+    body.screenshot .muted.smallhide,
+    body.screenshot .checkout-card{display:none !important;}
     body.screenshot .wrap{padding-top:10px}
 
     @media(max-width:768px){
       .header-inner{grid-template-columns:auto 1fr;}
       .main-nav{display:none;}
       .header-search input[type="search"]{width:100%;}
+      .checkout-grid{grid-template-columns:1fr;}
     }
 
   </style>
@@ -121,14 +145,13 @@
       </form>
     </div>
   </header>
-  <div class="subtitle">Cart (Screenshot Only)</div>
+  <div class="subtitle">Cart & Checkout</div>
 
   <div class="wrap">
     <a class="back" href="index.html">← Back to Menu</a>
 
     <div class="muted smallhide">
-      Build your cart here, then tap <b>Screenshot View</b> to take a clean screenshot and share.
-      No checkout or ordering on this site.
+      Build your cart, review your totals, and place your order request securely.
     </div>
 
     <div id="cartList"></div>
@@ -149,11 +172,59 @@
         Tip: On iPhone/Android, screenshot normally. On desktop, use the browser screenshot tool.
       </div>
     </div>
+
+
+    <div class="card checkout-card">
+      <div class="name" style="margin-bottom:10px;">Checkout</div>
+      <form id="checkoutForm" novalidate>
+        <div class="checkout-grid">
+          <div class="field">
+            <label for="customerName">Customer Name *</label>
+            <input class="input" id="customerName" name="customerName" maxlength="80" required />
+          </div>
+          <div class="field">
+            <label for="customerPhone">Phone *</label>
+            <input class="input" id="customerPhone" name="customerPhone" maxlength="40" required />
+          </div>
+          <div class="field">
+            <label for="customerEmail">Email (optional)</label>
+            <input class="input" id="customerEmail" name="customerEmail" type="email" maxlength="120" />
+          </div>
+          <div class="field" style="grid-column:1/-1;">
+            <label for="specialInstructions">Special Instructions (optional)</label>
+            <textarea class="textarea" id="specialInstructions" name="specialInstructions" maxlength="800"></textarea>
+          </div>
+        </div>
+
+        <div class="checkout-actions">
+          <button class="btn dark" id="placeOrderBtn" type="submit">Place Order</button>
+          <span class="muted">Orders are sent directly to Bobby Black staff by email.</span>
+        </div>
+        <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
+      </form>
+    </div>
   </div>
 
   <script src="cart.js"></script>
   <script>
     function money(n){ return BBE_CART.money(n); }
+
+    const checkoutForm = document.getElementById("checkoutForm");
+    const placeOrderBtn = document.getElementById("placeOrderBtn");
+    const checkoutStatus = document.getElementById("checkoutStatus");
+
+    function setCheckoutStatus(message, type){
+      checkoutStatus.textContent = message || "";
+      checkoutStatus.className = "status" + (type ? " " + type : "");
+    }
+
+    function getSubtotal(cart){
+      return cart.reduce((sum, line) => {
+        const qty = Number(line.qty) || 0;
+        const price = Number(line.unitPrice) || 0;
+        return sum + qty * price;
+      }, 0);
+    }
 
     function render(){
       const list = document.getElementById("cartList");
@@ -167,13 +238,12 @@
         return;
       }
 
-      let subtotal = 0;
+      const subtotal = getSubtotal(cart);
 
       cart.forEach((line, idx) => {
         const qty = Number(line.qty) || 0;
         const price = Number(line.unitPrice) || 0;
         const lineTotal = qty * price;
-        subtotal += lineTotal;
 
         const card = document.createElement("div");
         card.className = "card";
@@ -210,7 +280,6 @@
 
       document.getElementById("subtotal").textContent = money(subtotal);
 
-      // Wire buttons
       list.querySelectorAll("[data-inc]").forEach(btn=>{
         btn.onclick = () => {
           const i = Number(btn.getAttribute("data-inc"));
@@ -241,6 +310,95 @@
         };
       });
     }
+
+    function validateCheckout(name, phone, email, specialInstructions){
+      if(!name) return "Name is required.";
+      if(name.length > 80) return "Name must be 80 characters or fewer.";
+      if(!phone) return "Phone is required.";
+      if(phone.length > 40) return "Phone must be 40 characters or fewer.";
+      if(email && email.length > 120) return "Email must be 120 characters or fewer.";
+      if(specialInstructions.length > 800) return "Special instructions must be 800 characters or fewer.";
+      return "";
+    }
+
+    checkoutForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const cart = BBE_CART.loadCart();
+      if(!cart.length){
+        setCheckoutStatus("Your cart is empty. Add items before placing an order.", "error");
+        return;
+      }
+
+      const formData = new FormData(checkoutForm);
+      const name = String(formData.get("customerName") || "").trim();
+      const phone = String(formData.get("customerPhone") || "").trim();
+      const emailRaw = String(formData.get("customerEmail") || "").trim();
+      const specialInstructions = String(formData.get("specialInstructions") || "").trim();
+
+      const validationError = validateCheckout(name, phone, emailRaw, specialInstructions);
+      if(validationError){
+        setCheckoutStatus(validationError, "error");
+        return;
+      }
+
+      const subtotal = getSubtotal(cart);
+      const payload = {
+        customer: {
+          name,
+          phone,
+          email: emailRaw || null,
+        },
+        order: {
+          items: cart.map((line) => ({
+            id: String(line.id || ""),
+            name: String(line.name || ""),
+            qty: Math.max(1, Number(line.qty) || 1),
+            price: Math.max(0, Number(line.unitPrice) || 0),
+            variant: line.variantLabel ? String(line.variantLabel) : null,
+            notes: line.notes ? String(line.notes) : null,
+          })),
+          subtotal,
+          tax: null,
+          fees: null,
+          total: subtotal,
+          method: "unknown",
+          address: null,
+          specialInstructions: specialInstructions || null,
+        }
+      };
+
+      placeOrderBtn.disabled = true;
+      placeOrderBtn.textContent = "Sending...";
+      setCheckoutStatus("", "");
+
+      try {
+        const response = await fetch("/api/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        let data = {};
+        try { data = await response.json(); } catch {}
+
+        if(response.ok && data.ok){
+          const orderId = data.id ? ` (${data.id})` : "";
+          setCheckoutStatus(`Order request sent successfully${orderId}. We'll contact you shortly.`, "success");
+          BBE_CART.saveCart([]);
+          render();
+          checkoutForm.reset();
+          return;
+        }
+
+        setCheckoutStatus(data.error || "We couldn't send your order right now. Please try again.", "error");
+      } catch (error) {
+        console.error(error);
+        setCheckoutStatus("Network error. Please check your connection and try again.", "error");
+      } finally {
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.textContent = "Place Order";
+      }
+    });
 
     document.getElementById("clearCart").onclick = () => {
       if(confirm("Clear your cart?")){
