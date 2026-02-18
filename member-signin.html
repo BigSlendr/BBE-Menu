@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bobby Black — Member Sign In</title>
+
+  <!-- If your site has a stylesheet, reuse it here -->
+  <link rel="stylesheet" href="/styles.css" />
+  <script defer src="/auth.js"></script>
+
+  <style>
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; }
+    .wrap { max-width:520px; margin:48px auto; padding:24px; }
+    .card { background:#0b0b0b; border:1px solid #222; border-radius:14px; padding:22px; }
+    h1 { font-size:26px; margin:0 0 8px; }
+    p { color:#bdbdbd; margin:0 0 18px; }
+    label { display:block; font-size:13px; color:#cfcfcf; margin:12px 0 6px; }
+    input { width:100%; padding:12px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#050505; color:#fff; }
+    button { width:100%; margin-top:16px; padding:12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; }
+    button:hover { background:#151515; }
+    .row { display:flex; justify-content:space-between; margin-top:12px; gap:12px; }
+    a { color:#fff; text-decoration:underline; }
+    .msg { margin-top:12px; font-size:14px; color:#ffb3b3; min-height:18px; }
+    .ok { color:#b7ffb7; }
+    .toplinks { display:flex; justify-content:space-between; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="toplinks">
+      <a href="/index.html">← Back Home</a>
+      <a href="/member-signup.html">Sign Up</a>
+    </div>
+
+    <div class="card">
+      <h1>Member Sign In</h1>
+      <p>Sign in to access checkout verification.</p>
+
+      <div id="signedInBox" style="display:none;">
+        <p class="ok">You are already signed in.</p>
+        <button id="logoutBtn" type="button">Log out</button>
+      </div>
+
+      <form id="signinForm">
+        <label>Email</label>
+        <input name="email" type="email" autocomplete="email" required />
+
+        <label>Password</label>
+        <input name="password" type="password" autocomplete="current-password" required />
+
+        <button type="submit">Sign In</button>
+        <div class="row">
+          <a href="/member-signup.html">Not a member? Sign up</a>
+          <a href="#" onclick="alert('Password reset will be added next.'); return false;">Forgot password?</a>
+        </div>
+        <div id="msg" class="msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("signinForm");
+    const msg = document.getElementById("msg");
+    const signedInBox = document.getElementById("signedInBox");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    async function init() {
+      try {
+        const me = await window.bbGetMe();
+        if (me && me.loggedIn) {
+          form.style.display = "none";
+          signedInBox.style.display = "block";
+        }
+      } catch {}
+    }
+
+    logoutBtn?.addEventListener("click", async () => {
+      await window.bbLogout();
+      location.reload();
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      try {
+        const data = Object.fromEntries(new FormData(form).entries());
+        await window.bbPost("/api/auth/signin", data);
+        msg.textContent = "Signed in. Redirecting...";
+        msg.classList.add("ok");
+        setTimeout(() => (window.location.href = "/index.html"), 700);
+      } catch (err) {
+        msg.classList.remove("ok");
+        msg.textContent = err.message || "Sign in failed";
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
