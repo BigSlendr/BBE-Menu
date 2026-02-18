@@ -205,37 +205,18 @@
   }
 
   function updateCartCount() {
-    const el = document.getElementById("bbeCartCount");
-    if (!el) return;
     const c = cartCount();
-    el.textContent = String(c);
-    el.style.display = c > 0 ? "inline-block" : "none";
+    const els = document.querySelectorAll('[data-bbe-cart-count], #bbeCartCount');
+    if (!els.length) return;
+    els.forEach((el) => {
+      el.textContent = String(c);
+      el.style.display = c > 0 ? "inline-block" : "none";
+    });
   }
 
-  function mountCartPill(targetSelector) {
-    updateCartCount();
-
-    const target = targetSelector ? document.querySelector(targetSelector) : null;
-    const host = target || document.body;
-
-    // Avoid duplicates
-    if (document.getElementById("bbeCartPill")) return;
-
-    const a = document.createElement("a");
-    a.id = "bbeCartPill";
-    a.href = "cart.html";
-    a.style.cssText = `
-      position:fixed; right:14px; top:14px; z-index:9998;
-      background:#111; color:#fff; text-decoration:none;
-      border:1px solid rgba(255,255,255,0.4);
-      border-radius:999px; padding:10px 14px; font-weight:900;
-      font-family:Arial,sans-serif; box-shadow:0 10px 28px rgba(0,0,0,.20);
-    `;
-    a.innerHTML = `🛒 Cart <span id="bbeCartCount" style="
-      display:none; margin-left:8px; background:#fff; color:#111;
-      border-radius:999px; padding:2px 8px; font-weight:900;">0</span>`;
-    host.appendChild(a);
-
+  function mountCartPill() {
+    // Legacy API kept for backward compatibility.
+    // Cart UI now lives directly in the header markup.
     updateCartCount();
   }
 
