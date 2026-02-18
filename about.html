@@ -25,6 +25,8 @@
     @media(max-width:768px){.header-inner{grid-template-columns:1fr;gap:10px;justify-items:center}.main-nav{justify-content:center}.header-search{width:100%}.header-search input{width:100%}}
   </style>
   <script src="cart.js"></script>
+  <script defer src="/auth.js"></script>
+  <script defer src="/header-auth.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -34,7 +36,7 @@
         <a href="brands.html">Brands</a>
         <a href="categories.html">Categories</a>
         <a href="about.html">About</a>
-        <a href="/member-signin.html">Sign In</a>
+        <a href="/member-signin.html" id="bbMemberLink">SIGN IN</a>
         <a href="/member-signup.html" style="font-size:11px;opacity:.85;">Sign Up</a>
       </nav>
       <form class="header-search" role="search" action="#" method="GET">
