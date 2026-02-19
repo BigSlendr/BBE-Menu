@@ -1,9 +1,15 @@
 async function bbPost(url, data) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(data || {}),
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data || {}),
+    });
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    throw new Error("NETWORK — " + msg);
+  }
 
   const raw = await res.text();
   let parsed = null;
