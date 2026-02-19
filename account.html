@@ -257,6 +257,7 @@
     const idImage = document.getElementById("idImage");
     const selfieImage = document.getElementById("selfieImage");
     const idExpiration = document.getElementById("idExpiration");
+    const ordersList = document.getElementById("ordersList");
 
     function formatMoney(n) {
       return "$" + (Math.round(n * 100) / 100).toFixed(2);
@@ -293,6 +294,48 @@
       }
     }
 
+    function renderOrders(orders) {
+      if (!Array.isArray(orders) || orders.length === 0) {
+        ordersList.innerHTML = `
+          <div class="order">
+            <div><b>No orders yet</b></div>
+            <div class="muted" style="margin-top:6px;">Your order history will appear here once orders are stored.</div>
+          </div>
+        `;
+        return;
+      }
+
+      ordersList.innerHTML = orders.map((order) => {
+        let items = [];
+        try {
+          const parsed = JSON.parse(order.items_json || "[]");
+          if (Array.isArray(parsed)) items = parsed;
+        } catch {}
+
+        const shortId = String(order.id || "").slice(-6) || "------";
+        const created = order.created_at ? new Date(order.created_at) : null;
+        const createdLabel = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : "Unknown date";
+        const subtotal = Number(order.subtotal_cents || 0) / 100;
+
+        return `
+          <div class="order">
+            <div><b>Order #${shortId}</b></div>
+            <div class="muted" style="margin-top:6px;">${createdLabel}</div>
+            <div class="muted" style="margin-top:6px;">Status: <span class="status-badge">${String(order.status || "pending")}</span></div>
+            <div class="muted" style="margin-top:6px;">Subtotal: ${formatMoney(subtotal)}</div>
+            <div class="muted" style="margin-top:6px;">Items: ${items.length}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadOrders() {
+      const res = await fetch("/api/orders/my", { method: "GET" });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error || "Unable to load orders");
+      renderOrders(payload?.orders || []);
+    }
+
     async function loadMe() {
       const me = await window.bbGetMe();
       const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
@@ -317,6 +360,7 @@
           window.location.href = "/member-signin.html";
           return;
         }
+        await loadOrders();
       } catch {
         userLine.textContent = "Unable to load account.";
         return;
