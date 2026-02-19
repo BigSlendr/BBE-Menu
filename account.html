@@ -204,6 +204,10 @@
           <div class="value" id="pointsValue">0</div>
         </div>
         <div class="pill" style="min-width:220px;">
+          <div class="label">Lifetime Points</div>
+          <div class="value" id="lifetimePointsValue">0</div>
+        </div>
+        <div class="pill" style="min-width:220px;">
           <div class="label">Estimated Value</div>
           <div class="value" id="pointsValueDollars">$0.00</div>
         </div>
@@ -229,6 +233,16 @@
     </div>
 
     <div class="card">
+      <h2>Recent Rewards Activity</h2>
+      <div id="rewardsList" class="list">
+        <div class="order">
+          <div><b>No rewards activity yet</b></div>
+          <div class="muted" style="margin-top:6px;">Points earned and adjustments will appear here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Past Orders</h2>
       <div id="ordersList" class="list">
         <div class="order">
@@ -246,6 +260,7 @@
   <script>
     const userLine = document.getElementById("userLine");
     const pointsValue = document.getElementById("pointsValue");
+    const lifetimePointsValue = document.getElementById("lifetimePointsValue");
     const pointsValueDollars = document.getElementById("pointsValueDollars");
     const logoutBtn = document.getElementById("logoutBtn");
     const verificationStatus = document.getElementById("verificationStatus");
@@ -258,6 +273,7 @@
     const selfieImage = document.getElementById("selfieImage");
     const idExpiration = document.getElementById("idExpiration");
     const ordersList = document.getElementById("ordersList");
+    const rewardsList = document.getElementById("rewardsList");
 
     function formatMoney(n) {
       return "$" + (Math.round(n * 100) / 100).toFixed(2);
@@ -329,11 +345,45 @@
       }).join("");
     }
 
-    async function loadOrders() {
-      const res = await fetch("/api/orders/my", { method: "GET" });
+    function renderRewards(ledger) {
+      if (!Array.isArray(ledger) || ledger.length === 0) {
+        rewardsList.innerHTML = `
+          <div class="order">
+            <div><b>No rewards activity yet</b></div>
+            <div class="muted" style="margin-top:6px;">Points earned and adjustments will appear here.</div>
+          </div>
+        `;
+        return;
+      }
+
+      rewardsList.innerHTML = ledger.slice(0, 10).map((entry) => {
+        const created = entry.created_at ? new Date(entry.created_at) : null;
+        const createdLabel = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : "Unknown date";
+        const points = Number(entry.points || 0);
+        const pointsLabel = `${points >= 0 ? "+" : ""}${points}`;
+        const orderShort = entry.order_id ? String(entry.order_id).slice(-6) : null;
+
+        return `
+          <div class="order">
+            <div><b>${String(entry.type || "adjust")}</b> <span class="status-badge">${pointsLabel} pts</span></div>
+            <div class="muted" style="margin-top:6px;">${createdLabel}</div>
+            <div class="muted" style="margin-top:6px;">${entry.note || ""}${orderShort ? ` • Order #${orderShort}` : ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadSummary() {
+      const res = await fetch("/api/account/summary", { method: "GET" });
       const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Unable to load orders");
+      if (!res.ok) throw new Error(payload?.error || "Unable to load account summary");
+
+      const pts = Number(payload?.points_balance || 0);
+      pointsValue.textContent = String(pts);
+      lifetimePointsValue.textContent = String(Number(payload?.lifetime_points || 0));
+      pointsValueDollars.textContent = formatMoney(pts / 100);
       renderOrders(payload?.orders || []);
+      renderRewards(payload?.ledger || []);
     }
 
     async function loadMe() {
@@ -341,9 +391,6 @@
       const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
       userLine.textContent = name ? `${name} • ${me.user?.email}` : (me.user?.email || "Signed in");
 
-      const pts = Number(me.points_balance || 0);
-      pointsValue.textContent = String(pts);
-      pointsValueDollars.textContent = formatMoney(pts / 100);
       renderVerification(me.verificationStatus);
       return me;
     }
@@ -360,7 +407,7 @@
           window.location.href = "/member-signin.html";
           return;
         }
-        await loadOrders();
+        await loadSummary();
       } catch {
         userLine.textContent = "Unable to load account.";
         return;
