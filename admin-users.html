@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin — Users</title>
+</head>
+<body style="background:black;color:white;font-family:system-ui;padding:20px;">
+  <h2>Admin — Users</h2>
+
+  <input id="secret" type="password" placeholder="Enter ADMIN_SECRET" style="padding:8px;width:300px;">
+  <button id="loadBtn">Load Users</button>
+
+  <pre id="output" style="margin-top:20px;white-space:pre-wrap;"></pre>
+
+  <script>
+    document.getElementById("loadBtn").addEventListener("click", async () => {
+      const secret = document.getElementById("secret").value.trim();
+      const out = document.getElementById("output");
+      out.textContent = "Loading...";
+
+      try {
+        const res = await fetch("/api/admin/verifications", {
+          headers: { "x-admin-secret": secret }
+        });
+
+        const text = await res.text();
+        out.textContent = "STATUS: " + res.status + "\n\n" + text;
+      } catch (err) {
+        out.textContent = "ERROR:\n" + err;
+      }
+    });
+  </script>
+</body>
+</html>
