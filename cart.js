@@ -33,6 +33,76 @@
     return data.items || [];
   }
 
+  async function bbGetMe() {
+    try {
+      const res = await fetch("/api/auth/me", { method: "GET" });
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  function bbOpenAuthModal({ title, message, mode }) {
+    const modal = document.getElementById("bbAuthModal");
+    const modalTitle = document.getElementById("bbAuthTitle");
+    const modalMessage = document.getElementById("bbAuthMsg");
+
+    const signInBtn = document.getElementById("bbAuthSignInBtn");
+    const signUpBtn = document.getElementById("bbAuthSignUpBtn");
+    const accountBtn = document.getElementById("bbAuthAccountBtn");
+
+    if (!modal || !modalTitle || !modalMessage) return;
+
+    modalTitle.textContent = title || "Action required";
+    modalMessage.textContent = message || "";
+
+    if (mode === "verify") {
+      if (signInBtn) signInBtn.style.display = "none";
+      if (signUpBtn) signUpBtn.style.display = "none";
+      if (accountBtn) accountBtn.style.display = "inline-flex";
+    } else {
+      if (signInBtn) signInBtn.style.display = "inline-flex";
+      if (signUpBtn) signUpBtn.style.display = "inline-flex";
+      if (accountBtn) accountBtn.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+  }
+
+  function bbCloseAuthModal() {
+    const modal = document.getElementById("bbAuthModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  async function requireApprovedUser() {
+    const me = await bbGetMe();
+
+    if (!me || !me.loggedIn) {
+      bbOpenAuthModal({
+        title: "Sign in required",
+        message: "Please sign in to submit your order.",
+        mode: "signin",
+      });
+      return false;
+    }
+
+    const status = me.verificationStatus || "unverified";
+    if (status !== "approved") {
+      let msg = "Your account must be verified before submitting an order.";
+      if (status === "pending") msg = "Your account is pending verification. Please check back soon.";
+      if (status === "rejected") msg = "Your verification was rejected. Please contact support or re-verify.";
+
+      bbOpenAuthModal({
+        title: "Verification required",
+        message: msg,
+        mode: "verify",
+      });
+      return false;
+    }
+
+    return true;
+  }
+
   function ensureModal() {
     if (document.getElementById("bbeSizeModal")) return;
 
@@ -227,9 +297,25 @@
     saveCart,
     money,
     updateCartCount,
-    mountCartPill
+    mountCartPill,
+    requireApprovedUser,
+    bbOpenAuthModal,
+    bbCloseAuthModal
   };
 
   // Update count on page load
-  document.addEventListener("DOMContentLoaded", updateCartCount);
+  document.addEventListener("DOMContentLoaded", () => {
+    updateCartCount();
+
+    const closeBtn = document.getElementById("bbAuthCloseBtn");
+    const modal = document.getElementById("bbAuthModal");
+
+    if (closeBtn) closeBtn.addEventListener("click", bbCloseAuthModal);
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) bbCloseAuthModal();
+      });
+    }
+  });
 })();

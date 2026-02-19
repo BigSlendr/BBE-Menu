@@ -211,6 +211,72 @@
     .status.success{color:#0a7a3f}
     .status.error{color:#a11f1f}
 
+    /* Auth modal */
+    #bbAuthModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.72);
+      z-index: 9999;
+      padding: 18px;
+    }
+
+    #bbAuthModal .bbAuthCard {
+      width: 100%;
+      max-width: 520px;
+      background: #0b0b0b;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 18px;
+      color: #fff;
+    }
+
+    #bbAuthModal h3 { margin: 0 0 8px; font-size: 18px; }
+    #bbAuthModal p { margin: 0 0 14px; color: #bdbdbd; line-height: 1.35; }
+
+    #bbAuthModal .bbAuthActions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    #bbAuthModal .bbBtn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2a2a2a;
+      background: #111;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    #bbAuthModal .bbBtn:hover { background: #151515; }
+
+    #bbAuthModal .bbBtn.secondary { background: transparent; }
+
+    #bbAuthModal .bbCloseRow {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    #bbAuthModal .bbClose {
+      border: 1px solid #2a2a2a;
+      background: transparent;
+      color: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
     /* Screenshot mode */
     body.screenshot header,
     body.screenshot .actions,
@@ -315,6 +381,22 @@
         </div>
         <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
       </form>
+    </div>
+  </div>
+
+  <div id="bbAuthModal" role="dialog" aria-modal="true" aria-labelledby="bbAuthTitle">
+    <div class="bbAuthCard">
+      <div class="bbCloseRow">
+        <button class="bbClose" id="bbAuthCloseBtn" type="button">Close</button>
+      </div>
+      <h3 id="bbAuthTitle">Sign in required</h3>
+      <p id="bbAuthMsg">Please sign in to continue.</p>
+
+      <div class="bbAuthActions" id="bbAuthActions">
+        <a class="bbBtn" id="bbAuthSignInBtn" href="/member-signin.html">Sign In</a>
+        <a class="bbBtn secondary" id="bbAuthSignUpBtn" href="/member-signup.html">Create Account</a>
+        <a class="bbBtn" id="bbAuthAccountBtn" href="/account.html" style="display:none;">Go to Account</a>
+      </div>
     </div>
   </div>
 
@@ -436,6 +518,10 @@
 
     checkoutForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+
+      const ok = await BBE_CART.requireApprovedUser();
+      if(!ok) return;
+
       const cart = BBE_CART.loadCart();
       if(!cart.length){
         setCheckoutStatus("Your cart is empty. Add items before placing an order.", "error");
