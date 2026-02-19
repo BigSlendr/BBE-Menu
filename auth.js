@@ -4,11 +4,25 @@ async function bbPost(url, data) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(data || {}),
   });
-  const json = await res.json().catch(() => ({}));
+
+  const raw = await res.text();
+  let parsed = null;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {}
+
   if (!res.ok) {
-    throw new Error(json.error || "Request failed");
+    const serverMsg =
+      parsed && (parsed.error || parsed.message)
+        ? parsed.error || parsed.message
+        : raw
+          ? raw.slice(0, 800)
+          : "No response body";
+
+    throw new Error(`HTTP ${res.status} — ${serverMsg}`);
   }
-  return json;
+
+  return parsed ?? {};
 }
 
 async function bbGetMe() {
