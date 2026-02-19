@@ -30,10 +30,12 @@ export function uuid() {
   return crypto.randomUUID();
 }
 
+const PBKDF2_ITERATIONS = 100_000;
+
 /**
  * Stored format: pbkdf2$iterations$saltBase64$hashBase64
  */
-export async function hashPassword(password: string, iterations = 210_000) {
+export async function hashPassword(password: string, iterations = PBKDF2_ITERATIONS) {
   const enc = new TextEncoder();
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey(
