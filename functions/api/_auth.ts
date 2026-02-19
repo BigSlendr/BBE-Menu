@@ -33,6 +33,16 @@ export async function getSessionUserId(request: Request, env: any): Promise<stri
   return session.user_id || null;
 }
 
+export async function getVerificationStatus(userId: string, env: any): Promise<string> {
+  const db = env.DB as D1Database;
+  const row = await db
+    .prepare("SELECT status FROM user_verification WHERE user_id = ?")
+    .bind(userId)
+    .first<{ status?: string }>();
+
+  return row?.status || "unverified";
+}
+
 export function requireAdmin(request: Request, env: any): boolean {
   const secret = request.headers.get("x-admin-secret");
   return Boolean(secret && env.ADMIN_SECRET && secret === env.ADMIN_SECRET);

@@ -1,7 +1,10 @@
+import { getSessionUserId, getVerificationStatus, json } from "./_auth";
+
 interface Env {
   RESEND_API_KEY?: string;
   MAIL_TO?: string;
   MAIL_FROM?: string;
+  DB: D1Database;
 }
 
 type OrderItem = {
@@ -19,6 +22,9 @@ type OrderPayload = {
     email?: unknown;
     phone?: unknown;
   };
+  items?: unknown;
+  subtotal?: unknown;
+  notes?: unknown;
   order?: {
     items?: unknown;
     subtotal?: unknown;
@@ -72,9 +78,25 @@ const generateOrderId = (): string => {
   return `ORD-${y}${m}${d}-${rand}`;
 };
 
+const getPayloadItems = (payload: OrderPayload): OrderItem[] => {
+  if (Array.isArray(payload.items)) return payload.items as OrderItem[];
+  if (Array.isArray(payload.order?.items)) return payload.order.items as OrderItem[];
+  return [];
+};
+
+const getPayloadSubtotal = (payload: OrderPayload): number => {
+  const topLevel = asNumber(payload.subtotal);
+  if (Number.isFinite(topLevel)) return topLevel;
+  return asNumber(payload.order?.subtotal);
+};
+
+const getPayloadNotes = (payload: OrderPayload): string => {
+  return asTrimmedString(payload.notes) || asTrimmedString(payload.order?.specialInstructions);
+};
+
 const validatePayload = (payload: OrderPayload): string | null => {
   const customer = payload.customer ?? {};
-  const order = payload.order ?? {};
+  const items = getPayloadItems(payload);
   const name = asTrimmedString(customer.name);
   const phone = asTrimmedString(customer.phone);
 
@@ -83,9 +105,9 @@ const validatePayload = (payload: OrderPayload): string | null => {
   if (!phone) return "Customer phone is required.";
   if (phone.length > 40) return "Customer phone must be 40 characters or fewer.";
 
-  if (!Array.isArray(order.items) || order.items.length < 1) return "At least one order item is required.";
+  if (!Array.isArray(items) || items.length < 1) return "At least one order item is required.";
 
-  for (const rawItem of order.items as OrderItem[]) {
+  for (const rawItem of items as OrderItem[]) {
     const itemName = asTrimmedString(rawItem?.name);
     const qty = asNumber(rawItem?.qty);
     const price = asNumber(rawItem?.price);
@@ -95,8 +117,8 @@ const validatePayload = (payload: OrderPayload): string | null => {
     if (!Number.isFinite(price) || price < 0) return "Each item price must be 0 or greater.";
   }
 
-  const total = asNumber(order.total);
-  if (!Number.isFinite(total) || total < 0) return "Order total must be 0 or greater.";
+  const total = asNumber(payload.order?.total);
+  if (Number.isFinite(total) && total < 0) return "Order total must be 0 or greater.";
 
   return null;
 };
@@ -108,6 +130,16 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
 
   if (request.method !== "POST") {
     return jsonResponse({ ok: false, error: "Method not allowed." }, 405);
+  }
+
+  const userId = await getSessionUserId(request, env);
+  if (!userId) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  const verificationStatus = await getVerificationStatus(userId, env);
+  if (verificationStatus !== "approved") {
+    return json({ error: "Verification required" }, 403);
   }
 
   let payload: OrderPayload;
@@ -130,21 +162,25 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   }
 
   const customer = payload.customer!;
-  const order = payload.order!;
-  const items = order.items as OrderItem[];
+  const order = payload.order ?? {};
+  const items = getPayloadItems(payload);
 
   const orderId = generateOrderId();
+  const orderDbId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const customerName = asTrimmedString(customer.name);
   const customerPhone = asTrimmedString(customer.phone);
   const customerEmail = asTrimmedString(customer.email) || "(not provided)";
   const orderMethod = asTrimmedString(order.method) || "unknown";
-  const specialInstructions = asTrimmedString(order.specialInstructions) || "(none)";
+  const specialInstructions = getPayloadNotes(payload) || "(none)";
 
-  const subtotal = Number.isFinite(asNumber(order.subtotal)) ? asNumber(order.subtotal) : items.reduce((sum, item) => sum + asNumber(item.price) * asNumber(item.qty), 0);
+  const parsedSubtotal = getPayloadSubtotal(payload);
+  const subtotal = Number.isFinite(parsedSubtotal) ? parsedSubtotal : items.reduce((sum, item) => sum + asNumber(item.price) * asNumber(item.qty), 0);
+  const subtotalCents = Math.round(Number(subtotal) * 100);
   const tax = Number.isFinite(asNumber(order.tax)) ? asNumber(order.tax) : null;
   const fees = Number.isFinite(asNumber(order.fees)) ? asNumber(order.fees) : null;
-  const total = asNumber(order.total);
+  const providedTotal = asNumber(order.total);
+  const total = Number.isFinite(providedTotal) ? providedTotal : subtotal + (tax || 0) + (fees || 0);
 
   const address = order.address && typeof order.address === "object" ? (order.address as Record<string, unknown>) : null;
   const formattedAddress = address
@@ -201,6 +237,24 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
     </p>
   `;
 
+  await env.DB
+    .prepare(
+      `INSERT INTO orders (
+        id,
+        user_id,
+        created_at,
+        status,
+        subtotal_cents,
+        items_json,
+        notes,
+        points_earned,
+        points_redeemed,
+        discount_cents
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`
+    )
+    .bind(orderDbId, userId, timestamp, "pending", subtotalCents, JSON.stringify(items), getPayloadNotes(payload) || null)
+    .run();
+
   const resendResponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -220,5 +274,5 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
     return jsonResponse({ ok: false, error: `Unable to send email: ${resendText || resendResponse.statusText}` }, 502);
   }
 
-  return jsonResponse({ ok: true, id: orderId }, 200);
+  return jsonResponse({ ok: true, id: orderId, order_id: orderDbId }, 200);
 };
