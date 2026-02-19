@@ -149,8 +149,10 @@
       window.location.href = "/index.html";
     });
 
-    init().catch(() => {
-      userLine.textContent = "Unable to load account.";
+    window.addEventListener("DOMContentLoaded", () => {
+      init().catch(() => {
+        userLine.textContent = "Unable to load account.";
+      });
     });
   </script>
 </body>
