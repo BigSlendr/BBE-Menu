@@ -6,7 +6,7 @@
   <title>Bobby Black — Member Sign Up</title>
 
   <link rel="stylesheet" href="/styles.css" />
-  <script defer src="/auth.js"></script>
+  <script defer src="/auth.js?v=6"></script>
 
   <style>
     body { background:#000; color:#fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; }
@@ -137,7 +137,7 @@
         msg.classList.add("ok");
         setTimeout(() => (window.location.href = "/index.html"), 700);
       } catch (err) {
-        msg.textContent = err.message;
+        msg.textContent = err && err.message ? err.message : String(err);
       }
     });
 
