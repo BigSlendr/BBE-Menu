@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bobby Black — Account</title>
+
+  <style>
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; }
+    .bb-header{
+      width:100%;
+      background:#000;
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,0.16);
+      position:sticky;
+      top:0;
+      z-index:1000;
+    }
+    .bb-header-row1{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      padding:10px 14px;
+    }
+    .bb-logo img,.brand-logo{
+      height:42px;
+      width:auto;
+      display:block;
+    }
+    .bb-cart-btn{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.18);
+      color:#fff;
+      text-decoration:none;
+      white-space:nowrap;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .bb-cart-count{
+      display:none;
+      margin-left:2px;
+      background:#fff;
+      color:#111;
+      border-radius:999px;
+      padding:2px 7px;
+      font-size:11px;
+      font-weight:900;
+      min-width:20px;
+      text-align:center;
+    }
+    .bb-nav{
+      display:flex;
+      gap:18px;
+      justify-content:center;
+      align-items:center;
+      padding:8px 12px 10px;
+      border-top:1px solid rgba(255,255,255,0.10);
+    }
+    .bb-nav a{
+      color:#fff;
+      text-decoration:none;
+      font-size:13px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      opacity:0.9;
+    }
+    .bb-nav a:hover,.bb-nav a:focus-visible{
+      opacity:1;
+      text-decoration:underline;
+    }
+    .header-search{
+      width:min(1200px,100%);
+      margin:0 auto;
+      padding:0 16px 10px;
+    }
+    .header-search input[type="search"],
+    .header-search input{
+      width:min(520px, 100%);
+      height:38px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.28);
+      background:rgba(255,255,255,0.06);
+      color:#fff;
+      padding:0 14px;
+      font-size:12px;
+      letter-spacing:0.02em;
+      outline:none;
+      text-transform:uppercase;
+      margin:0 auto;
+      display:block;
+    }
+    @media (max-width: 520px) {
+      .bb-header-row1{padding:10px 12px;}
+      .bb-cart-btn{right:10px;padding:8px 10px;}
+      .bb-cart-text{display:none;}
+      .bb-nav{flex-wrap:wrap;gap:14px;padding:10px 12px 12px;}
+    }
+    .wrap { max-width:900px; margin:24px auto 64px; padding:18px; }
+    .card { background:#0b0b0b; border:1px solid #222; border-radius:14px; padding:18px; margin-top:14px; }
+    h1 { font-size:26px; margin:0 0 6px; }
+    h2 { font-size:16px; margin:0 0 10px; letter-spacing:0.04em; }
+    p { color:#bdbdbd; margin:0; }
+    .row { display:flex; gap:14px; flex-wrap:wrap; }
+    .pill { padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#070707; }
+    .label { font-size:12px; color:#9a9a9a; }
+    .value { font-size:20px; margin-top:4px; }
+    button { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; }
+    button:hover { background:#151515; }
+    a { color:#fff; text-decoration:underline; }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+    .muted { color:#9a9a9a; }
+    .list { margin-top:10px; }
+    .order { padding:12px; border-radius:12px; border:1px solid #222; background:#060606; margin-top:10px; }
+  </style>
+</head>
+<body>
+
+  <header class="bb-header">
+    <div class="bb-header-row1">
+      <a class="bb-logo" href="/index.html" aria-label="Bobby Black Home">
+        <img class="brand-logo" src="images/Bobbyb.png" alt="Bobby Black" />
+      </a>
+
+      <a class="bb-cart-btn" href="/cart.html" aria-label="Cart">
+        <span class="bb-cart-icon" aria-hidden="true">🛒</span>
+        <span class="bb-cart-text">Cart</span>
+        <span class="bb-cart-count" data-bbe-cart-count>0</span>
+      </a>
+    </div>
+
+    <nav class="bb-nav" aria-label="Primary">
+      <a href="/brands.html">Brands</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/about.html">About</a>
+      <a href="/member-signin.html" class="bb-signin-link" id="bbMemberLink">SIGN IN</a>
+    </nav>
+  <form class="header-search" role="search" action="#" method="GET">
+          <input
+            type="search"
+            name="q"
+            placeholder="WHAT CAN WE HELP YOU FIND?"
+            aria-label="Search"
+          />
+        </form>
+</header>
+
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Account</h1>
+        <p id="userLine" class="muted">Loading...</p>
+      </div>
+      <div>
+        <button id="logoutBtn" type="button">Log out</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Points Balance</h2>
+      <div class="row">
+        <div class="pill" style="min-width:220px;">
+          <div class="label">Current Points</div>
+          <div class="value" id="pointsValue">0</div>
+        </div>
+        <div class="pill" style="min-width:220px;">
+          <div class="label">Estimated Value</div>
+          <div class="value" id="pointsValueDollars">$0.00</div>
+        </div>
+      </div>
+      <p style="margin-top:12px;">
+        Earn <b>10 points per $1</b> spent (subtotal before tax). Default redemption: <b>100 points = $1 off</b>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Rewards Options</h2>
+      <div class="list">
+        <div class="order">
+          <div><b>100 points</b> → $1 off</div>
+          <div class="muted" style="margin-top:6px;">(Default conversion. Tier bonuses can be added later.)</div>
+        </div>
+        <div class="order"><div><b>500 points</b> → $5 off</div></div>
+        <div class="order"><div><b>1,000 points</b> → $10 off</div></div>
+      </div>
+      <p class="muted" style="margin-top:12px;">
+        Redemption during checkout will be added after orders are saved in the database.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Past Orders</h2>
+      <div id="ordersList" class="list">
+        <div class="order">
+          <div><b>No orders yet</b></div>
+          <div class="muted" style="margin-top:6px;">Your order history will appear here once orders are stored.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script defer src="/auth.js"></script>
+  <script defer src="/header-auth.js"></script>
+
+  <script>
+    const userLine = document.getElementById("userLine");
+    const pointsValue = document.getElementById("pointsValue");
+    const pointsValueDollars = document.getElementById("pointsValueDollars");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function formatMoney(n) {
+      return "$" + (Math.round(n * 100) / 100).toFixed(2);
+    }
+
+    async function init() {
+      if (!window.bbGetMe) {
+        userLine.textContent = "Auth helper missing (auth.js not loaded).";
+        return;
+      }
+
+      let me = null;
+      try {
+        me = await window.bbGetMe();
+      } catch {
+        userLine.textContent = "Unable to load account.";
+        return;
+      }
+
+      if (!me || !me.loggedIn) {
+        window.location.href = "/member-signin.html";
+        return;
+      }
+
+      const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
+      userLine.textContent = name ? `${name} • ${me.user?.email}` : (me.user?.email || "Signed in");
+
+      const pts = Number(me.points_balance || 0);
+      pointsValue.textContent = String(pts);
+      pointsValueDollars.textContent = formatMoney(pts / 100);
+    }
+
+    logoutBtn.addEventListener("click", async () => {
+      if (window.bbLogout) {
+        await window.bbLogout().catch(() => ({}));
+      } else {
+        await fetch("/api/auth/logout", { method: "POST" }).catch(() => ({}));
+      }
+      window.location.href = "/index.html";
+    });
+
+    init().catch(() => {
+      userLine.textContent = "Unable to load account.";
+    });
+  </script>
+</body>
+</html>
