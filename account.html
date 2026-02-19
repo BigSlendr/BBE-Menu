@@ -123,6 +123,13 @@
     .muted { color:#9a9a9a; }
     .list { margin-top:10px; }
     .order { padding:12px; border-radius:12px; border:1px solid #222; background:#060606; margin-top:10px; }
+    .status-line { margin-top:8px; color:#c9c9c9; }
+    .status-badge { font-weight:700; text-transform:capitalize; }
+    .verify-grid { display:grid; gap:10px; max-width:460px; }
+    .verify-grid label { display:grid; gap:6px; font-size:13px; color:#d3d3d3; }
+    .verify-grid input { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; }
+    .verify-grid button[disabled] { opacity:.55; cursor:not-allowed; }
+    .verify-message { margin-top:10px; font-size:13px; }
   </style>
 </head>
 <body>
@@ -161,10 +168,32 @@
       <div>
         <h1>Account</h1>
         <p id="userLine" class="muted">Loading...</p>
+        <p class="status-line">Verification Status: <span id="verificationStatus" class="status-badge">unverified</span></p>
       </div>
       <div>
         <button id="logoutBtn" type="button">Log out</button>
       </div>
+    </div>
+
+    <div id="verifyCard" class="card">
+      <h2>Verify Your Account</h2>
+      <p id="verifyStatusText" class="muted">Upload your documents to start verification.</p>
+      <form id="verifyForm" class="verify-grid" style="margin-top:12px;" enctype="multipart/form-data">
+        <label>
+          Government ID
+          <input id="idImage" type="file" name="id_image" accept="image/*" required />
+        </label>
+        <label>
+          Selfie
+          <input id="selfieImage" type="file" name="selfie_image" accept="image/*" required />
+        </label>
+        <label>
+          ID Expiration (optional)
+          <input id="idExpiration" type="date" name="id_expiration" />
+        </label>
+        <button id="verifySubmit" type="submit">Submit for Review</button>
+      </form>
+      <p id="verifyMessage" class="verify-message muted"></p>
     </div>
 
     <div class="card">
@@ -219,9 +248,61 @@
     const pointsValue = document.getElementById("pointsValue");
     const pointsValueDollars = document.getElementById("pointsValueDollars");
     const logoutBtn = document.getElementById("logoutBtn");
+    const verificationStatus = document.getElementById("verificationStatus");
+    const verifyStatusText = document.getElementById("verifyStatusText");
+    const verifyCard = document.getElementById("verifyCard");
+    const verifyForm = document.getElementById("verifyForm");
+    const verifySubmit = document.getElementById("verifySubmit");
+    const verifyMessage = document.getElementById("verifyMessage");
+    const idImage = document.getElementById("idImage");
+    const selfieImage = document.getElementById("selfieImage");
+    const idExpiration = document.getElementById("idExpiration");
 
     function formatMoney(n) {
       return "$" + (Math.round(n * 100) / 100).toFixed(2);
+    }
+
+    function renderVerification(status) {
+      const current = status || "unverified";
+      verificationStatus.textContent = current;
+
+      if (current === "approved") {
+        verifyCard.style.display = "none";
+        verifyMessage.textContent = "";
+        return;
+      }
+
+      verifyCard.style.display = "block";
+      verifyForm.style.display = "grid";
+
+      if (current === "pending") {
+        verifyStatusText.textContent = "Pending review. Your upload is under admin review.";
+        verifySubmit.disabled = true;
+        idImage.required = false;
+        selfieImage.required = false;
+      } else if (current === "rejected") {
+        verifyStatusText.textContent = "Rejected — please re-upload clear images to continue.";
+        verifySubmit.disabled = false;
+        idImage.required = true;
+        selfieImage.required = true;
+      } else {
+        verifyStatusText.textContent = "Upload your documents to start verification.";
+        verifySubmit.disabled = false;
+        idImage.required = true;
+        selfieImage.required = true;
+      }
+    }
+
+    async function loadMe() {
+      const me = await window.bbGetMe();
+      const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
+      userLine.textContent = name ? `${name} • ${me.user?.email}` : (me.user?.email || "Signed in");
+
+      const pts = Number(me.points_balance || 0);
+      pointsValue.textContent = String(pts);
+      pointsValueDollars.textContent = formatMoney(pts / 100);
+      renderVerification(me.verificationStatus);
+      return me;
     }
 
     async function init() {
@@ -230,26 +311,49 @@
         return;
       }
 
-      let me = null;
       try {
-        me = await window.bbGetMe();
+        const me = await loadMe();
+        if (!me || !me.loggedIn) {
+          window.location.href = "/member-signin.html";
+          return;
+        }
       } catch {
         userLine.textContent = "Unable to load account.";
         return;
       }
-
-      if (!me || !me.loggedIn) {
-        window.location.href = "/member-signin.html";
-        return;
-      }
-
-      const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
-      userLine.textContent = name ? `${name} • ${me.user?.email}` : (me.user?.email || "Signed in");
-
-      const pts = Number(me.points_balance || 0);
-      pointsValue.textContent = String(pts);
-      pointsValueDollars.textContent = formatMoney(pts / 100);
     }
+
+    verifyForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      verifyMessage.textContent = "";
+
+      const formData = new FormData();
+      if (idImage.files?.[0]) formData.append("id_image", idImage.files[0]);
+      if (selfieImage.files?.[0]) formData.append("selfie_image", selfieImage.files[0]);
+      if (idExpiration.value) formData.append("id_expiration", idExpiration.value);
+
+      verifySubmit.disabled = true;
+      try {
+        const res = await fetch("/api/verify/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload?.error || "Upload failed");
+
+        verifyMessage.textContent = "Submitted for review";
+        verifyMessage.classList.remove("muted");
+
+        const me = await loadMe();
+        if (me?.verificationStatus === "pending") {
+          verifyForm.reset();
+        }
+      } catch (err) {
+        verifyMessage.textContent = err?.message || "Upload failed. Please try again.";
+        verifyMessage.classList.add("muted");
+        renderVerification(verificationStatus.textContent || "unverified");
+      }
+    });
 
     logoutBtn.addEventListener("click", async () => {
       if (window.bbLogout) {
