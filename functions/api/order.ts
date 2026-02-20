@@ -1,4 +1,5 @@
 import { getSessionUserId, getVerificationStatus, json } from "./_auth";
+import { insertOrder } from "./orders/_create";
 
 interface Env {
   RESEND_API_KEY?: string;
@@ -166,7 +167,6 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   const items = getPayloadItems(payload);
 
   const orderId = generateOrderId();
-  const orderDbId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const customerName = asTrimmedString(customer.name);
   const customerPhone = asTrimmedString(customer.phone);
@@ -181,6 +181,8 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   const fees = Number.isFinite(asNumber(order.fees)) ? asNumber(order.fees) : null;
   const providedTotal = asNumber(order.total);
   const total = Number.isFinite(providedTotal) ? providedTotal : subtotal + (tax || 0) + (fees || 0);
+  const totalCents = Math.round(Number(total) * 100);
+  const taxCents = Math.round(Number(tax || 0) * 100);
 
   const address = order.address && typeof order.address === "object" ? (order.address as Record<string, unknown>) : null;
   const formattedAddress = address
@@ -237,23 +239,28 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
     </p>
   `;
 
-  await env.DB
-    .prepare(
-      `INSERT INTO orders (
-        id,
-        user_id,
-        created_at,
-        status,
-        subtotal_cents,
-        items_json,
-        notes,
-        points_earned,
-        points_redeemed,
-        discount_cents
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`
-    )
-    .bind(orderDbId, userId, timestamp, "pending", subtotalCents, JSON.stringify(items), getPayloadNotes(payload) || null)
-    .run();
+  let orderDbId = "";
+  try {
+    orderDbId = await insertOrder({
+      db: env.DB,
+      userId,
+      payload: {
+        cart: payload.order ?? { items },
+        subtotal_cents: subtotalCents,
+        tax_cents: taxCents,
+        total_cents: totalCents,
+        customer: {
+          name: customerName,
+          phone: customerPhone,
+          delivery_method: orderMethod === "delivery" ? "delivery" : "pickup",
+          address: address,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("[order] failed to insert order", error);
+    return jsonResponse({ ok: false, error: "Unable to save order." }, 500);
+  }
 
   const resendResponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
