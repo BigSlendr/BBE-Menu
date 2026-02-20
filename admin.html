@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bobby Black — Admin</title>
+  <style>
+    body { margin:0; background:#000; color:#fff; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    .wrap { max-width:1100px; margin:0 auto; padding:18px; }
+    h1 { margin:0 0 10px; font-size:22px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    input[type="password"] { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#0b0b0b; color:#fff; min-width:280px; }
+    button { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; }
+    button:hover { background:#151515; }
+    .muted { color:#bdbdbd; }
+    .err { color:#ffb3b3; white-space:pre-wrap; word-break:break-word; margin-top:10px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:12px; margin-top:14px; }
+    .card { background:#0b0b0b; border:1px solid #222; border-radius:14px; padding:14px; }
+    .card h3 { margin:0 0 6px; font-size:16px; }
+    .pill { display:inline-flex; padding:4px 8px; border:1px solid #2a2a2a; border-radius:999px; font-size:12px; color:#ddd; background:#070707; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .btnGood { border-color:#1f3; }
+    .btnBad { border-color:#f33; }
+    .btnGhost { background:transparent; }
+    /* modal */
+    #modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.75); padding:18px; z-index:9999; }
+    #modal .box { width:100%; max-width:860px; background:#0b0b0b; border:1px solid #222; border-radius:16px; padding:12px; }
+    #modalTop { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
+    #modalImg { width:100%; height:auto; border-radius:12px; border:1px solid #222; background:#000; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Admin — Verification Review</h1>
+
+    <div class="row">
+      <input id="secret" type="password" placeholder="ADMIN_SECRET" />
+      <button id="unlockBtn" type="button">Unlock</button>
+      <button id="refreshBtn" type="button" class="btnGhost">Refresh</button>
+      <span id="status" class="muted"></span>
+    </div>
+
+    <div id="msg" class="err"></div>
+
+    <div id="list" class="grid"></div>
+  </div>
+
+  <div id="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <div id="modalTop">
+        <div class="muted" id="modalTitle">Preview</div>
+        <button id="closeModal" type="button">Close</button>
+      </div>
+      <img id="modalImg" alt="preview" />
+    </div>
+  </div>
+
+<script>
+  const secretInput = document.getElementById("secret");
+  const unlockBtn = document.getElementById("unlockBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const msg = document.getElementById("msg");
+  const list = document.getElementById("list");
+  const statusEl = document.getElementById("status");
+
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modalImg");
+  const modalTitle = document.getElementById("modalTitle");
+  const closeModal = document.getElementById("closeModal");
+  let currentBlobUrl = null;
+
+  function setMsg(t) { msg.textContent = t || ""; }
+
+  function getSecret() {
+    return sessionStorage.getItem("bb_admin_secret") || "";
+  }
+  function setSecret(v) {
+    sessionStorage.setItem("bb_admin_secret", v);
+  }
+
+  async function api(path, opts = {}) {
+    const secret = getSecret();
+    const headers = Object.assign({}, opts.headers || {}, { "x-admin-secret": secret });
+    const res = await fetch(path, Object.assign({}, opts, { headers }));
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    if (!res.ok) {
+      const err = (json && (json.error || json.message)) ? (json.error || json.message) : text.slice(0, 800);
+      throw new Error(`HTTP ${res.status} — ${err}`);
+    }
+    return json ?? {};
+  }
+
+  function shortId(id) {
+    if (!id) return "";
+    return id.length > 10 ? id.slice(-10) : id;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    try { return new Date(iso).toLocaleString(); } catch { return iso; }
+  }
+
+  function clearList() { list.innerHTML = ""; }
+
+  async function loadVerifications() {
+    setMsg("");
+    clearList();
+    statusEl.textContent = "Loading...";
+    const data = await api("/api/admin/verifications");
+    const items = data.verifications || [];
+    statusEl.textContent = items.length ? `${items.length} records` : "No records";
+
+    if (!items.length) return;
+
+    for (const v of items) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = (v.email || "Unknown user");
+      card.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "muted";
+      const nm = [v.first_name, v.last_name].filter(Boolean).join(" ");
+      meta.textContent = `${nm ? nm + " • " : ""}${v.status || "unknown"} • ${fmtDate(v.updated_at)} • user ${shortId(v.user_id)}`;
+      card.appendChild(meta);
+
+      const pill = document.createElement("div");
+      pill.style.marginTop = "8px";
+      pill.innerHTML = `<span class="pill">${(v.status || "unknown").toUpperCase()}</span>`;
+      card.appendChild(pill);
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const viewId = document.createElement("button");
+      viewId.type = "button";
+      viewId.textContent = "View ID";
+      viewId.disabled = !v.id_key;
+      viewId.addEventListener("click", async () => {
+        await previewFile(v.id_key, "ID Image");
+      });
+
+      const viewSelfie = document.createElement("button");
+      viewSelfie.type = "button";
+      viewSelfie.textContent = "View Selfie";
+      viewSelfie.disabled = !v.selfie_key;
+      viewSelfie.addEventListener("click", async () => {
+        await previewFile(v.selfie_key, "Selfie Image");
+      });
+
+      const approve = document.createElement("button");
+      approve.type = "button";
+      approve.className = "btnGood";
+      approve.textContent = "Approve";
+      approve.addEventListener("click", async () => {
+        if (!confirm(`Approve ${v.email || v.user_id}?`)) return;
+        await api("/api/admin/verification-action", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ user_id: v.user_id, action: "approve" })
+        });
+        await loadVerifications();
+      });
+
+      const reject = document.createElement("button");
+      reject.type = "button";
+      reject.className = "btnBad";
+      reject.textContent = "Reject";
+      reject.addEventListener("click", async () => {
+        if (!confirm(`Reject ${v.email || v.user_id}?`)) return;
+        await api("/api/admin/verification-action", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ user_id: v.user_id, action: "reject" })
+        });
+        await loadVerifications();
+      });
+
+      actions.appendChild(viewId);
+      actions.appendChild(viewSelfie);
+      actions.appendChild(approve);
+      actions.appendChild(reject);
+      card.appendChild(actions);
+
+      list.appendChild(card);
+    }
+  }
+
+  async function previewFile(key, label) {
+    setMsg("");
+    try {
+      statusEl.textContent = "Loading image...";
+      const secret = getSecret();
+      const res = await fetch(`/api/admin/verification-file?key=${encodeURIComponent(key)}`, {
+        headers: { "x-admin-secret": secret }
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`HTTP ${res.status} — ${t.slice(0, 800)}`);
+      }
+
+      const blob = await res.blob();
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = URL.createObjectURL(blob);
+
+      modalTitle.textContent = label;
+      modalImg.src = currentBlobUrl;
+      modal.style.display = "flex";
+      statusEl.textContent = "";
+    } catch (e) {
+      setMsg(e.message || String(e));
+      statusEl.textContent = "";
+    }
+  }
+
+  function closePreview() {
+    modal.style.display = "none";
+    modalImg.src = "";
+    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
+
+  closeModal.addEventListener("click", closePreview);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closePreview();
+  });
+
+  unlockBtn.addEventListener("click", async () => {
+    const s = secretInput.value.trim();
+    if (!s) { setMsg("Enter ADMIN_SECRET."); return; }
+    setSecret(s);
+    await loadVerifications().catch(e => setMsg(e.message || String(e)));
+  });
+
+  refreshBtn.addEventListener("click", async () => {
+    if (!getSecret()) { setMsg("Enter ADMIN_SECRET and click Unlock."); return; }
+    await loadVerifications().catch(e => setMsg(e.message || String(e)));
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const s = getSecret();
+    if (s) {
+      secretInput.value = s;
+      loadVerifications().catch(() => {});
+    }
+  });
+</script>
+</body>
+</html>

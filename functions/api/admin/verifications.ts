@@ -21,7 +21,7 @@ export const onRequestGet: PagesFunction = async (context) => {
         uv.updated_at
       FROM user_verification uv
       LEFT JOIN users u ON u.id = uv.user_id
-      WHERE uv.status = 'pending'
+      WHERE uv.status IN ('pending','unverified','rejected')
       ORDER BY uv.updated_at DESC`
     )
     .all();
