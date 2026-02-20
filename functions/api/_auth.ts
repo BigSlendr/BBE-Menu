@@ -44,6 +44,7 @@ export async function getVerificationStatus(userId: string, env: any): Promise<s
 }
 
 export function requireAdmin(request: Request, env: any): boolean {
+  if (!env.ADMIN_SECRET) return false;
   const secret = request.headers.get("x-admin-secret");
-  return Boolean(secret && env.ADMIN_SECRET && secret === env.ADMIN_SECRET);
+  return Boolean(secret && secret === env.ADMIN_SECRET);
 }
