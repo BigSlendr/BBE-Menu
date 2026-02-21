@@ -407,6 +407,11 @@
     const checkoutForm = document.getElementById("checkoutForm");
     const placeOrderBtn = document.getElementById("placeOrderBtn");
     const checkoutStatus = document.getElementById("checkoutStatus");
+    const customerNameInput = document.getElementById("customerName");
+    const customerPhoneInput = document.getElementById("customerPhone");
+    const customerEmailInput = document.getElementById("customerEmail");
+
+    let checkoutProfile = null;
 
     function setCheckoutStatus(message, type){
       checkoutStatus.textContent = message || "";
@@ -419,6 +424,49 @@
         const price = Number(line.unitPrice) || 0;
         return sum + qty * price;
       }, 0);
+    }
+
+    function buildProfileName(user){
+      const first = String(user?.first_name || "").trim();
+      const last = String(user?.last_name || "").trim();
+      return `${first} ${last}`.trim();
+    }
+
+    function applyCheckoutAutofill(user){
+      if(!user) return;
+
+      const profileName = buildProfileName(user);
+      const profilePhone = String(user.phone || "").trim();
+      const profileEmail = String(user.email || "").trim();
+
+      if(profileName && !customerNameInput.value.trim()) {
+        customerNameInput.value = profileName;
+      }
+
+      if(profilePhone && !customerPhoneInput.value.trim()) {
+        customerPhoneInput.value = profilePhone;
+      }
+
+      if(profileEmail && !customerEmailInput.value.trim()) {
+        customerEmailInput.value = profileEmail;
+      }
+    }
+
+    async function loadCheckoutProfile(){
+      try {
+        const response = await fetch("/api/me", { method: "GET", cache: "no-store" });
+        if(response.status === 401) return;
+        if(!response.ok) return;
+
+        const payload = await response.json();
+        const user = payload?.user;
+        if(!user) return;
+
+        checkoutProfile = user;
+        applyCheckoutAutofill(user);
+      } catch {
+        // Keep guest checkout flow unchanged when profile request fails.
+      }
     }
 
     function render(){
@@ -529,10 +577,18 @@
       }
 
       const formData = new FormData(checkoutForm);
-      const name = String(formData.get("customerName") || "").trim();
-      const phone = String(formData.get("customerPhone") || "").trim();
-      const emailRaw = String(formData.get("customerEmail") || "").trim();
+      const inputName = String(formData.get("customerName") || "").trim();
+      const inputPhone = String(formData.get("customerPhone") || "").trim();
+      const inputEmail = String(formData.get("customerEmail") || "").trim();
       const specialInstructions = String(formData.get("specialInstructions") || "").trim();
+
+      const profileName = buildProfileName(checkoutProfile);
+      const profilePhone = String(checkoutProfile?.phone || "").trim();
+      const profileEmail = String(checkoutProfile?.email || "").trim();
+
+      const name = inputName || profileName;
+      const phone = inputPhone || profilePhone;
+      const emailRaw = inputEmail || profileEmail;
 
       const validationError = validateCheckout(name, phone, emailRaw, specialInstructions);
       if(validationError){
@@ -623,6 +679,7 @@
     };
 
     render();
+    loadCheckoutProfile();
   </script>
   <script defer src="/auth.js?v=6"></script>
   <script defer src="/header-auth.js?v=6"></script>
