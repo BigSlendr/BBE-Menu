@@ -241,7 +241,7 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
 
   let orderDbId = "";
   try {
-    orderDbId = await insertOrder({
+    const orderInsert = await insertOrder({
       db: env.DB,
       userId,
       payload: {
@@ -257,7 +257,12 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
         },
       },
     });
+    orderDbId = orderInsert.orderId;
   } catch (error) {
+    if ((error as { statusCode?: number })?.statusCode === 400) {
+      return jsonResponse({ ok: false, error: "User record missing." }, 400);
+    }
+
     console.error("[order] failed to insert order", error);
     return jsonResponse({ ok: false, error: "Unable to save order." }, 500);
   }
