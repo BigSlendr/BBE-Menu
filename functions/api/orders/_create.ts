@@ -70,6 +70,8 @@ export const getCartPayload = (payload: CreateOrderPayload): unknown => {
   return [];
 };
 
+export const validateCreateOrderPayload = (_payload: CreateOrderPayload): string | null => null;
+
 export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): Promise<InsertOrderResult> => {
   const orderId = crypto.randomUUID();
   const nowIso = new Date().toISOString();
