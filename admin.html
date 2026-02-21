@@ -125,12 +125,12 @@
       const meta = document.createElement("div");
       meta.className = "muted";
       const nm = [v.first_name, v.last_name].filter(Boolean).join(" ");
-      meta.textContent = `${nm ? nm + " • " : ""}${v.status || "unknown"} • ${fmtDate(v.updated_at)} • user ${shortId(v.user_id)}`;
+      meta.textContent = `${nm ? nm + " • " : ""}${v.account_status || "pending"} • ${fmtDate(v.updated_at)} • user ${shortId(v.user_id)}`;
       card.appendChild(meta);
 
       const pill = document.createElement("div");
       pill.style.marginTop = "8px";
-      pill.innerHTML = `<span class="pill">${(v.status || "unknown").toUpperCase()}</span>`;
+      pill.innerHTML = `<span class="pill">${(v.account_status || "pending").toUpperCase()}</span>`;
       card.appendChild(pill);
 
       const actions = document.createElement("div");
@@ -166,16 +166,30 @@
         await loadVerifications();
       });
 
-      const reject = document.createElement("button");
-      reject.type = "button";
-      reject.className = "btnBad";
-      reject.textContent = "Reject";
-      reject.addEventListener("click", async () => {
-        if (!confirm(`Reject ${v.email || v.user_id}?`)) return;
+      const deny = document.createElement("button");
+      deny.type = "button";
+      deny.className = "btnBad";
+      deny.textContent = "Deny";
+      deny.addEventListener("click", async () => {
+        const reason = prompt(`Deny reason for ${v.email || v.user_id} (optional):`) || "";
+        if (!confirm(`Deny ${v.email || v.user_id}?`)) return;
         await api("/api/admin/verification-action", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ user_id: v.user_id, action: "reject" })
+          body: JSON.stringify({ user_id: v.user_id, action: "deny", reason })
+        });
+        await loadVerifications();
+      });
+
+      const pending = document.createElement("button");
+      pending.type = "button";
+      pending.textContent = "Set Pending";
+      pending.addEventListener("click", async () => {
+        if (!confirm(`Set ${v.email || v.user_id} back to pending?`)) return;
+        await api("/api/admin/verification-action", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ user_id: v.user_id, action: "pending" })
         });
         await loadVerifications();
       });
@@ -183,7 +197,8 @@
       actions.appendChild(viewId);
       actions.appendChild(viewSelfie);
       actions.appendChild(approve);
-      actions.appendChild(reject);
+      actions.appendChild(deny);
+      actions.appendChild(pending);
       card.appendChild(actions);
 
       list.appendChild(card);

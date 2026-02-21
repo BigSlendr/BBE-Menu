@@ -21,12 +21,9 @@ export const onRequestGet: PagesFunction = async (context) => {
     }
 
     const user = await db.prepare(
-      `SELECT id, email, first_name, last_name FROM users WHERE id = ?`
+      `SELECT id, email, first_name, last_name, account_status, verified_at, status_reason FROM users WHERE id = ?`
     ).bind(session.user_id).first<any>();
 
-    const v = await db.prepare(
-      `SELECT status FROM user_verification WHERE user_id = ?`
-    ).bind(session.user_id).first<any>();
 
     return json({
       loggedIn: true,
@@ -36,7 +33,9 @@ export const onRequestGet: PagesFunction = async (context) => {
         first_name: user?.first_name,
         last_name: user?.last_name,
       },
-      verificationStatus: v?.status || "unverified",
+      verificationStatus: user?.account_status || "pending",
+      verified_at: user?.verified_at || null,
+      status_reason: user?.status_reason || null,
     });
   } catch (err: any) {
     return json({ error: err?.message || String(err) }, 500);
