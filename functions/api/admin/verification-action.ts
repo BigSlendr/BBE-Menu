@@ -1,4 +1,4 @@
-import { json, requireAdmin } from "../_auth";
+import { getSessionUserId, json, requireAdmin } from "../_auth";
 
 export const onRequestPost: PagesFunction = async (context) => {
   const { request, env } = context;
@@ -23,7 +23,7 @@ export const onRequestPost: PagesFunction = async (context) => {
 
   const db = env.DB as D1Database;
   const now = new Date().toISOString();
-  const adminId: string | null = null;
+  const adminId = await getSessionUserId(request, env);
 
   let accountStatus: "approved" | "denied" | "pending";
   if (action === "approve") {
@@ -52,9 +52,25 @@ export const onRequestPost: PagesFunction = async (context) => {
     .run();
 
   await db
-    .prepare("UPDATE user_verification SET status = ?, updated_at = ? WHERE user_id = ?")
-    .bind(accountStatus, now, user_id)
+    .prepare(
+      `INSERT INTO user_verification (user_id, status, updated_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET
+         status = excluded.status,
+         updated_at = excluded.updated_at`
+    )
+    .bind(user_id, accountStatus, now)
     .run();
 
-  return json({ ok: true, account_status: accountStatus, verified_at: verifiedAt, status_reason: statusReason });
+  const updatedUser = await db
+    .prepare("SELECT account_status, verified_at, status_reason FROM users WHERE id = ?")
+    .bind(user_id)
+    .first<{ account_status: string; verified_at: string | null; status_reason: string | null }>();
+
+  return json({
+    ok: true,
+    account_status: updatedUser?.account_status || accountStatus,
+    verified_at: updatedUser?.verified_at || verifiedAt,
+    status_reason: updatedUser?.status_reason ?? statusReason,
+  });
 };
