@@ -14,15 +14,15 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const binds: unknown[] = [];
 
   if (category) {
-    where.push("p.category = ?");
+    where.push("LOWER(p.category) = LOWER(?)");
     binds.push(category);
   }
   if (subcategory) {
-    where.push("p.subcategory = ?");
+    where.push("(p.subcategory IS NULL OR LOWER(p.subcategory) = LOWER(?))");
     binds.push(subcategory);
   }
   if (brand) {
-    where.push("p.brand = ?");
+    where.push("LOWER(p.brand) = LOWER(?)");
     binds.push(brand);
   }
   if (q) {
