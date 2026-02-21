@@ -425,7 +425,10 @@
 
     function money(n){ return "$"+Number(n).toFixed(0) }
 
-    fetch("content/products.json",{cache:"no-store"})
+    const USE_D1_PRODUCTS = (window.BBE_USE_D1_PRODUCTS ?? localStorage.getItem('bbe_use_d1_products') !== 'false');
+
+    function renderStaticMenu(){
+      fetch("content/products.json",{cache:"no-store"})
       .then(r=>r.json())
       .then(data=>{
         const items=(data.items||[]).filter(i=>i.category==="Accessories");
@@ -508,6 +511,20 @@
           "<div style='color:#b00000;font-weight:900'>Error loading products.json</div>";
         console.error(err);
       });
+    }
+
+    function renderD1Menu(){
+      fetch('/api/products?category=' + encodeURIComponent('Accessories'), { cache: 'no-store' })
+        .then(r=>r.json())
+        .then(data=>{
+          const items=data.products||[];
+          const container=document.getElementById('menu');
+          container.innerHTML=`<div class='group'><div class='group-title'>Accessories</div>${items.map(item=>`<div class='item' onclick="location.href='product.html?slug=${encodeURIComponent(item.slug)}'"><div class='item-name'>${item.name}</div><div class='meta'><span class='pill'>From: ${item.from_price_cents===null?'N/A':'$'+(item.from_price_cents/100).toFixed(2)}</span></div><div class='actions-row'><button class='btn view' onclick="event.stopPropagation();location.href='product.html?slug=${encodeURIComponent(item.slug)}'">View</button></div></div>`).join('')}</div>`;
+        })
+        .catch((err)=>{console.error('D1 products failed, using static fallback', err);renderStaticMenu();});
+    }
+
+    if (USE_D1_PRODUCTS) renderD1Menu(); else renderStaticMenu();
   </script>
 
   <script defer src="/auth.js?v=6"></script>

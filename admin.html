@@ -41,6 +41,7 @@
     <button class="tab" id="tabCustomers">Customers</button>
     <button class="tab" id="tabOrders">Orders</button>
     <button class="tab" id="tabVerification">Verification</button>
+    <button class="tab" id="tabProducts">Products</button>
   </div>
 
   <section id="dashboard" class="section active"><div id="metrics" class="cards"></div></section>
@@ -65,15 +66,30 @@
   </section>
 
   <section id="verification" class="section"><div id="vList" class="cards"></div></section>
+
+  <section id="products" class="section">
+    <div class="row">
+      <input id="pQuery" placeholder="search name/brand/category" />
+      <input id="pCategory" placeholder="category" />
+      <input id="pBrand" placeholder="brand" />
+      <select id="pPublished"><option value="">All published</option><option value="1">Published</option><option value="0">Unpublished</option></select>
+      <button id="pSearch">Search</button>
+      <button id="pNew">New Product</button>
+    </div>
+    <div class="tableWrap"><table><thead><tr><th>Image</th><th>Name</th><th>Brand</th><th>Category</th><th>Published</th><th>Variants</th><th>Total inventory</th><th></th></tr></thead><tbody id="pBody"></tbody></table></div>
+    <div id="pEditor" class="panel" style="display:none;"></div>
+  </section>
 </div>
 <script>
 const $ = (s)=>document.querySelector(s); const msg=$('#msg'); const statusEl=$('#status');
 let currentCustomer=null;
+let currentProduct=null;
 const getSecret=()=>sessionStorage.getItem('bb_admin_secret')||''; const setSecret=v=>sessionStorage.setItem('bb_admin_secret',v);
 async function api(path,opts={}){const h=Object.assign({},opts.headers||{}, {'x-admin-secret':getSecret()}); const r=await fetch(path,Object.assign({},opts,{headers:h})); const t=await r.text(); let j={}; try{j=JSON.parse(t)}catch{} if(!r.ok)throw new Error((j.error||t||r.statusText)); return j;}
-function showTab(name){['dashboard','customers','orders','verification'].forEach(id=>$('#'+id).classList.toggle('active',id===name)); ['Dashboard','Customers','Orders','Verification'].forEach(n=>$('#tab'+n).classList.toggle('active',n.toLowerCase()===name));}
+function showTab(name){['dashboard','customers','orders','verification','products'].forEach(id=>$('#'+id).classList.toggle('active',id===name)); ['Dashboard','Customers','Orders','Verification','Products'].forEach(n=>$('#tab'+n).classList.toggle('active',n.toLowerCase()===name));}
 function fmt(d){if(!d)return '-'; return new Date(d).toLocaleString();}
 function cents(v){return '$'+((Number(v||0))/100).toFixed(2)}
+const esc = (v)=>String(v||'').replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 
 async function loadDashboard(){const d=await api('/api/admin/dashboard'); const m=d.metrics||{}; $('#metrics').innerHTML=`<div class=card><h3>Total Users</h3>${m.totalUsers||0}</div><div class=card><h3>Active Users</h3>${m.activeUsers||0}</div><div class=card><h3>Orders (7d)</h3>${m.ordersLast7Days||0}</div><div class=card><h3>Pending Verification</h3>${m.pendingVerification||0}</div>`;}
 async function loadCustomers(){const qs=new URLSearchParams({query:$('#cQuery').value||'',status:$('#cStatus').value||'',tier:$('#cTier').value||'',active:$('#cActive').value||'',tag:$('#cTag').value||'',limit:'100'}); const d=await api('/api/admin/customers?'+qs.toString()); const rows=d.customers||[]; statusEl.textContent=`Customers: ${rows.length}`; $('#cBody').innerHTML=''; rows.forEach(u=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${(u.first_name||'')} ${(u.last_name||'')}</td><td>${u.email||''}</td><td>${u.account_status}</td><td>${Number(u.is_active)===1?'Active':'Deactivated'}</td><td>${u.effectiveTier}</td><td>${u.points_balance||0}</td><td><button>Open</button></td>`; tr.querySelector('button').onclick=()=>openCustomer(u.id); $('#cBody').appendChild(tr);});}
@@ -104,6 +120,52 @@ async function loadOrders(){const d=await api('/api/admin/orders?query='+encodeU
 async function openOrder(id){const d=await api('/api/admin/orders/'+id); $('#orderDetail').style.display='block'; $('#orderDetail').innerHTML='<h3>Order '+id+'</h3><pre style="white-space:pre-wrap">'+JSON.stringify(d.order,null,2)+'</pre>';}
 async function loadVerification(){const d=await api('/api/admin/verification/pending'); const users=d.users||[]; $('#vList').innerHTML=users.length?users.map(u=>`<div class=card><h3>${u.first_name||''} ${u.last_name||''}</h3><div>${u.email||''}</div><button onclick="openCustomer('${u.id.replace(/'/g,"\\'")}');showTab('customers')">Review</button></div>`).join(''):'<div class=muted>No pending users.</div>';}
 
+async function loadProducts(){
+  const qs=new URLSearchParams({query:$('#pQuery').value||'',category:$('#pCategory').value||'',brand:$('#pBrand').value||'',published:$('#pPublished').value||'',limit:'100'});
+  const d=await api('/api/admin/products?'+qs.toString());
+  const rows=d.products||[];
+  statusEl.textContent=`Products: ${rows.length}`;
+  $('#pBody').innerHTML='';
+  rows.forEach(p=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${p.image_path?`<img src="${esc(p.image_path)}" alt="${esc(p.name)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:'-'}</td><td>${esc(p.name)}</td><td>${esc(p.brand)}</td><td>${esc(p.category)}${p.subcategory?` / ${esc(p.subcategory)}`:''}</td><td>${Number(p.is_published)===1?'Yes':'No'}</td><td>${p.variant_count||0}</td><td>${p.total_inventory||0}</td><td><button>Edit</button></td>`; tr.querySelector('button').onclick=()=>openProductEditor(p.id); $('#pBody').appendChild(tr);});
+}
+
+async function openProductEditor(id){
+  const d=await api('/api/admin/products/'+id);
+  const product=d.product||null;
+  if(!product){msg.textContent='Product not found'; return;}
+  currentProduct=product;
+  const variants=d.variants||[];
+  $('#pEditor').style.display='block';
+  $('#pEditor').innerHTML=`<h3>Edit Product</h3>
+  <div class=row><input id=pn placeholder='name' value="${esc(product.name)}"><input id=ps placeholder='slug' value="${esc(product.slug)}"><input id=pb placeholder='brand' value="${esc(product.brand)}"></div>
+  <div class=row><input id=pc placeholder='category' value="${esc(product.category)}"><input id=psc placeholder='subcategory' value="${esc(product.subcategory||'')}"><input id=pi placeholder='image_path (/images/...)' value="${esc(product.image_path||'')}"></div>
+  <textarea id=pd placeholder='description' style='width:100%;min-height:80px;'>${esc(product.description||'')}</textarea>
+  <div class=row><input id=pe placeholder='effects comma separated' value="${esc((product.effects||[]).join(', '))}"><label><input id=ppub type=checkbox ${Number(product.is_published)===1?'checked':''}> Published</label><label><input id=pfeat type=checkbox ${Number(product.is_featured)===1?'checked':''}> Featured</label><button id=psave>Save Product</button></div>
+  <h4>Variants</h4>
+  <div id=variantRows>${variants.map(v=>`<div class='row' data-id='${v.id}'><input data-field='label' value="${esc(v.label)}"><input data-field='price_cents' type='number' min='0' value='${Number(v.price_cents)||0}'><input data-field='sort_order' type='number' value='${Number(v.sort_order)||0}'><input data-field='low_stock_threshold' type='number' min='0' value='${v.low_stock_threshold??''}'><label><input data-field='is_active' type='checkbox' ${Number(v.is_active)===1?'checked':''}>Active</label><span>Inv: ${v.inventory_qty||0}</span><button data-action='save'>Save</button><button data-action='up'>↑</button><button data-action='down'>↓</button><button data-action='set'>Set Qty</button><button data-action='adj'>Adjust</button></div>`).join('')}</div>
+  <div class='row'><input id=nvlabel placeholder='variant label'><input id=nvprice type='number' min='0' placeholder='price cents'><input id=nvinv type='number' min='0' placeholder='inventory'><button id=nvadd>Add Variant</button></div>`;
+
+  $('#psave').onclick=async()=>{
+    if($('#pi').value && !$('#pi').value.startsWith('/images/')) throw new Error('image_path must start with /images/');
+    await api('/api/admin/products/'+product.id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({name:$('#pn').value,slug:$('#ps').value,brand:$('#pb').value,category:$('#pc').value,subcategory:$('#psc').value,description:$('#pd').value,effects:$('#pe').value.split(',').map(s=>s.trim()).filter(Boolean),image_path:$('#pi').value,is_published:$('#ppub').checked,is_featured:$('#pfeat').checked})});
+    await loadProducts();
+    await openProductEditor(product.id);
+  };
+
+  document.querySelectorAll('#variantRows .row').forEach(row=>{row.querySelectorAll('button').forEach(btn=>btn.onclick=async()=>{const variantId=row.dataset.id; const label=row.querySelector('[data-field="label"]').value; const price=Number(row.querySelector('[data-field="price_cents"]').value); if(!label) throw new Error('Variant label required'); if(price<0) throw new Error('Price must be >= 0'); const payload={label,price_cents:price,sort_order:Number(row.querySelector('[data-field="sort_order"]').value||0),low_stock_threshold:row.querySelector('[data-field="low_stock_threshold"]').value===''?null:Number(row.querySelector('[data-field="low_stock_threshold"]').value),is_active:row.querySelector('[data-field="is_active"]').checked}; const action=btn.dataset.action; if(action==='save') await api('/api/admin/variants/'+variantId,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}); if(action==='up'||action==='down'){payload.sort_order += action==='up'?-1:1; await api('/api/admin/variants/'+variantId,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});} if(action==='set'){const qty=Number(prompt('Set inventory qty', '0')||0); await api('/api/admin/variants/'+variantId+'/inventory',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mode:'set',qty,reason:'admin set'})});} if(action==='adj'){const qty=Number(prompt('Adjust inventory (+/-)', '1')||0); const reason=prompt('Reason', 'manual adjustment')||''; await api('/api/admin/variants/'+variantId+'/inventory',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mode:'adjust',qty,reason})});} await openProductEditor(product.id);});});
+  });
+
+  $('#nvadd').onclick=async()=>{const label=$('#nvlabel').value.trim(); const price=Number($('#nvprice').value||0); if(!label) throw new Error('Variant label required'); if(price<0) throw new Error('Price must be >= 0'); await api('/api/admin/products/'+product.id+'/variants',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({label,price_cents:price,inventory_qty:Number($('#nvinv').value||0)})}); await openProductEditor(product.id); await loadProducts();};
+}
+
+async function createProduct(){
+  const name=prompt('Product name'); if(!name) return;
+  const brand=prompt('Brand','Bobby Black Exclusive')||'';
+  const category=prompt('Category','Flower')||'';
+  await api('/api/admin/products',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name,brand,category,is_published:true})});
+  await loadProducts();
+}
+
 $('#unlockBtn').onclick=async()=>{try{setSecret($('#secret').value.trim()); msg.textContent=''; await refresh();}catch(e){msg.textContent=e.message}};
 $('#refreshBtn').onclick=()=>refresh().catch(e=>msg.textContent=e.message);
 $('#cSearch').onclick=()=>loadCustomers().catch(e=>msg.textContent=e.message); $('#oSearch').onclick=()=>loadOrders().catch(e=>msg.textContent=e.message);
@@ -111,7 +173,10 @@ $('#tabDashboard').onclick=()=>{showTab('dashboard');loadDashboard().catch(e=>ms
 $('#tabCustomers').onclick=()=>{showTab('customers');loadCustomers().catch(e=>msg.textContent=e.message)};
 $('#tabOrders').onclick=()=>{showTab('orders');loadOrders().catch(e=>msg.textContent=e.message)};
 $('#tabVerification').onclick=()=>{showTab('verification');loadVerification().catch(e=>msg.textContent=e.message)};
-async function refresh(){if(!getSecret()) throw new Error('Enter ADMIN_SECRET and unlock.'); const active=document.querySelector('.section.active').id; if(active==='dashboard') await loadDashboard(); if(active==='customers') await loadCustomers(); if(active==='orders') await loadOrders(); if(active==='verification') await loadVerification();}
+$('#tabProducts').onclick=()=>{showTab('products');loadProducts().catch(e=>msg.textContent=e.message)};
+$('#pSearch').onclick=()=>loadProducts().catch(e=>msg.textContent=e.message);
+$('#pNew').onclick=()=>createProduct().catch(e=>msg.textContent=e.message);
+async function refresh(){if(!getSecret()) throw new Error('Enter ADMIN_SECRET and unlock.'); const active=document.querySelector('.section.active').id; if(active==='dashboard') await loadDashboard(); if(active==='customers') await loadCustomers(); if(active==='orders') await loadOrders(); if(active==='verification') await loadVerification(); if(active==='products') await loadProducts();}
 window.addEventListener('DOMContentLoaded',()=>{const s=getSecret(); if(s){$('#secret').value=s; refresh().catch(()=>{});}});
 </script>
 </body></html>
