@@ -731,10 +731,13 @@
     }
     function safeUpper(s){ return (s || "—").toString().toUpperCase(); }
     function getId(){ return new URLSearchParams(location.search).get("id"); }
+    function getSlug(){ return new URLSearchParams(location.search).get("slug"); }
     function normalizeKey(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,""); }
 
     const id = getId();
-    if(!id){
+    const slug = getSlug();
+    const USE_D1_PRODUCTS = (window.BBE_USE_D1_PRODUCTS ?? localStorage.getItem('bbe_use_d1_products') !== 'false');
+    if(!id && !slug){
       window.location.replace("flower.html");
     }
 
@@ -860,6 +863,17 @@
     function buildSizeOptions(item){
       sizeSelect.innerHTML = "";
 
+      if(item.__d1 && Array.isArray(item.variants)){
+        item.variants.forEach(v=>{
+          const opt=document.createElement("option");
+          opt.value=v.id;
+          opt.textContent=v.label;
+          sizeSelect.appendChild(opt);
+        });
+        if(item.variants[0]) sizeSelect.value=item.variants[0].id;
+        return;
+      }
+
       if(item.category === "Flower"){
         const sizes = [
           { key:"g3_5", label:"3.5g" },
@@ -904,6 +918,10 @@
     }
 
     function getUnitPrice(item, sizeKey){
+      if(item.__d1){
+        const chosen=(item.variants||[]).find(v=>v.id===sizeKey);
+        return chosen ? Number(chosen.price_cents||0) / 100 : null;
+      }
       if(item.category === "Flower") return item.prices?.[sizeKey];
       if(item.category === "Concentrates") return item.prices?.perGram;
       if(item.category === "Accessories") return item.prices?.single;
@@ -987,7 +1005,57 @@
       backLink.textContent = "← Back";
     }
 
-    fetch("content/products.json", { cache:"no-store" })
+    function renderProduct(item){
+      currentItem = item;
+      setBackLink(item);
+      const cassh = applyCasshRulesBranding(item);
+      crumbTrail.textContent = `HOME • ${safeUpper(item.category)} • ${safeUpper(item.subcategory || "ITEM")}`;
+      typeBadge.textContent = safeUpper(item.type || item.category);
+      const displayBrand = cassh ? "CA$H RULE$" : (item.brand || "Bobby Black Exclusive");
+      productTitle.textContent = `${safeUpper(displayBrand)} | ${safeUpper(item.name)}`;
+      brandLine.textContent = displayBrand.toUpperCase();
+      ratingText.textContent = "0";
+      renderImage(item);
+      aboutTitle.textContent = `ABOUT: ${safeUpper(displayBrand)} | ${safeUpper(item.name)}`;
+      aboutBy.textContent = `BY: ${displayBrand.toUpperCase()}`;
+      aboutText.textContent = item.description || "Description coming soon.";
+      buildSizeOptions(item);
+      renderPrice();
+      sizeSelect.addEventListener("change", renderPrice);
+      renderEffects(item);
+
+      addBtn.onclick = () => {
+        const qty = Number(qtySelect.value || 1);
+        if (item.__d1) {
+          const variant = (item.variants||[]).find(v => v.id === sizeSelect.value);
+          if (!variant) return;
+          const cart = BBE_CART.loadCart();
+          const line = {
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            subcategory: item.subcategory || "",
+            variantKey: variant.id,
+            variantLabel: variant.label,
+            unitPrice: Number(variant.price_cents || 0) / 100,
+            image: item.image_path || ""
+          };
+          const key = line.id + "::" + line.variantKey;
+          const existing = cart.find(x => x.key === key);
+          if (existing) existing.qty = (Number(existing.qty)||0) + qty;
+          else cart.push({ ...line, key, qty });
+          BBE_CART.saveCart(cart);
+          return;
+        }
+
+        if (BBE_CART && typeof BBE_CART.openAddFlow === "function") {
+          for(let i=0;i<qty;i++) BBE_CART.openAddFlow(item.id, "content/products.json");
+        }
+      };
+    }
+
+    function loadStaticProduct(){
+      fetch("content/products.json", { cache:"no-store" })
       .then(r=>r.json())
       .then(data=>{
         const items = data.items || [];
@@ -1002,48 +1070,37 @@
           return;
         }
 
-        currentItem = item;
-        setBackLink(item);
-
-        const cassh = applyCasshRulesBranding(item);
-
-        crumbTrail.textContent = `HOME • ${safeUpper(item.category)} • ${safeUpper(item.subcategory || "ITEM")}`;
-        typeBadge.textContent = safeUpper(item.type || item.category);
-
-        const displayBrand = cassh ? "CA$H RULE$" : (item.brand || "Bobby Black Exclusive");
-
-        productTitle.textContent = `${safeUpper(displayBrand)} | ${safeUpper(item.name)}`;
-        brandLine.textContent = displayBrand.toUpperCase();
-        ratingText.textContent = "0";
-
-        renderImage(item);
-
-        aboutTitle.textContent = `ABOUT: ${safeUpper(displayBrand)} | ${safeUpper(item.name)}`;
-        aboutBy.textContent = `BY: ${displayBrand.toUpperCase()}`;
-        aboutText.textContent = item.description || "Description coming soon.";
-
-        buildSizeOptions(item);
-        renderPrice();
-        sizeSelect.addEventListener("change", renderPrice);
-
-        renderEffects(item);
-
-        addBtn.onclick = () => {
-          const qty = Number(qtySelect.value || 1);
-
-          // safest fallback with unknown cart.js api
-          if (BBE_CART && typeof BBE_CART.openAddFlow === "function") {
-            for(let i=0;i<qty;i++){
-              BBE_CART.openAddFlow(item.id, "content/products.json");
-            }
-          }
-        };
+        renderProduct(item);
       })
       .catch(err=>{
         productTitle.textContent = "ERROR";
         brandLine.textContent = "Could not load products.json.";
         console.error(err);
       });
+    }
+
+    function loadD1Product(){
+      fetch('/api/products/' + encodeURIComponent(slug), { cache: 'no-store' })
+        .then(r=>{ if(!r.ok) throw new Error('D1 product not found'); return r.json(); })
+        .then(data=>{
+          const p = data.product;
+          renderProduct({
+            ...p,
+            __d1: true,
+            type: p.category,
+            image: p.image_path,
+            effects: p.effects,
+            variants: p.variants || []
+          });
+        })
+        .catch((err)=>{
+          console.error('D1 product failed, falling back to static', err);
+          loadStaticProduct();
+        });
+    }
+
+    if (USE_D1_PRODUCTS && slug) loadD1Product();
+    else loadStaticProduct();
   </script>
 
   <script defer src="/auth.js?v=6"></script>
