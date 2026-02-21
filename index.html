@@ -564,6 +564,9 @@
       border-radius:20px;
       padding:18px;
     }
+    .suggestions-card.hidden{display:none}
+    .sg-link{display:inline-flex;align-items:center;gap:8px;border:1px solid #111;border-radius:999px;padding:10px 14px;background:#fff;color:#111;text-decoration:none;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer}
+    .sg-link:hover{border-color:var(--gold);color:var(--gold)}
     .suggestions-copy{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.5}
     .suggestions-form{display:grid;gap:10px}
     .suggestions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -865,8 +868,12 @@
     </div>
 
     <div class="section-title">Suggestions</div>
-    <div class="suggestions-card" id="suggestions">
-      <p class="suggestions-copy">Have an idea, flavor request, or feedback for the menu? Send it directly to the Bobby Black team.</p>
+    <button class="sg-link" id="suggestionsToggle" type="button">Drop a suggestion</button>
+    <div class="suggestions-card hidden" id="suggestions">
+      <div class="sg-actions" style="justify-content:space-between">
+        <p class="suggestions-copy" style="margin:0">Have an idea, flavor request, or feedback for the menu? Send it directly to the Bobby Black team.</p>
+        <button class="sg-link" id="suggestionsClose" type="button">Close</button>
+      </div>
       <form id="suggestionsForm" class="suggestions-form" novalidate>
         <div class="suggestions-grid">
           <div class="sg-field">
@@ -921,6 +928,9 @@
       };
     })();
 
+    const suggestionsToggle = document.getElementById("suggestionsToggle");
+    const suggestionsClose = document.getElementById("suggestionsClose");
+    const suggestionsCard = document.getElementById("suggestions");
     const suggestionsForm = document.getElementById("suggestionsForm");
     const suggestionsSubmit = document.getElementById("suggestionsSubmit");
     const suggestionsStatus = document.getElementById("suggestionsStatus");
@@ -929,6 +939,12 @@
       suggestionsStatus.textContent = message || "";
       suggestionsStatus.className = "sg-status" + (type ? " " + type : "");
     }
+
+
+    function openSuggestionsForm(){ suggestionsCard.classList.remove("hidden"); }
+    function closeSuggestionsForm(){ suggestionsCard.classList.add("hidden"); }
+    suggestionsToggle.addEventListener("click", openSuggestionsForm);
+    suggestionsClose.addEventListener("click", closeSuggestionsForm);
 
     function validateSuggestion(payload){
       if(!payload.name) return "Name is required.";

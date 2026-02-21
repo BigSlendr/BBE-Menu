@@ -187,6 +187,146 @@ async function importProductsFromContent(){
   await loadProducts();
 }
 
+
+
+let selectedCustomerId='';
+let selectedOrderId='';
+let selectedProductId='';
+
+function textCell(tr, text){ const td=document.createElement('td'); td.textContent=text==null?'':String(text); tr.appendChild(td); return td; }
+function setPanelMinimize(panelId){
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const btn = panel.querySelector('[data-role="minimize"]');
+  if (btn) {
+    btn.onclick = () => { panel.style.display='none'; };
+  }
+}
+
+const _loadCustomers = loadCustomers;
+loadCustomers = async function(){
+  const qs=new URLSearchParams({query:$('#cQuery').value||'',status:$('#cStatus').value||'',tier:$('#cTier').value||'',active:$('#cActive').value||'',tag:$('#cTag').value||'',limit:'100'});
+  const d=await api('/api/admin/customers?'+qs.toString());
+  const rows=d.customers||[];
+  statusEl.textContent=`Customers: ${rows.length}`;
+  const body=$('#cBody'); body.innerHTML='';
+  rows.forEach((u)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.customerId = u.id;
+    if (u.id===selectedCustomerId) tr.style.outline='1px solid #d4af37';
+    textCell(tr, `${u.first_name||''} ${u.last_name||''}`.trim());
+    textCell(tr, u.email||'');
+    textCell(tr, u.account_status||'');
+    textCell(tr, Number(u.is_active)===1?'Active':'Deactivated');
+    textCell(tr, u.effectiveTier||'');
+    textCell(tr, String(u.points_balance||0));
+    const td=document.createElement('td');
+    const btn=document.createElement('button'); btn.textContent='Open'; btn.onclick=()=>openCustomer(u.id); td.appendChild(btn); tr.appendChild(td);
+    body.appendChild(tr);
+  });
+};
+
+const _openCustomer = openCustomer;
+openCustomer = async function(id){
+  selectedCustomerId = id;
+  const existingModal=document.getElementById('pointsAdjustModal'); if(existingModal) existingModal.remove();
+  await _openCustomer(id);
+  const panel=$('#customerDetail');
+  const title=panel.querySelector('h3');
+  if (title && !panel.querySelector('[data-role="minimize"]')){
+    const row=document.createElement('div'); row.className='row';
+    const btn=document.createElement('button'); btn.dataset.role='minimize'; btn.textContent='Minimize';
+    row.appendChild(btn); panel.insertBefore(row, panel.firstChild);
+  }
+  const adjustRow=document.createElement('div');
+  adjustRow.className='row';
+  adjustRow.innerHTML="<button id='openAdjustPoints'>Adjust Points</button>";
+  const pointsLine = Array.from(panel.querySelectorAll('p')).find((el)=>el.textContent.startsWith('Points:'));
+  if (pointsLine) pointsLine.insertAdjacentElement('afterend', adjustRow); else panel.appendChild(adjustRow);
+  const modal=document.createElement('div');
+  modal.id='pointsAdjustModal';
+  modal.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;';
+  modal.innerHTML="<div class='panel' style='max-width:420px;width:100%'><h3>Adjust Points</h3><div class='row'><input id='pointsDeltaInput' type='number' step='1' placeholder='Points delta (e.g. -20 or 50)'></div><div class='row'><input id='pointsReasonInput' placeholder='Reason (required)'></div><div class='row'><button id='submitPointsAdjust'>Apply</button><button id='cancelPointsAdjust'>Cancel</button></div><div id='pointsAdjustStatus' class='muted'></div></div>";
+  document.body.appendChild(modal);
+  document.getElementById('openAdjustPoints').onclick=()=>{ modal.style.display='flex'; };
+  document.getElementById('cancelPointsAdjust').onclick=()=>{ modal.remove(); };
+  document.getElementById('submitPointsAdjust').onclick=async()=>{
+    const points_delta = Number(document.getElementById('pointsDeltaInput').value||'0');
+    const reason = String(document.getElementById('pointsReasonInput').value||'').trim();
+    const status = document.getElementById('pointsAdjustStatus');
+    if (!Number.isInteger(points_delta)){ status.textContent='Points delta must be an integer.'; return; }
+    if (!reason){ status.textContent='Reason is required.'; return; }
+    const result = await api('/api/admin/customers/'+id+'/points-adjust',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({points_delta,reason})});
+    currentCustomer = result.customer || currentCustomer;
+    modal.remove();
+    await openCustomer(id);
+    await loadCustomers();
+  };
+  setPanelMinimize('customerDetail');
+};
+
+loadOrders = async function(){
+  const d=await api('/api/admin/orders?query='+encodeURIComponent($('#oQuery').value||''));
+  const rows=d.orders||[];
+  const body=$('#oBody'); body.innerHTML='';
+  rows.forEach((o)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.orderId=o.id;
+    if (o.id===selectedOrderId) tr.style.outline='1px solid #d4af37';
+    textCell(tr,o.id); textCell(tr,fmt(o.created_at)); textCell(tr,o.status); textCell(tr,cents(o.total_cents));
+    textCell(tr,o.user_id?'Account':'Guest'); textCell(tr,o.customer_name||o.customer_email||'-');
+    const td=document.createElement('td'); const btn=document.createElement('button'); btn.textContent='Open'; btn.onclick=()=>openOrder(o.id); td.appendChild(btn); tr.appendChild(td);
+    body.appendChild(tr);
+  });
+};
+
+openOrder = async function(id){
+  selectedOrderId = id;
+  const d=await api('/api/admin/orders/'+id);
+  const order=d.order||{};
+  const panel=$('#orderDetail');
+  panel.style.display='block';
+  panel.innerHTML='';
+  const top=document.createElement('div'); top.className='row';
+  const h3=document.createElement('h3'); h3.textContent='Order '+id; top.appendChild(h3);
+  const minBtn=document.createElement('button'); minBtn.dataset.role='minimize'; minBtn.textContent='Minimize'; top.appendChild(minBtn);
+  panel.appendChild(top);
+  const summary=document.createElement('p');
+  summary.textContent=`Created: ${fmt(order.created_at)} | Status: ${order.status || '-'} | Subtotal: ${cents(order.subtotal_cents)} | Total: ${cents(order.total_cents)} | Points Earned: ${order.points_earned || 0} | Points Redeemed: ${order.points_redeemed || 0}`;
+  panel.appendChild(summary);
+  const customer=document.createElement('p');
+  customer.textContent=`Customer: ${order.customer_name || '-'} | Phone: ${order.customer_phone || '-'} | Email: ${order.customer_email || '-'}`;
+  panel.appendChild(customer);
+  const itemsTitle=document.createElement('h4'); itemsTitle.textContent='Items'; panel.appendChild(itemsTitle);
+  const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap';
+  let parsed = order.cart_json;
+  try { parsed = typeof order.cart_json === 'string' ? JSON.parse(order.cart_json) : order.cart_json; } catch {}
+  pre.textContent=JSON.stringify(parsed ?? order.cart_json ?? {}, null, 2);
+  panel.appendChild(pre);
+  setPanelMinimize('orderDetail');
+};
+
+const _openProductEditor=openProductEditor;
+openProductEditor = async function(id){
+  selectedProductId=id;
+  await _openProductEditor(id);
+  const panel=$('#pEditor');
+  if (panel.style.display==='none') return;
+  const row=document.createElement('div'); row.className='row';
+  const btn=document.createElement('button'); btn.dataset.role='minimize'; btn.textContent='Minimize';
+  row.appendChild(btn); panel.insertBefore(row,panel.firstChild);
+  setPanelMinimize('pEditor');
+};
+
+loadProducts = async function(){
+  const qs=new URLSearchParams({query:$('#pQuery').value||'',category:$('#pCategory').value||'',brand:$('#pBrand').value||'',published:$('#pPublished').value||'',limit:'100'});
+  const d=await api('/api/admin/products?'+qs.toString());
+  const rows=d.products||[];
+  statusEl.textContent=`Products: ${rows.length}`;
+  $('#pBody').innerHTML='';
+  rows.forEach(p=>{const tr=document.createElement('tr'); if(p.id===selectedProductId) tr.style.outline='1px solid #d4af37'; tr.innerHTML=`<td>${p.image_path?`<img src="${esc(p.image_path)}" alt="${esc(p.name)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:'-'}</td><td>${esc(p.name)}</td><td>${esc(p.brand)}</td><td>${esc(p.category)}${p.subcategory?` / ${esc(p.subcategory)}`:''}</td><td>${Number(p.is_published)===1?'Yes':'No'}</td><td>${p.variant_count||0}</td><td>${p.total_inventory||0}</td><td><button>Edit</button></td>`; tr.querySelector('button').onclick=()=>openProductEditor(p.id); $('#pBody').appendChild(tr);});
+};
+
 $('#refreshBtn').onclick=()=>refresh().catch(e=>msg.textContent=e.message);
 $('#cSearch').onclick=()=>loadCustomers().catch(e=>msg.textContent=e.message); $('#oSearch').onclick=()=>loadOrders().catch(e=>msg.textContent=e.message);
 $('#tabDashboard').onclick=()=>{showTab('dashboard');loadDashboard().catch(e=>msg.textContent=e.message)};

@@ -216,6 +216,10 @@
 
     .group{margin-bottom:36px}
 
+    .subcat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+    .subcat-tab{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
+    .subcat-tab.active{background:#111;color:#fff;border-color:#111}
+
     /* ✅ group header now supports an optional logo */
     .group-head{
       display:flex;
@@ -485,6 +489,7 @@
       (<strong>N/A</strong> = <strong>NOT AVAILABLE</strong>)
     </div>
 
+    <div id="flowerTabs" class="subcat-tabs" aria-label="Flower subcategories"></div>
     <div id="menu"></div>
   </div>
 
@@ -742,6 +747,114 @@
       });
     }
 
+    const FLOWER_SUBCATEGORY_TABS = ["Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake", "All"];
+    const FLOWER_SUBCATEGORY_MAP = {
+      "ca$h rule$": "Cash Rules",
+      "cash rule": "Cash Rules",
+      "cash rules": "Cash Rules",
+      "bobby black exclusive": "Bobby Black Exclusives",
+      "bobby black exclusives": "Bobby Black Exclusives",
+      "loose lineup": "Loose Lineup",
+      "shake": "Shake",
+      "shakes": "Shake"
+    };
+
+    let d1FlowerItems = [];
+    let activeFlowerTab = "All";
+
+    function normalizeSubcategory(value){
+      const raw = String(value || "").trim();
+      if (!raw) return "Loose Lineup";
+      const mapped = FLOWER_SUBCATEGORY_MAP[raw.toLowerCase()];
+      return mapped || raw;
+    }
+
+    function buildFlowerTabs(){
+      const tabsEl = document.getElementById('flowerTabs');
+      tabsEl.innerHTML = '';
+      FLOWER_SUBCATEGORY_TABS.forEach((tab) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'subcat-tab' + (tab === activeFlowerTab ? ' active' : '');
+        btn.textContent = tab;
+        btn.onclick = () => {
+          activeFlowerTab = tab;
+          buildFlowerTabs();
+          renderD1FlowerList();
+        };
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function renderD1FlowerList(){
+      const container = document.getElementById('menu');
+      container.innerHTML = '';
+
+      const filtered = activeFlowerTab === 'All'
+        ? d1FlowerItems
+        : d1FlowerItems.filter((item) => normalizeSubcategory(item.subcategory) === activeFlowerTab);
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'muted';
+        empty.textContent = 'No products in this subcategory yet.';
+        container.appendChild(empty);
+        return;
+      }
+
+      const group = document.createElement('div');
+      group.className = 'group';
+      const head = document.createElement('div');
+      head.className = 'group-head';
+      const title = document.createElement('h2');
+      title.className = 'group-title';
+      title.textContent = activeFlowerTab === 'All' ? 'Flower' : activeFlowerTab;
+      head.appendChild(title);
+      group.appendChild(head);
+
+      filtered.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'item';
+        row.onclick = () => {
+          location.href = 'product.html?slug=' + encodeURIComponent(item.slug);
+        };
+
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        if (item.image_path) {
+          const img = document.createElement('img');
+          img.src = item.image_path;
+          img.alt = item.name;
+          img.loading = 'lazy';
+          thumb.appendChild(img);
+        } else {
+          const noImg = document.createElement('div');
+          noImg.className = 'noimg';
+          noImg.textContent = 'No Image';
+          thumb.appendChild(noImg);
+        }
+        row.appendChild(thumb);
+
+        const main = document.createElement('div');
+        main.className = 'item-main';
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = item.name;
+        main.appendChild(name);
+        const prices = document.createElement('div');
+        prices.className = 'prices';
+        const price = document.createElement('span');
+        price.className = 'price';
+        price.textContent = 'From: ' + (item.from_price_cents === null ? 'N/A' : '$' + (item.from_price_cents / 100).toFixed(2));
+        prices.appendChild(price);
+        main.appendChild(prices);
+        row.appendChild(main);
+        group.appendChild(row);
+      });
+
+      container.appendChild(group);
+    }
+
     function renderD1Menu(){
       fetch('/api/products?category=' + encodeURIComponent('Flower'), { cache: 'no-store' })
         .then(r => {
@@ -755,11 +868,13 @@
             renderStaticMenu();
             return;
           }
-          const container = document.getElementById('menu');
-          container.innerHTML = `<div class='group'><div class='group-head'><h2 class='group-title'>Flower</h2></div>${items.map(item => `<div class='item' onclick="location.href='product.html?slug=${encodeURIComponent(item.slug)}'"><div class='thumb'>${item.image_path ? `<img src='${item.image_path}' alt='${item.name}' loading='lazy'>` : `<div class='noimg'>No Image</div>`}</div><div class='item-main'><div class='item-name'>${item.name}</div><div class='prices'><span class='price'>From: ${item.from_price_cents === null ? 'N/A' : '$' + (item.from_price_cents/100).toFixed(2)}</span></div><div class='actions-row'><button class='btn view' onclick="event.stopPropagation();location.href='product.html?slug=${encodeURIComponent(item.slug)}'">View</button></div></div></div>`).join('')}</div>`;
+          d1FlowerItems = items;
+          buildFlowerTabs();
+          renderD1FlowerList();
         })
         .catch(err => {
           console.log('[storefront-fallback] D1 Flower request failed. Falling back to legacy static catalog.', err);
+          document.getElementById('flowerTabs').innerHTML = '';
           renderStaticMenu();
         });
     }
