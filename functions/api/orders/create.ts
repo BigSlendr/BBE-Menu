@@ -25,12 +25,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   try {
     const { orderId, pointsEarned, newTier, newPointsBalance } = await insertOrder({ db: env.DB, userId, payload });
-    return json({ ok: true, orderId, pointsEarned, newTier, newPointsBalance });
+    return json({ ok: true, success: true, orderId, pointsEarned, newTier, newPointsBalance });
   } catch (error) {
     if ((error as { statusCode?: number })?.statusCode === 400) {
-      return json({ ok: false, error: "user record missing" }, 400);
+      return json({ ok: false, success: false, error: "user record missing" }, 400);
     }
     console.error("[orders/create] failed to insert order", error);
-    return json({ ok: false, error: "failed to create order" }, 500);
+    return json({ ok: false, success: false, error: "Unable to save order", code: "ORDER_SAVE_FAILED" }, 500);
   }
 };

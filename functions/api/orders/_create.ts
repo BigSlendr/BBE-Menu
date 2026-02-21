@@ -10,9 +10,12 @@ export type CreateOrderPayload = {
   customer?: {
     name?: unknown;
     phone?: unknown;
+    email?: unknown;
     delivery_method?: unknown;
     address?: unknown;
   };
+  special_instructions?: unknown;
+  specialInstructions?: unknown;
 };
 
 interface InsertOrderParams {
@@ -61,16 +64,19 @@ export const computeOrderPointsEarned = (subtotalCents: number): number =>
   Math.floor(subtotalCents / 100) * 10;
 
 export const getCartPayload = (payload: CreateOrderPayload): unknown => {
-  if (payload.cart && typeof payload.cart === "object") return payload.cart;
-  if (Array.isArray(payload.cartItems)) return { items: payload.cartItems };
-  return null;
+  if (Array.isArray(payload.cartItems)) return payload.cartItems;
+  if (Array.isArray(payload.cart)) return payload.cart;
+  if (payload.cart && typeof payload.cart === "object" && Array.isArray((payload.cart as { items?: unknown }).items)) {
+    return (payload.cart as { items: unknown[] }).items;
+  }
+  return [];
 };
 
 export const validateCreateOrderPayload = (payload: CreateOrderPayload): string | null => {
   if (!payload || typeof payload !== "object") return "invalid payload";
 
   const cart = getCartPayload(payload);
-  if (!cart) return "cart is required";
+  if (!Array.isArray(cart) || cart.length < 1) return "cart is required";
 
   const subtotalCents = normalizeCents(payload.subtotal_cents, payload.subtotal);
   const totalCents = normalizeCents(payload.total_cents, payload.total);
@@ -105,8 +111,10 @@ export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): P
 
   const customerName = asString(payload.customer?.name) || null;
   const customerPhone = asString(payload.customer?.phone) || null;
+  const customerEmail = asString(payload.customer?.email) || null;
   const deliveryMethod = asString(payload.customer?.delivery_method) || null;
   const address = payload.customer?.address && typeof payload.customer.address === "object" ? payload.customer.address : null;
+  const specialInstructions = asString(payload.special_instructions ?? payload.specialInstructions) || null;
 
   const cart = getCartPayload(payload);
 
@@ -125,40 +133,43 @@ export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): P
   const newPointsBalance = Number(user.points_balance || 0) + pointsEarned;
   const newTier = computeTierFromLifetimeSpend(newLifetimeSpendCents);
 
-  await db
-    .prepare(
-      `INSERT INTO orders (
-        id,
-        user_id,
-        created_at,
-        status,
-        subtotal_cents,
-        tax_cents,
-        total_cents,
-        points_earned,
-        customer_name,
-        customer_phone,
-        delivery_method,
-        address_json,
-        cart_json
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      orderId,
-      userId,
-      nowIso,
-      status,
-      subtotalCents,
-      taxCents,
-      totalCents,
-      pointsEarned,
-      customerName,
-      customerPhone,
-      deliveryMethod,
-      address ? JSON.stringify(address) : null,
-      JSON.stringify(cart)
-    )
-    .run();
+  const orderColumns = await db.prepare("PRAGMA table_info(orders)").all<{ name: string }>();
+  const existingColumns = new Set((orderColumns.results || []).map((column) => column.name));
+
+  const orderRowValues: Record<string, unknown> = {
+    id: orderId,
+    user_id: userId,
+    created_at: nowIso,
+    status,
+    subtotal_cents: subtotalCents,
+    total_cents: totalCents,
+    points_earned: pointsEarned,
+    points_redeemed: 0,
+    credit_cents_used: 0,
+    tax_cents: taxCents,
+    customer_name: customerName,
+    customer_phone: customerPhone,
+    customer_email: customerEmail,
+    special_instructions: specialInstructions,
+    delivery_method: deliveryMethod,
+    address_json: address ? JSON.stringify(address) : null,
+    cart_json: JSON.stringify(cart),
+  };
+
+  const insertableEntries = Object.entries(orderRowValues).filter(([column]) => existingColumns.has(column));
+
+  const missingRequiredColumns = ["id", "user_id", "created_at", "status", "subtotal_cents", "total_cents", "points_earned", "cart_json"].filter(
+    (column) => !existingColumns.has(column)
+  );
+  if (missingRequiredColumns.length > 0) {
+    throw new Error(`orders table missing required columns: ${missingRequiredColumns.join(", ")}`);
+  }
+
+  const insertColumns = insertableEntries.map(([column]) => column).join(", ");
+  const insertPlaceholders = insertableEntries.map(() => "?").join(", ");
+  const insertValues = insertableEntries.map(([, value]) => value);
+
+  await db.prepare(`INSERT INTO orders (${insertColumns}) VALUES (${insertPlaceholders})`).bind(...insertValues).run();
 
   try {
     await db

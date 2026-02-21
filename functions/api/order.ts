@@ -240,6 +240,9 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   `;
 
   let orderDbId = "";
+  let pointsEarned = 0;
+  let newPointsBalance: number | null = null;
+  let newTier: string | null = null;
   try {
     const orderInsert = await insertOrder({
       db: env.DB,
@@ -252,19 +255,24 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
         customer: {
           name: customerName,
           phone: customerPhone,
+          email: customerEmail === "(not provided)" ? null : customerEmail,
           delivery_method: orderMethod === "delivery" ? "delivery" : "pickup",
           address: address,
         },
+        special_instructions: specialInstructions === "(none)" ? null : specialInstructions,
       },
     });
     orderDbId = orderInsert.orderId;
+    pointsEarned = orderInsert.pointsEarned;
+    newPointsBalance = orderInsert.newPointsBalance;
+    newTier = orderInsert.newTier;
   } catch (error) {
     if ((error as { statusCode?: number })?.statusCode === 400) {
-      return jsonResponse({ ok: false, error: "User record missing." }, 400);
+      return jsonResponse({ ok: false, success: false, error: "User record missing." }, 400);
     }
 
     console.error("[order] failed to insert order", error);
-    return jsonResponse({ ok: false, error: "Unable to save order." }, 500);
+    return jsonResponse({ ok: false, success: false, error: "Unable to save order", code: "ORDER_SAVE_FAILED" }, 500);
   }
 
   const resendResponse = await fetch("https://api.resend.com/emails", {
@@ -286,5 +294,14 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
     return jsonResponse({ ok: false, error: `Unable to send email: ${resendText || resendResponse.statusText}` }, 502);
   }
 
-  return jsonResponse({ ok: true, id: orderId, order_id: orderDbId }, 200);
+  return jsonResponse({
+    ok: true,
+    success: true,
+    id: orderId,
+    orderId: orderDbId || orderId,
+    order_id: orderDbId,
+    pointsEarned,
+    newPointsBalance,
+    newTier,
+  }, 200);
 };
