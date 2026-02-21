@@ -75,6 +75,7 @@
       <select id="pPublished"><option value="">All published</option><option value="1">Published</option><option value="0">Unpublished</option></select>
       <button id="pSearch">Search</button>
       <button id="pNew">New Product</button>
+      <button id="pImport">Import from Content JSON</button>
     </div>
     <div class="tableWrap"><table><thead><tr><th>Image</th><th>Name</th><th>Brand</th><th>Category</th><th>Published</th><th>Variants</th><th>Total inventory</th><th></th></tr></thead><tbody id="pBody"></tbody></table></div>
     <div id="pEditor" class="panel" style="display:none;"></div>
@@ -166,6 +167,25 @@ async function createProduct(){
   await loadProducts();
 }
 
+async function importProductsFromContent(){
+  const confirmed=confirm('Import products from content/products.json into D1? Existing products and variants will be upserted; inventory is not reset.');
+  if(!confirmed) return;
+  const result=await api('/api/admin/products/import-content',{method:'POST'});
+  const summary=[
+    `Products inserted: ${result.productsInserted||0}`,
+    `Products updated: ${result.productsUpdated||0}`,
+    `Variants inserted: ${result.variantsInserted||0}`,
+    `Variants updated: ${result.variantsUpdated||0}`,
+    `Skipped: ${result.skipped||0}`,
+    `Errors: ${Array.isArray(result.errors)?result.errors.length:0}`
+  ].join('\n');
+  alert('Import complete.\n\n'+summary);
+  if(Array.isArray(result.errors)&&result.errors.length){
+    console.error('Import errors',result.errors);
+  }
+  await loadProducts();
+}
+
 $('#unlockBtn').onclick=async()=>{try{setSecret($('#secret').value.trim()); msg.textContent=''; await refresh();}catch(e){msg.textContent=e.message}};
 $('#refreshBtn').onclick=()=>refresh().catch(e=>msg.textContent=e.message);
 $('#cSearch').onclick=()=>loadCustomers().catch(e=>msg.textContent=e.message); $('#oSearch').onclick=()=>loadOrders().catch(e=>msg.textContent=e.message);
@@ -176,6 +196,7 @@ $('#tabVerification').onclick=()=>{showTab('verification');loadVerification().ca
 $('#tabProducts').onclick=()=>{showTab('products');loadProducts().catch(e=>msg.textContent=e.message)};
 $('#pSearch').onclick=()=>loadProducts().catch(e=>msg.textContent=e.message);
 $('#pNew').onclick=()=>createProduct().catch(e=>msg.textContent=e.message);
+$('#pImport').onclick=()=>importProductsFromContent().catch(e=>msg.textContent=e.message);
 async function refresh(){if(!getSecret()) throw new Error('Enter ADMIN_SECRET and unlock.'); const active=document.querySelector('.section.active').id; if(active==='dashboard') await loadDashboard(); if(active==='customers') await loadCustomers(); if(active==='orders') await loadOrders(); if(active==='verification') await loadVerification(); if(active==='products') await loadProducts();}
 window.addEventListener('DOMContentLoaded',()=>{const s=getSecret(); if(s){$('#secret').value=s; refresh().catch(()=>{});}});
 </script>
