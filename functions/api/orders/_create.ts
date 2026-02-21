@@ -20,7 +20,7 @@ export type CreateOrderPayload = {
 
 interface InsertOrderParams {
   db: D1Database;
-  userId: string;
+  userId: string | null;
   payload: CreateOrderPayload;
 }
 
@@ -32,15 +32,14 @@ type UserRewardsSnapshot = {
 export type InsertOrderResult = {
   orderId: string;
   pointsEarned: number;
-  newTier: string;
-  newPointsBalance: number;
+  newTier: string | null;
+  newPointsBalance: number | null;
 };
 
 const asFiniteNumber = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null;
 
 const asString = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
-
 const toCents = (dollars: number): number => Math.round(dollars * 100);
 
 const normalizeCents = (centsValue: unknown, dollarsValue: unknown): number | null => {
@@ -60,8 +59,7 @@ export const computeTierFromLifetimeSpend = (lifetimeSpendCents: number): string
   return "member";
 };
 
-export const computeOrderPointsEarned = (subtotalCents: number): number =>
-  Math.floor(subtotalCents / 100) * 10;
+export const computeOrderPointsEarned = (subtotalCents: number): number => Math.floor(subtotalCents / 100) * 10;
 
 export const getCartPayload = (payload: CreateOrderPayload): unknown => {
   if (Array.isArray(payload.cartItems)) return payload.cartItems;
@@ -72,33 +70,6 @@ export const getCartPayload = (payload: CreateOrderPayload): unknown => {
   return [];
 };
 
-export const validateCreateOrderPayload = (payload: CreateOrderPayload): string | null => {
-  if (!payload || typeof payload !== "object") return "invalid payload";
-
-  const cart = getCartPayload(payload);
-  if (!Array.isArray(cart) || cart.length < 1) return "cart is required";
-
-  const subtotalCents = normalizeCents(payload.subtotal_cents, payload.subtotal);
-  const totalCents = normalizeCents(payload.total_cents, payload.total);
-  const customer = payload.customer;
-
-  if (subtotalCents === null) return "subtotal is required";
-  if (totalCents === null) return "total is required";
-  if (!customer || typeof customer !== "object") return "customer is required";
-
-  const customerName = asString(customer.name);
-  const customerPhone = asString(customer.phone);
-  const deliveryMethod = asString(customer.delivery_method);
-
-  if (!customerName) return "customer.name is required";
-  if (!customerPhone) return "customer.phone is required";
-  if (deliveryMethod !== "pickup" && deliveryMethod !== "delivery") {
-    return "customer.delivery_method must be pickup or delivery";
-  }
-
-  return null;
-};
-
 export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): Promise<InsertOrderResult> => {
   const orderId = crypto.randomUUID();
   const nowIso = new Date().toISOString();
@@ -107,7 +78,6 @@ export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): P
   const subtotalCents = normalizeCents(payload.subtotal_cents, payload.subtotal) ?? 0;
   const taxCents = normalizeCents(payload.tax_cents, payload.tax) ?? 0;
   const totalCents = normalizeCents(payload.total_cents, payload.total) ?? 0;
-  const pointsEarned = computeOrderPointsEarned(subtotalCents);
 
   const customerName = asString(payload.customer?.name) || null;
   const customerPhone = asString(payload.customer?.phone) || null;
@@ -115,23 +85,66 @@ export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): P
   const deliveryMethod = asString(payload.customer?.delivery_method) || null;
   const address = payload.customer?.address && typeof payload.customer.address === "object" ? payload.customer.address : null;
   const specialInstructions = asString(payload.special_instructions ?? payload.specialInstructions) || null;
-
   const cart = getCartPayload(payload);
 
-  const user = await db
-    .prepare(`SELECT points_balance, lifetime_spend_cents FROM users WHERE id = ?`)
-    .bind(userId)
-    .first<UserRewardsSnapshot>();
+  const pointsEarned = userId ? computeOrderPointsEarned(subtotalCents) : 0;
+  let newPointsBalance: number | null = null;
+  let newTier: string | null = null;
 
-  if (!user) {
-    const userError = new Error("user record missing");
-    (userError as Error & { statusCode?: number }).statusCode = 400;
-    throw userError;
+  if (userId) {
+    const user = await db
+      .prepare(`SELECT points_balance, lifetime_spend_cents FROM users WHERE id = ?`)
+      .bind(userId)
+      .first<UserRewardsSnapshot>();
+
+    if (!user) {
+      const userError = new Error("user record missing");
+      (userError as Error & { statusCode?: number }).statusCode = 400;
+      throw userError;
+    }
+
+    const newLifetimeSpendCents = Number(user.lifetime_spend_cents || 0) + subtotalCents;
+    newPointsBalance = Number(user.points_balance || 0) + pointsEarned;
+    newTier = computeTierFromLifetimeSpend(newLifetimeSpendCents);
+
+    await db
+      .prepare(
+        `UPDATE users
+         SET points_balance = points_balance + ?,
+             lifetime_spend_cents = lifetime_spend_cents + ?,
+             tier = ?,
+             last_activity_at = ?,
+             updated_at = ?
+         WHERE id = ?`
+      )
+      .bind(pointsEarned, subtotalCents, newTier, nowIso, nowIso, userId)
+      .run();
+
+    await db
+      .prepare(
+        `INSERT INTO points_ledger (
+          id,
+          user_id,
+          created_at,
+          type,
+          points_delta,
+          reason,
+          order_id,
+          meta_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .bind(
+        crypto.randomUUID(),
+        userId,
+        nowIso,
+        "earn",
+        pointsEarned,
+        "Order earned points",
+        orderId,
+        JSON.stringify({ rule: "10pts_per_$1", subtotal_cents: subtotalCents })
+      )
+      .run();
   }
-
-  const newLifetimeSpendCents = Number(user.lifetime_spend_cents || 0) + subtotalCents;
-  const newPointsBalance = Number(user.points_balance || 0) + pointsEarned;
-  const newTier = computeTierFromLifetimeSpend(newLifetimeSpendCents);
 
   const orderColumns = await db.prepare("PRAGMA table_info(orders)").all<{ name: string }>();
   const existingColumns = new Set((orderColumns.results || []).map((column) => column.name));
@@ -157,71 +170,11 @@ export const insertOrder = async ({ db, userId, payload }: InsertOrderParams): P
   };
 
   const insertableEntries = Object.entries(orderRowValues).filter(([column]) => existingColumns.has(column));
-
-  const missingRequiredColumns = ["id", "user_id", "created_at", "status", "subtotal_cents", "total_cents", "points_earned", "cart_json"].filter(
-    (column) => !existingColumns.has(column)
-  );
-  if (missingRequiredColumns.length > 0) {
-    throw new Error(`orders table missing required columns: ${missingRequiredColumns.join(", ")}`);
-  }
-
   const insertColumns = insertableEntries.map(([column]) => column).join(", ");
   const insertPlaceholders = insertableEntries.map(() => "?").join(", ");
   const insertValues = insertableEntries.map(([, value]) => value);
 
   await db.prepare(`INSERT INTO orders (${insertColumns}) VALUES (${insertPlaceholders})`).bind(...insertValues).run();
 
-  try {
-    await db
-      .prepare(
-        `INSERT INTO points_ledger (
-          id,
-          user_id,
-          created_at,
-          type,
-          points_delta,
-          reason,
-          order_id,
-          meta_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        crypto.randomUUID(),
-        userId,
-        nowIso,
-        "earn",
-        pointsEarned,
-        "Order earned points",
-        orderId,
-        JSON.stringify({ rule: "10pts_per_$1", subtotal_cents: subtotalCents })
-      )
-      .run();
-  } catch (error) {
-    console.error("[orders/create] points_ledger insert failed after order insert", {
-      orderId,
-      userId,
-      error,
-    });
-    throw new Error("failed to record points ledger for order");
-  }
-
-  await db
-    .prepare(
-      `UPDATE users
-       SET points_balance = points_balance + ?,
-           lifetime_spend_cents = lifetime_spend_cents + ?,
-           tier = ?,
-           last_activity_at = ?,
-           updated_at = ?
-       WHERE id = ?`
-    )
-    .bind(pointsEarned, subtotalCents, newTier, nowIso, nowIso, userId)
-    .run();
-
-  return {
-    orderId,
-    pointsEarned,
-    newTier,
-    newPointsBalance,
-  };
+  return { orderId, pointsEarned, newTier, newPointsBalance };
 };
