@@ -13,22 +13,48 @@ export const onRequestPost: PagesFunction = async (context) => {
   }
 
   const user_id = String(body?.user_id || "").trim();
-  const action = String(body?.action || "").trim();
+  const action = String(body?.action || "").trim().toLowerCase();
+  const reason = body?.reason == null ? null : String(body.reason).trim() || null;
 
   if (!user_id) return json({ error: "user_id required" }, 400);
-  if (action !== "approve" && action !== "reject") {
-    return json({ error: "action must be approve|reject" }, 400);
+  if (!["approve", "deny", "pending", "reject"].includes(action)) {
+    return json({ error: "action must be approve|deny|pending" }, 400);
   }
-
-  const status = action === "approve" ? "approved" : "rejected";
 
   const db = env.DB as D1Database;
   const now = new Date().toISOString();
+  const adminId: string | null = null;
+
+  let accountStatus: "approved" | "denied" | "pending";
+  if (action === "approve") {
+    accountStatus = "approved";
+  } else if (action === "deny" || action === "reject") {
+    accountStatus = "denied";
+  } else {
+    accountStatus = "pending";
+  }
+
+  const verifiedAt = accountStatus === "approved" ? now : null;
+  const verifiedByAdminId = accountStatus === "approved" ? adminId : null;
+  const statusReason = accountStatus === "denied" ? reason : null;
+
+  await db
+    .prepare(
+      `UPDATE users
+       SET account_status = ?,
+           verified_at = ?,
+           verified_by_admin_id = ?,
+           status_reason = ?,
+           updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(accountStatus, verifiedAt, verifiedByAdminId, statusReason, now, user_id)
+    .run();
 
   await db
     .prepare("UPDATE user_verification SET status = ?, updated_at = ? WHERE user_id = ?")
-    .bind(status, now, user_id)
+    .bind(accountStatus, now, user_id)
     .run();
 
-  return json({ ok: true });
+  return json({ ok: true, account_status: accountStatus, verified_at: verifiedAt, status_reason: statusReason });
 };

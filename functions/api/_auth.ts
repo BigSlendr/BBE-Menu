@@ -36,11 +36,11 @@ export async function getSessionUserId(request: Request, env: any): Promise<stri
 export async function getVerificationStatus(userId: string, env: any): Promise<string> {
   const db = env.DB as D1Database;
   const row = await db
-    .prepare("SELECT status FROM user_verification WHERE user_id = ?")
+    .prepare("SELECT account_status FROM users WHERE id = ?")
     .bind(userId)
-    .first<{ status?: string }>();
+    .first<{ account_status?: string }>();
 
-  return row?.status || "unverified";
+  return row?.account_status || "pending";
 }
 
 export function requireAdmin(request: Request, env: any): boolean {
