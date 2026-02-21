@@ -736,6 +736,7 @@
 
     const id = getId();
     const slug = getSlug();
+    const d1LookupKey = slug || id;
     const USE_D1_PRODUCTS = (window.BBE_USE_D1_PRODUCTS ?? localStorage.getItem('bbe_use_d1_products') !== 'false');
     if(!id && !slug){
       window.location.replace("flower.html");
@@ -1080,8 +1081,8 @@
     }
 
     function loadD1Product(){
-      fetch('/api/products/' + encodeURIComponent(slug), { cache: 'no-store' })
-        .then(r=>{ if(!r.ok) throw new Error('D1 product not found'); return r.json(); })
+      fetch('/api/products/' + encodeURIComponent(d1LookupKey), { cache: 'no-store' })
+        .then(r=>{ if(!r.ok) throw new Error('D1 product not found: ' + r.status); return r.json(); })
         .then(data=>{
           const p = data.product;
           renderProduct({
@@ -1094,12 +1095,12 @@
           });
         })
         .catch((err)=>{
-          console.error('D1 product failed, falling back to static', err);
+          console.log('[storefront-fallback] D1 product lookup failed or missing. Falling back to legacy product lookup by id.', err);
           loadStaticProduct();
         });
     }
 
-    if (USE_D1_PRODUCTS && slug) loadD1Product();
+    if (USE_D1_PRODUCTS && d1LookupKey) loadD1Product();
     else loadStaticProduct();
   </script>
 
