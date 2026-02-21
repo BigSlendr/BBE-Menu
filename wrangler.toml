@@ -1,0 +1,7 @@
+# Wrangler configuration
+# Keep existing database_name/database_id values if this project already has a D1 database configured.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "<keep existing>"
+database_id = "<keep existing>"
