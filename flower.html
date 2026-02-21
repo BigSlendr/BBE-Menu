@@ -747,26 +747,43 @@
       });
     }
 
-    const FLOWER_SUBCATEGORY_TABS = ["Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake", "All"];
+    const FLOWER_GROUP_ORDER = ["Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake"];
+    const FLOWER_SUBCATEGORY_TABS = ["All", ...FLOWER_GROUP_ORDER];
     const FLOWER_SUBCATEGORY_MAP = {
-      "ca$h rule$": "Cash Rules",
-      "cash rule": "Cash Rules",
-      "cash rules": "Cash Rules",
-      "bobby black exclusive": "Bobby Black Exclusives",
-      "bobby black exclusives": "Bobby Black Exclusives",
       "loose lineup": "Loose Lineup",
-      "shake": "Shake",
-      "shakes": "Shake"
+      "cash rule$": "Cash Rules",
+      "shakes": "Shake",
+      "bobby black exclusives": "Bobby Black Exclusives"
     };
 
     let d1FlowerItems = [];
     let activeFlowerTab = "All";
+    let flowerGroups = new Map();
 
     function normalizeSubcategory(value){
       const raw = String(value || "").trim();
-      if (!raw) return "Loose Lineup";
+      if (!raw) return "Other";
       const mapped = FLOWER_SUBCATEGORY_MAP[raw.toLowerCase()];
-      return mapped || raw;
+      return mapped || "Other";
+    }
+
+    function buildFlowerGroups(items){
+      const grouped = new Map(FLOWER_GROUP_ORDER.map((name) => [name, []]));
+      let hasOther = false;
+
+      items.forEach((item) => {
+        const groupName = normalizeSubcategory(item.subcategory);
+        if (!grouped.has(groupName)) {
+          if (!grouped.has('Other')) grouped.set('Other', []);
+          hasOther = true;
+        }
+        grouped.get(groupName).push(item);
+      });
+
+      if (hasOther && !grouped.has('Other')) grouped.set('Other', []);
+      if (grouped.has('Other') && grouped.get('Other').length === 0) grouped.delete('Other');
+
+      return grouped;
     }
 
     function buildFlowerTabs(){
@@ -776,11 +793,18 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'subcat-tab' + (tab === activeFlowerTab ? ' active' : '');
+        btn.setAttribute('aria-current', tab === activeFlowerTab ? 'true' : 'false');
         btn.textContent = tab;
         btn.onclick = () => {
           activeFlowerTab = tab;
           buildFlowerTabs();
           renderD1FlowerList();
+          if (activeFlowerTab !== 'All') {
+            const selectedGroup = document.querySelector(`[data-flower-group="${activeFlowerTab}"]`);
+            if (selectedGroup) {
+              selectedGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
         };
         tabsEl.appendChild(btn);
       });
@@ -790,29 +814,31 @@
       const container = document.getElementById('menu');
       container.innerHTML = '';
 
-      const filtered = activeFlowerTab === 'All'
-        ? d1FlowerItems
-        : d1FlowerItems.filter((item) => normalizeSubcategory(item.subcategory) === activeFlowerTab);
-
-      if (!filtered.length) {
+      if (!flowerGroups.size) {
         const empty = document.createElement('div');
         empty.className = 'muted';
-        empty.textContent = 'No products in this subcategory yet.';
+        empty.textContent = 'No products in this category yet.';
         container.appendChild(empty);
         return;
       }
 
-      const group = document.createElement('div');
-      group.className = 'group';
-      const head = document.createElement('div');
-      head.className = 'group-head';
-      const title = document.createElement('h2');
-      title.className = 'group-title';
-      title.textContent = activeFlowerTab === 'All' ? 'Flower' : activeFlowerTab;
-      head.appendChild(title);
-      group.appendChild(head);
+      flowerGroups.forEach((items, groupName) => {
+        if (!items.length) return;
+        if (activeFlowerTab !== 'All' && activeFlowerTab !== groupName) return;
 
-      filtered.forEach((item) => {
+        const group = document.createElement('div');
+        group.className = 'group';
+        group.dataset.flowerGroup = groupName;
+
+        const head = document.createElement('div');
+        head.className = 'group-head';
+        const title = document.createElement('h2');
+        title.className = 'group-title';
+        title.textContent = groupName;
+        head.appendChild(title);
+        group.appendChild(head);
+
+        items.forEach((item) => {
         const row = document.createElement('div');
         row.className = 'item';
         row.onclick = () => {
@@ -848,11 +874,13 @@
         price.textContent = 'From: ' + (item.from_price_cents === null ? 'N/A' : '$' + (item.from_price_cents / 100).toFixed(2));
         prices.appendChild(price);
         main.appendChild(prices);
+
         row.appendChild(main);
         group.appendChild(row);
       });
 
-      container.appendChild(group);
+        container.appendChild(group);
+      });
     }
 
     function renderD1Menu(){
@@ -869,6 +897,7 @@
             return;
           }
           d1FlowerItems = items;
+          flowerGroups = buildFlowerGroups(d1FlowerItems);
           buildFlowerTabs();
           renderD1FlowerList();
         })
