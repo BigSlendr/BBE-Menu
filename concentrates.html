@@ -579,13 +579,21 @@
 
     function renderD1Menu(){
       fetch('/api/products?category=' + encodeURIComponent('Concentrates'), { cache: 'no-store' })
-        .then(r=>r.json())
+        .then(r=>{
+          if (!r.ok) throw new Error('D1 category request failed: ' + r.status);
+          return r.json();
+        })
         .then(data=>{
           const items=data.products||[];
+          if(!items.length){
+            console.log('[storefront-fallback] D1 Concentrates catalog is empty. Falling back to legacy static catalog.');
+            renderStaticMenu();
+            return;
+          }
           const container=document.getElementById('menu');
           container.innerHTML=`<div class='group'><div class='group-title'>Concentrates</div>${items.map(item=>`<div class='item' onclick="location.href='product.html?slug=${encodeURIComponent(item.slug)}'"><div class='thumb'>${item.image_path?`<img src='${item.image_path}' alt='${item.name}'>`:"<div class='noimg'>No Image</div>"}</div><div class='item-main'><div class='item-name'>${item.name}</div><div class='prices'><span class='price'>From: ${item.from_price_cents===null?'N/A':'$'+(item.from_price_cents/100).toFixed(2)}</span></div><div class='actions-row'><button class='btn view' onclick="event.stopPropagation();location.href='product.html?slug=${encodeURIComponent(item.slug)}'">View</button></div></div></div>`).join('')}</div>`;
         })
-        .catch((err)=>{console.error('D1 products failed, using static fallback', err);renderStaticMenu();});
+        .catch((err)=>{console.log('[storefront-fallback] D1 Concentrates request failed. Falling back to legacy static catalog.', err);renderStaticMenu();});
     }
 
     if (USE_D1_PRODUCTS) renderD1Menu(); else renderStaticMenu();
