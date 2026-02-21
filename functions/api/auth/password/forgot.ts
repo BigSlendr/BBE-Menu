@@ -1,4 +1,4 @@
-import { json, uuid } from "../_utils";
+import { uuid } from "../_utils";
 
 const RESET_WINDOW_MINUTES = 30;
 const THROTTLE_WINDOW_MS = 15 * 60 * 1000;
@@ -8,56 +8,84 @@ const THROTTLE_LIMIT_PER_EMAIL = 3;
 export const onRequestPost: PagesFunction = async (context) => {
   const { request, env } = context;
   const db = env.DB as D1Database;
+  const responseHeaders = new Headers({
+    "X-BB-Reset-UserFound": "0",
+    "X-BB-Reset-Inserted": "0",
+  });
 
-  if (!db) return json({ ok: true });
+  if (!db) return okResponse(responseHeaders);
 
   try {
     let body: any;
     try {
       body = await request.json();
     } catch {
-      return json({ ok: true });
+      body = {};
     }
 
-    const email = String(body?.email || "").trim().toLowerCase();
+    const email = String(body?.email ?? body?.Email ?? "").trim().toLowerCase();
     const ip = getIpAddress(request);
     const userAgent = (request.headers.get("user-agent") || "").slice(0, 512);
 
-    if (!email || !email.includes("@")) return json({ ok: true });
+    if (!email || !email.includes("@")) return okResponse(responseHeaders);
 
     const now = new Date();
     const throttledIp = await isThrottled(db, "ip", ip || "unknown", now, THROTTLE_LIMIT_PER_IP);
     const throttledEmail = await isThrottled(db, "email", email, now, THROTTLE_LIMIT_PER_EMAIL);
     if (throttledIp || throttledEmail) {
       console.log("[auth/password/forgot] throttled request", { ipPresent: Boolean(ip), emailDomain: email.split("@")[1] || "" });
-      return json({ ok: true });
+      return okResponse(responseHeaders);
     }
 
-    const user = await db.prepare("SELECT id FROM users WHERE email = ?").bind(email).first<{ id: string }>();
-    if (!user?.id) return json({ ok: true });
+    const user = await db
+      .prepare("SELECT id, email FROM users WHERE lower(email)=? LIMIT 1")
+      .bind(email)
+      .first<{ id: string; email: string }>();
+
+    if (!user?.id) return okResponse(responseHeaders);
+    responseHeaders.set("X-BB-Reset-UserFound", "1");
 
     const token = randomToken(32);
     const tokenHash = await sha256Hex(token);
     const createdAt = now.toISOString();
     const expiresAt = new Date(now.getTime() + RESET_WINDOW_MINUTES * 60 * 1000).toISOString();
 
-    await db
-      .prepare(
-        `INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, used_at, created_at, request_ip, user_agent)
-         VALUES (?, ?, ?, ?, NULL, ?, ?, ?)`
-      )
-      .bind(uuid(), user.id, tokenHash, expiresAt, createdAt, ip, userAgent)
-      .run();
+    try {
+      await env.DB
+        .prepare(
+          `INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, created_at, request_ip, user_agent)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(uuid(), user.id, tokenHash, expiresAt, createdAt, ip, userAgent)
+        .run();
+      responseHeaders.set("X-BB-Reset-Inserted", "1");
+    } catch (error) {
+      console.error("reset insert failed", error);
+      responseHeaders.set("X-BB-Reset-Inserted", "0");
+    }
 
     const resetUrl = `https://bobbyblacknyc.com/reset-password?token=${encodeURIComponent(token)}`;
     await sendPasswordResetEmail(env, email, resetUrl);
 
-    return json({ ok: true });
+    return okResponse(responseHeaders);
   } catch (err) {
     console.error("[auth/password/forgot] error", err);
-    return json({ ok: true });
+    return okResponse(responseHeaders);
   }
 };
+
+function okResponse(headers: Headers) {
+  const merged = new Headers({
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+  });
+  headers.forEach((value, key) => merged.set(key, value));
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: merged,
+  });
+}
 
 function getIpAddress(request: Request) {
   const cfIp = request.headers.get("cf-connecting-ip");
