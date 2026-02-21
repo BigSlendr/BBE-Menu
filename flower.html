@@ -216,9 +216,58 @@
 
     .group{margin-bottom:36px}
 
-    .subcat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
-    .subcat-tab{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
+    .subcat-tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:10px 0 18px;
+      position:sticky;
+      top:var(--sticky-offset, 126px);
+      z-index:980;
+      background:var(--bg);
+      padding:10px 0 12px;
+    }
+    .subcat-tab{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer}
     .subcat-tab.active{background:#111;color:#fff;border-color:#111}
+
+    .accordion{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      margin-bottom:14px;
+      overflow:hidden;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+    }
+    .accordion-header{
+      width:100%;
+      border:none;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px;
+      min-height:62px;
+      font:inherit;
+      cursor:pointer;
+      text-align:left;
+    }
+    .accordion-header:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+    .accordion-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .accordion-title{font-size:18px;font-weight:900}
+    .accordion-count{font-size:13px;color:var(--muted);font-weight:700}
+    .accordion-chevron{font-size:22px;line-height:1;transition:transform .25s ease}
+    .accordion.open .accordion-chevron{transform:rotate(180deg)}
+    .accordion-content{
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      transition:max-height .35s ease, opacity .25s ease;
+      padding:0 12px;
+    }
+    .accordion.open .accordion-content{opacity:1}
+    .accordion-items{padding-bottom:12px}
+
+    .accordion{scroll-margin-top:calc(var(--sticky-offset, 126px) + 68px)}
 
     /* ✅ group header now supports an optional logo */
     .group-head{
@@ -747,63 +796,81 @@
       });
     }
 
-    const FLOWER_GROUP_ORDER = ["Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake"];
-    const FLOWER_SUBCATEGORY_TABS = ["All", ...FLOWER_GROUP_ORDER];
-    const FLOWER_SUBCATEGORY_MAP = {
-      "loose lineup": "Loose Lineup",
-      "cash rule$": "Cash Rules",
-      "shakes": "Shake",
-      "bobby black exclusives": "Bobby Black Exclusives"
-    };
+    const FLOWER_GROUP_ORDER = ["Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake", "Other"];
+    const FLOWER_PILL_ORDER = ["All", "Cash Rules", "Bobby Black Exclusives", "Loose Lineup", "Shake"];
+    const FLOWER_DEFAULT_OPEN_GROUP = "Loose Lineup";
 
     let d1FlowerItems = [];
     let activeFlowerTab = "All";
     let flowerGroups = new Map();
+    let openFlowerGroup = FLOWER_DEFAULT_OPEN_GROUP;
+
+    function syncStickyOffset(){
+      const header = document.querySelector('.bb-header');
+      const top = header ? header.offsetHeight : 120;
+      document.documentElement.style.setProperty('--sticky-offset', top + 'px');
+    }
 
     function normalizeSubcategory(value){
-      const raw = String(value || "").trim();
-      if (!raw) return "Other";
-      const mapped = FLOWER_SUBCATEGORY_MAP[raw.toLowerCase()];
-      return mapped || "Other";
+      const raw = String(value || "").toLowerCase();
+      if (raw.includes('cash')) return 'Cash Rules';
+      if (raw.includes('bobby')) return 'Bobby Black Exclusives';
+      if (raw.includes('loose')) return 'Loose Lineup';
+      if (raw.includes('shake')) return 'Shake';
+      return 'Other';
     }
 
     function buildFlowerGroups(items){
       const grouped = new Map(FLOWER_GROUP_ORDER.map((name) => [name, []]));
-      let hasOther = false;
-
       items.forEach((item) => {
         const groupName = normalizeSubcategory(item.subcategory);
-        if (!grouped.has(groupName)) {
-          if (!grouped.has('Other')) grouped.set('Other', []);
-          hasOther = true;
-        }
         grouped.get(groupName).push(item);
       });
 
-      if (hasOther && !grouped.has('Other')) grouped.set('Other', []);
-      if (grouped.has('Other') && grouped.get('Other').length === 0) grouped.delete('Other');
-
+      if (!grouped.get('Other').length) grouped.delete('Other');
       return grouped;
+    }
+
+    function getPillCount(tab){
+      if (tab === 'All') {
+        let count = 0;
+        flowerGroups.forEach((items) => { count += items.length; });
+        return count;
+      }
+      return (flowerGroups.get(tab) || []).length;
+    }
+
+    function setOpenFlowerGroup(nextGroup){
+      openFlowerGroup = nextGroup;
+      const accordions = document.querySelectorAll('.accordion');
+      accordions.forEach((accordion) => {
+        const groupName = accordion.getAttribute('data-flower-group');
+        const content = accordion.querySelector('.accordion-content');
+        const isOpen = groupName === openFlowerGroup;
+        accordion.classList.toggle('open', isOpen);
+        if (!content) return;
+        content.style.maxHeight = isOpen ? (content.scrollHeight + 8) + 'px' : '0px';
+      });
     }
 
     function buildFlowerTabs(){
       const tabsEl = document.getElementById('flowerTabs');
       tabsEl.innerHTML = '';
-      FLOWER_SUBCATEGORY_TABS.forEach((tab) => {
+      FLOWER_PILL_ORDER.forEach((tab) => {
+        const count = getPillCount(tab);
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'subcat-tab' + (tab === activeFlowerTab ? ' active' : '');
         btn.setAttribute('aria-current', tab === activeFlowerTab ? 'true' : 'false');
-        btn.textContent = tab;
+        btn.textContent = `${tab} (${count})`;
         btn.onclick = () => {
           activeFlowerTab = tab;
+          openFlowerGroup = tab === 'All' ? FLOWER_DEFAULT_OPEN_GROUP : tab;
           buildFlowerTabs();
           renderD1FlowerList();
-          if (activeFlowerTab !== 'All') {
-            const selectedGroup = document.querySelector(`[data-flower-group="${activeFlowerTab}"]`);
-            if (selectedGroup) {
-              selectedGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+          if (tab !== 'All') {
+            const selectedGroup = document.getElementById('section-' + tab.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+            if (selectedGroup) selectedGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         };
         tabsEl.appendChild(btn);
@@ -814,7 +881,11 @@
       const container = document.getElementById('menu');
       container.innerHTML = '';
 
-      if (!flowerGroups.size) {
+      const visibleGroups = FLOWER_GROUP_ORDER
+        .filter((groupName) => flowerGroups.has(groupName))
+        .map((groupName) => [groupName, flowerGroups.get(groupName)]);
+
+      if (!visibleGroups.length) {
         const empty = document.createElement('div');
         empty.className = 'muted';
         empty.textContent = 'No products in this category yet.';
@@ -822,69 +893,98 @@
         return;
       }
 
-      flowerGroups.forEach((items, groupName) => {
+      visibleGroups.forEach(([groupName, items]) => {
         if (!items.length) return;
-        if (activeFlowerTab !== 'All' && activeFlowerTab !== groupName) return;
 
-        const group = document.createElement('div');
-        group.className = 'group';
-        group.dataset.flowerGroup = groupName;
+        const accordion = document.createElement('section');
+        accordion.className = 'accordion';
+        accordion.dataset.flowerGroup = groupName;
+        accordion.id = 'section-' + groupName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-        const head = document.createElement('div');
-        head.className = 'group-head';
-        const title = document.createElement('h2');
-        title.className = 'group-title';
+        const header = document.createElement('button');
+        header.type = 'button';
+        header.className = 'accordion-header';
+
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'accordion-title-row';
+        const title = document.createElement('span');
+        title.className = 'accordion-title';
         title.textContent = groupName;
-        head.appendChild(title);
-        group.appendChild(head);
+        const count = document.createElement('span');
+        count.className = 'accordion-count';
+        count.textContent = `(${items.length})`;
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(count);
 
-        items.forEach((item) => {
-        const row = document.createElement('div');
-        row.className = 'item';
-        row.onclick = () => {
-          location.href = 'product.html?slug=' + encodeURIComponent(item.slug);
+        const chevron = document.createElement('span');
+        chevron.className = 'accordion-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.textContent = '⌄';
+
+        header.appendChild(titleWrap);
+        header.appendChild(chevron);
+
+        const content = document.createElement('div');
+        content.className = 'accordion-content';
+        const itemsWrap = document.createElement('div');
+        itemsWrap.className = 'accordion-items';
+
+        header.onclick = () => {
+          setOpenFlowerGroup(openFlowerGroup === groupName ? '' : groupName);
         };
 
-        const thumb = document.createElement('div');
-        thumb.className = 'thumb';
-        if (item.image_path) {
-          const img = document.createElement('img');
-          img.src = item.image_path;
-          img.alt = item.name;
-          img.loading = 'lazy';
-          thumb.appendChild(img);
-        } else {
-          const noImg = document.createElement('div');
-          noImg.className = 'noimg';
-          noImg.textContent = 'No Image';
-          thumb.appendChild(noImg);
-        }
-        row.appendChild(thumb);
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'item';
+          row.onclick = () => {
+            location.href = 'product.html?slug=' + encodeURIComponent(item.slug);
+          };
 
-        const main = document.createElement('div');
-        main.className = 'item-main';
-        const name = document.createElement('div');
-        name.className = 'item-name';
-        name.textContent = item.name;
-        main.appendChild(name);
-        const prices = document.createElement('div');
-        prices.className = 'prices';
-        const price = document.createElement('span');
-        price.className = 'price';
-        price.textContent = 'From: ' + (item.from_price_cents === null ? 'N/A' : '$' + (item.from_price_cents / 100).toFixed(2));
-        prices.appendChild(price);
-        main.appendChild(prices);
+          const thumb = document.createElement('div');
+          thumb.className = 'thumb';
+          if (item.image_path) {
+            const img = document.createElement('img');
+            img.src = item.image_path;
+            img.alt = item.name;
+            img.loading = 'lazy';
+            thumb.appendChild(img);
+          } else {
+            const noImg = document.createElement('div');
+            noImg.className = 'noimg';
+            noImg.textContent = 'No Image';
+            thumb.appendChild(noImg);
+          }
+          row.appendChild(thumb);
 
-        row.appendChild(main);
-        group.appendChild(row);
+          const main = document.createElement('div');
+          main.className = 'item-main';
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = item.name;
+          main.appendChild(name);
+          const prices = document.createElement('div');
+          prices.className = 'prices';
+          const price = document.createElement('span');
+          price.className = 'price';
+          price.textContent = 'From: ' + (item.from_price_cents === null ? 'N/A' : '$' + (item.from_price_cents / 100).toFixed(2));
+          prices.appendChild(price);
+          main.appendChild(prices);
+
+          row.appendChild(main);
+          itemsWrap.appendChild(row);
+        });
+
+        content.appendChild(itemsWrap);
+        accordion.appendChild(header);
+        accordion.appendChild(content);
+        container.appendChild(accordion);
       });
 
-        container.appendChild(group);
-      });
+      setOpenFlowerGroup(openFlowerGroup || FLOWER_DEFAULT_OPEN_GROUP);
     }
 
     function renderD1Menu(){
-      fetch('/api/products?category=' + encodeURIComponent('Flower'), { cache: 'no-store' })
+      fetch('/api/products?category=' + encodeURIComponent('Flower') + '&is_published=1', { cache: 'no-store' })
         .then(r => {
           if (!r.ok) throw new Error('D1 category request failed: ' + r.status);
           return r.json();
@@ -898,6 +998,7 @@
           }
           d1FlowerItems = items;
           flowerGroups = buildFlowerGroups(d1FlowerItems);
+          openFlowerGroup = FLOWER_DEFAULT_OPEN_GROUP;
           buildFlowerTabs();
           renderD1FlowerList();
         })
@@ -907,6 +1008,9 @@
           renderStaticMenu();
         });
     }
+
+    syncStickyOffset();
+    window.addEventListener('resize', syncStickyOffset);
 
     if (USE_D1_PRODUCTS) renderD1Menu(); else renderStaticMenu();
   </script>
