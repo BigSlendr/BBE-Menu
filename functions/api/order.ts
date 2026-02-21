@@ -134,13 +134,11 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   }
 
   const userId = await getSessionUserId(request, env);
-  if (!userId) {
-    return json({ error: "Unauthorized" }, 401);
-  }
-
-  const verificationStatus = await getVerificationStatus(userId, env);
-  if (verificationStatus !== "approved") {
-    return json({ error: "Verification required" }, 403);
+  if (userId) {
+    const verificationStatus = await getVerificationStatus(userId, env);
+    if (verificationStatus !== "approved") {
+      return json({ error: "Verification required" }, 403);
+    }
   }
 
   let payload: OrderPayload;

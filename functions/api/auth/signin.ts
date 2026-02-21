@@ -19,13 +19,14 @@ export const onRequestPost: PagesFunction = async (context) => {
     if (!email || !password) return json({ error: "Email and password required" }, 400);
 
     const user = await db.prepare(
-      "SELECT id, password_hash FROM users WHERE email = ?"
+      "SELECT id, password_hash, COALESCE(is_active, 1) AS is_active FROM users WHERE email = ?"
     ).bind(email).first<any>();
 
     if (!user) return json({ error: "Invalid credentials" }, 401);
 
     const ok = await verifyPassword(password, user.password_hash);
     if (!ok) return json({ error: "Invalid credentials" }, 401);
+    if (Number(user.is_active) === 0) return json({ ok: false, error: "account_deactivated" }, 403);
 
     const sessionId = uuid();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();

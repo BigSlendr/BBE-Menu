@@ -3,442 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bobby Black — Admin</title>
+  <title>Bobby Black — Admin CSM</title>
   <style>
-    body { margin:0; background:#000; color:#fff; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-    .wrap { max-width:1200px; margin:0 auto; padding:18px; }
-    h1 { margin:0 0 14px; font-size:24px; }
+    body { margin:0; background:#050505; color:#f1f1f1; font-family:Inter,system-ui,sans-serif; }
+    .wrap { max-width:1300px; margin:0 auto; padding:20px; }
     .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .toolbar { margin-bottom:12px; }
-    input, select { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#0b0b0b; color:#fff; }
-    input[type="password"] { min-width:280px; }
-    button { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; }
-    button:hover { background:#1a1a1a; }
-    button:disabled { opacity:.55; cursor:not-allowed; }
-    .muted { color:#bdbdbd; }
-    .err { color:#ffb3b3; white-space:pre-wrap; word-break:break-word; margin:10px 0; min-height:20px; }
-    .tabs { display:flex; gap:8px; margin:12px 0; }
-    .tab.active { border-color:#fff; }
-    .section { display:none; }
+    input,select,button,textarea { background:#101010; color:#fff; border:1px solid #463a18; border-radius:10px; padding:10px; }
+    button { cursor:pointer; }
+    .tab.active { border-color:#d4af37; color:#d4af37; }
+    .section { display:none; margin-top:12px; }
     .section.active { display:block; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:12px; margin-top:14px; }
-    .card, .panel { background:#0b0b0b; border:1px solid #222; border-radius:14px; padding:14px; }
-    .card h3, .panel h3 { margin:0 0 8px; font-size:16px; }
-    .pill { display:inline-flex; padding:4px 8px; border:1px solid #2a2a2a; border-radius:999px; font-size:12px; color:#ddd; background:#070707; }
-    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    .btnGood { border-color:#1f3; }
-    .btnBad { border-color:#f33; }
-    .btnWarn { border-color:#bbb; }
-    .tableWrap { overflow:auto; margin-top:12px; border:1px solid #222; border-radius:12px; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+    .card,.panel { background:#0c0c0c; border:1px solid #3d3214; border-radius:12px; padding:12px; }
+    .tableWrap { overflow:auto; border:1px solid #3d3214; border-radius:12px; margin-top:10px; }
     table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px; border-bottom:1px solid #1c1c1c; text-align:left; font-size:14px; }
-    th { color:#ddd; background:#090909; position:sticky; top:0; }
-    tr:hover td { background:#0f0f0f; }
-    .empty { margin-top:12px; color:#9e9e9e; }
-
-    #detailModal { position:fixed; inset:0; display:none; align-items:flex-start; justify-content:center; overflow:auto; background:rgba(0,0,0,.8); padding:24px; z-index:9999; }
-    #detailModal .box { width:100%; max-width:960px; background:#070707; border:1px solid #222; border-radius:16px; padding:14px; }
-    .split { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .kv { margin:0; display:grid; grid-template-columns:150px 1fr; gap:8px; font-size:14px; }
-    .kv dt { color:#a8a8a8; }
-    .kv dd { margin:0; }
-    @media (max-width:900px) { .split { grid-template-columns:1fr; } .kv { grid-template-columns:120px 1fr; } }
+    th,td { padding:8px; border-bottom:1px solid #282117; text-align:left; }
+    .pill { padding:2px 8px; border:1px solid #5b4a1f; border-radius:999px; font-size:12px; display:inline-block; }
+    #customerDetail,#orderDetail { margin-top:10px; }
+    .muted { color:#b8b8b8; }
+    .err { color:#ff9696; min-height:20px; margin:8px 0; }
+    .tags { display:flex; gap:6px; flex-wrap:wrap; }
+    .tag { border:1px solid #6b5724; border-radius:999px; padding:4px 8px; }
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <h1>Admin — Customer Dashboard</h1>
+<body><div class="wrap">
+  <h1>Admin Workspace</h1>
+  <div class="row">
+    <input id="secret" type="password" placeholder="ADMIN_SECRET" />
+    <button id="unlockBtn">Unlock</button>
+    <button id="refreshBtn">Refresh</button>
+    <span id="status" class="muted"></span>
+  </div>
+  <div id="msg" class="err"></div>
 
-    <div class="row toolbar">
-      <input id="secret" type="password" placeholder="ADMIN_SECRET" />
-      <button id="unlockBtn" type="button">Unlock</button>
-      <button id="refreshBtn" type="button">Refresh</button>
-      <span id="status" class="muted"></span>
-    </div>
-
-    <div id="msg" class="err"></div>
-
-    <div class="tabs">
-      <button id="tabQueue" class="tab active" type="button">Verification Queue</button>
-      <button id="tabCustomers" class="tab" type="button">Customers</button>
-    </div>
-
-    <section id="queueSection" class="section active">
-      <div id="queueList" class="grid"></div>
-      <div id="queueEmpty" class="empty" style="display:none;">No records</div>
-    </section>
-
-    <section id="customersSection" class="section">
-      <div class="row">
-        <input id="customerQuery" type="text" placeholder="Search email, name, or phone" style="min-width:320px;" />
-        <select id="customerStatus">
-          <option value="all">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="denied">Denied</option>
-        </select>
-        <button id="searchBtn" type="button">Search</button>
-      </div>
-      <div id="customersTableWrap" class="tableWrap" style="display:none;">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Tier</th><th>Points</th><th>Created</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="customersBody"></tbody>
-        </table>
-      </div>
-      <div id="customersEmpty" class="empty" style="display:none;">No records</div>
-    </section>
+  <div class="row" style="margin-top:10px;">
+    <button class="tab active" id="tabDashboard">Dashboard</button>
+    <button class="tab" id="tabCustomers">Customers</button>
+    <button class="tab" id="tabOrders">Orders</button>
+    <button class="tab" id="tabVerification">Verification</button>
   </div>
 
-  <div id="detailModal" role="dialog" aria-modal="true">
-    <div class="box">
-      <div class="row" style="justify-content:space-between; margin-bottom:10px;">
-        <h3 style="margin:0;">Customer Detail</h3>
-        <button id="closeDetail" type="button">Close</button>
-      </div>
+  <section id="dashboard" class="section active"><div id="metrics" class="cards"></div></section>
 
-      <div id="detailContent" style="display:none;">
-        <div class="split">
-          <div class="panel">
-            <h3>Profile</h3>
-            <dl class="kv" id="profileKv"></dl>
-          </div>
-          <div class="panel">
-            <h3>Verification</h3>
-            <dl class="kv" id="verificationKv"></dl>
-            <div class="actions">
-              <button id="approveBtn" class="btnGood" type="button">Approve</button>
-              <button id="denyBtn" class="btnBad" type="button">Deny</button>
-              <button id="pendingBtn" class="btnWarn" type="button">Set Pending</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel" style="margin-top:12px;">
-          <h3>Order History</h3>
-          <div id="ordersWrap" class="tableWrap" style="display:none; margin-top:8px;">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th><th>Created</th><th>Status</th><th>Subtotal</th><th>Total</th><th>Pts Earned</th><th>Pts Redeemed</th><th>Credit Used</th>
-                </tr>
-              </thead>
-              <tbody id="ordersBody"></tbody>
-            </table>
-          </div>
-          <div id="ordersEmpty" class="empty" style="display:none;">No records</div>
-        </div>
-      </div>
-      <div id="detailLoading" class="muted">Loading...</div>
+  <section id="customers" class="section">
+    <div class="row">
+      <input id="cQuery" placeholder="search email/name/phone" />
+      <select id="cStatus"><option value="all">All status</option><option>pending</option><option>approved</option><option>denied</option></select>
+      <select id="cTier"><option value="all">All tier</option><option>member</option><option>insider</option><option>elite</option><option>reserve</option></select>
+      <select id="cActive"><option value="">All active</option><option value="1">Active</option><option value="0">Deactivated</option></select>
+      <input id="cTag" placeholder="tag" />
+      <button id="cSearch">Search</button>
     </div>
-  </div>
+    <div class="tableWrap"><table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Active</th><th>Tier</th><th>Points</th><th></th></tr></thead><tbody id="cBody"></tbody></table></div>
+    <div id="customerDetail" class="panel" style="display:none;"></div>
+  </section>
 
+  <section id="orders" class="section">
+    <div class="row"><input id="oQuery" placeholder="order id/email/phone/name" /><button id="oSearch">Search</button></div>
+    <div class="tableWrap"><table><thead><tr><th>ID</th><th>Date</th><th>Status</th><th>Total</th><th>Type</th><th>Customer</th><th></th></tr></thead><tbody id="oBody"></tbody></table></div>
+    <div id="orderDetail" class="panel" style="display:none;"></div>
+  </section>
+
+  <section id="verification" class="section"><div id="vList" class="cards"></div></section>
+</div>
 <script>
-  const secretInput = document.getElementById("secret");
-  const unlockBtn = document.getElementById("unlockBtn");
-  const refreshBtn = document.getElementById("refreshBtn");
-  const msg = document.getElementById("msg");
-  const statusEl = document.getElementById("status");
+const $ = (s)=>document.querySelector(s); const msg=$('#msg'); const statusEl=$('#status');
+let currentCustomer=null;
+const getSecret=()=>sessionStorage.getItem('bb_admin_secret')||''; const setSecret=v=>sessionStorage.setItem('bb_admin_secret',v);
+async function api(path,opts={}){const h=Object.assign({},opts.headers||{}, {'x-admin-secret':getSecret()}); const r=await fetch(path,Object.assign({},opts,{headers:h})); const t=await r.text(); let j={}; try{j=JSON.parse(t)}catch{} if(!r.ok)throw new Error((j.error||t||r.statusText)); return j;}
+function showTab(name){['dashboard','customers','orders','verification'].forEach(id=>$('#'+id).classList.toggle('active',id===name)); ['Dashboard','Customers','Orders','Verification'].forEach(n=>$('#tab'+n).classList.toggle('active',n.toLowerCase()===name));}
+function fmt(d){if(!d)return '-'; return new Date(d).toLocaleString();}
+function cents(v){return '$'+((Number(v||0))/100).toFixed(2)}
 
-  const tabQueue = document.getElementById("tabQueue");
-  const tabCustomers = document.getElementById("tabCustomers");
-  const queueSection = document.getElementById("queueSection");
-  const customersSection = document.getElementById("customersSection");
+async function loadDashboard(){const d=await api('/api/admin/dashboard'); const m=d.metrics||{}; $('#metrics').innerHTML=`<div class=card><h3>Total Users</h3>${m.totalUsers||0}</div><div class=card><h3>Active Users</h3>${m.activeUsers||0}</div><div class=card><h3>Orders (7d)</h3>${m.ordersLast7Days||0}</div><div class=card><h3>Pending Verification</h3>${m.pendingVerification||0}</div>`;}
+async function loadCustomers(){const qs=new URLSearchParams({query:$('#cQuery').value||'',status:$('#cStatus').value||'',tier:$('#cTier').value||'',active:$('#cActive').value||'',tag:$('#cTag').value||'',limit:'100'}); const d=await api('/api/admin/customers?'+qs.toString()); const rows=d.customers||[]; statusEl.textContent=`Customers: ${rows.length}`; $('#cBody').innerHTML=''; rows.forEach(u=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${(u.first_name||'')} ${(u.last_name||'')}</td><td>${u.email||''}</td><td>${u.account_status}</td><td>${Number(u.is_active)===1?'Active':'Deactivated'}</td><td>${u.effectiveTier}</td><td>${u.points_balance||0}</td><td><button>Open</button></td>`; tr.querySelector('button').onclick=()=>openCustomer(u.id); $('#cBody').appendChild(tr);});}
+async function openCustomer(id){const d=await api('/api/admin/customers/'+id); currentCustomer=d.customer; const tags=d.tags||[]; const orders=await api('/api/admin/orders?query='+encodeURIComponent(id)); const userOrders=(orders.orders||[]).filter(o=>o.user_id===id);
+$('#customerDetail').style.display='block'; $('#customerDetail').innerHTML=`<h3>Customer Detail</h3>
+<div class=row><input id=first value="${currentCustomer.first_name||''}" placeholder="first name"><input id=last value="${currentCustomer.last_name||''}" placeholder="last name"><input id=phone value="${currentCustomer.phone||''}" placeholder="phone"><button id=saveProfile>Save Profile</button></div>
+<p>Email: <b>${currentCustomer.email}</b> · <span class=pill>${Number(currentCustomer.is_active)===1?'Active':'Deactivated'}</span></p>
+<div class=row><button id=approve>Approve</button><button id=deny>Deny</button><button id=pending>Pending</button></div>
+<p>Points: ${currentCustomer.points_balance} · Lifetime Spend: ${cents(currentCustomer.lifetime_spend_cents)} · Effective Tier: ${currentCustomer.effectiveTier}</p>
+<div class=row><select id=tierOverride><option value=''>Clear override</option><option>member</option><option>insider</option><option>elite</option><option>reserve</option></select><input id=tierReason placeholder='override reason'><button id=saveTier>Save Tier Override</button></div>
+<div><h4>Tags</h4><div class=tags>${tags.map(t=>`<span class=tag>${t} <button data-tag="${t}" class=delTag>x</button></span>`).join('')}</div><div class=row><input id=newTag placeholder='add tag'><button id=addTag>Add Tag</button></div></div>
+<div><h4>Orders</h4>${userOrders.length?'<pre style="white-space:pre-wrap">'+JSON.stringify(userOrders,null,2)+'</pre>':'<div class=muted>No user orders</div>'}</div>
+<div><h4>Actions</h4><div class=row><button id=deactivate>Deactivate</button><button id=reactivate>Reactivate</button></div>
+<div style='margin-top:8px;border:1px solid #5b1f1f;padding:8px;border-radius:8px;'><b>Danger Zone</b><div class=row><input id=confirmEmail placeholder='confirm email'><label><input id=anonymize type=checkbox> anonymize orders</label><button id=hardDelete>Hard Delete</button></div></div></div>`;
+$('#tierOverride').value=currentCustomer.tier_override||'';
+$('#saveProfile').onclick=()=>api('/api/admin/customers/'+id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({first_name:$('#first').value,last_name:$('#last').value,phone:$('#phone').value})}).then(()=>openCustomer(id));
+$('#approve').onclick=()=>api('/api/admin/customers/'+id+'/status',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({account_status:'approved'})}).then(()=>openCustomer(id));
+$('#deny').onclick=()=>api('/api/admin/customers/'+id+'/status',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({account_status:'denied',status_reason:prompt('Reason')||''})}).then(()=>openCustomer(id));
+$('#pending').onclick=()=>api('/api/admin/customers/'+id+'/status',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({account_status:'pending'})}).then(()=>openCustomer(id));
+$('#saveTier').onclick=()=>api('/api/admin/customers/'+id+'/tier',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({tier_override:$('#tierOverride').value||null,reason:$('#tierReason').value||''})}).then(()=>openCustomer(id));
+$('#addTag').onclick=()=>api('/api/admin/customers/'+id+'/tags',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({tag:$('#newTag').value})}).then(()=>openCustomer(id));
+document.querySelectorAll('.delTag').forEach(b=>b.onclick=()=>api('/api/admin/customers/'+id+'/tags/'+encodeURIComponent(b.dataset.tag),{method:'DELETE'}).then(()=>openCustomer(id)));
+$('#deactivate').onclick=()=>api('/api/admin/customers/'+id+'/deactivate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({reason:prompt('Reason optional')||''})}).then(()=>openCustomer(id));
+$('#reactivate').onclick=()=>api('/api/admin/customers/'+id+'/reactivate',{method:'POST'}).then(()=>openCustomer(id));
+$('#hardDelete').onclick=()=>api('/api/admin/customers/'+id,{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({confirmEmail:$('#confirmEmail').value,anonymizeOrders:$('#anonymize').checked})}).then(()=>{$('#customerDetail').style.display='none';loadCustomers();});
+}
+async function loadOrders(){const d=await api('/api/admin/orders?query='+encodeURIComponent($('#oQuery').value||'')); const rows=d.orders||[]; $('#oBody').innerHTML=''; rows.forEach(o=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${o.id}</td><td>${fmt(o.created_at)}</td><td>${o.status}</td><td>${cents(o.total_cents)}</td><td>${o.user_id?'Account':'Guest'}</td><td>${o.customer_name||o.customer_email||'-'}</td><td><button>Open</button></td>`; tr.querySelector('button').onclick=()=>openOrder(o.id); $('#oBody').appendChild(tr);});}
+async function openOrder(id){const d=await api('/api/admin/orders/'+id); $('#orderDetail').style.display='block'; $('#orderDetail').innerHTML='<h3>Order '+id+'</h3><pre style="white-space:pre-wrap">'+JSON.stringify(d.order,null,2)+'</pre>';}
+async function loadVerification(){const d=await api('/api/admin/verification/pending'); const users=d.users||[]; $('#vList').innerHTML=users.length?users.map(u=>`<div class=card><h3>${u.first_name||''} ${u.last_name||''}</h3><div>${u.email||''}</div><button onclick="openCustomer('${u.id.replace(/'/g,"\\'")}');showTab('customers')">Review</button></div>`).join(''):'<div class=muted>No pending users.</div>';}
 
-  const queueList = document.getElementById("queueList");
-  const queueEmpty = document.getElementById("queueEmpty");
-
-  const customerQuery = document.getElementById("customerQuery");
-  const customerStatus = document.getElementById("customerStatus");
-  const searchBtn = document.getElementById("searchBtn");
-  const customersBody = document.getElementById("customersBody");
-  const customersTableWrap = document.getElementById("customersTableWrap");
-  const customersEmpty = document.getElementById("customersEmpty");
-
-  const detailModal = document.getElementById("detailModal");
-  const closeDetail = document.getElementById("closeDetail");
-  const detailContent = document.getElementById("detailContent");
-  const detailLoading = document.getElementById("detailLoading");
-  const profileKv = document.getElementById("profileKv");
-  const verificationKv = document.getElementById("verificationKv");
-  const approveBtn = document.getElementById("approveBtn");
-  const denyBtn = document.getElementById("denyBtn");
-  const pendingBtn = document.getElementById("pendingBtn");
-  const ordersBody = document.getElementById("ordersBody");
-  const ordersWrap = document.getElementById("ordersWrap");
-  const ordersEmpty = document.getElementById("ordersEmpty");
-
-  let currentUserId = null;
-
-  function setMsg(t) { msg.textContent = t || ""; }
-  function getSecret() { return sessionStorage.getItem("bb_admin_secret") || ""; }
-  function setSecret(v) { sessionStorage.setItem("bb_admin_secret", v); }
-
-  async function api(path, opts = {}) {
-    const secret = getSecret();
-    const headers = Object.assign({}, opts.headers || {}, { "x-admin-secret": secret });
-    const res = await fetch(path, Object.assign({}, opts, { headers }));
-    const text = await res.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch {}
-    if (!res.ok) {
-      const err = (json && (json.error || json.message)) ? (json.error || json.message) : text.slice(0, 800);
-      throw new Error(`HTTP ${res.status} — ${err}`);
-    }
-    return json ?? {};
-  }
-
-  function fmtDate(iso) {
-    if (!iso) return "-";
-    try { return new Date(iso).toLocaleString(); } catch { return iso; }
-  }
-
-  function cents(v) {
-    const n = Number(v || 0);
-    return `$${(n / 100).toFixed(2)}`;
-  }
-
-  function setTab(which) {
-    const queue = which === "queue";
-    tabQueue.classList.toggle("active", queue);
-    tabCustomers.classList.toggle("active", !queue);
-    queueSection.classList.toggle("active", queue);
-    customersSection.classList.toggle("active", !queue);
-  }
-
-  async function loadQueue() {
-    queueList.innerHTML = "";
-    queueEmpty.style.display = "none";
-    const data = await api("/api/admin/users/pending");
-    const items = data.users || [];
-    statusEl.textContent = `Queue: ${items.length}`;
-
-    if (!items.length) {
-      queueEmpty.style.display = "block";
-      return;
-    }
-
-    for (const u of items) {
-      const card = document.createElement("div");
-      card.className = "card";
-      const name = [u.first_name, u.last_name].filter(Boolean).join(" ") || "Unknown";
-      card.innerHTML = `
-        <h3>${name}</h3>
-        <div class="muted">${u.email || "-"}</div>
-        <div class="muted">${u.phone || "-"}</div>
-        <div style="margin-top:8px;"><span class="pill">${(u.account_status || "pending").toUpperCase()}</span></div>
-      `;
-      const actions = document.createElement("div");
-      actions.className = "actions";
-      const review = document.createElement("button");
-      review.type = "button";
-      review.textContent = "Review";
-      review.addEventListener("click", () => openCustomerDetail(u.id));
-      actions.appendChild(review);
-      card.appendChild(actions);
-      queueList.appendChild(card);
-    }
-  }
-
-  async function loadCustomers() {
-    customersBody.innerHTML = "";
-    customersTableWrap.style.display = "none";
-    customersEmpty.style.display = "none";
-
-    const q = customerQuery.value.trim();
-    const st = customerStatus.value;
-    const data = await api(`/api/admin/users?query=${encodeURIComponent(q)}&status=${encodeURIComponent(st)}&limit=100`);
-    const users = data.users || [];
-    statusEl.textContent = `Customers: ${users.length}`;
-
-    if (!users.length) {
-      customersEmpty.style.display = "block";
-      return;
-    }
-
-    customersTableWrap.style.display = "block";
-    for (const u of users) {
-      const tr = document.createElement("tr");
-      const name = [u.first_name, u.last_name].filter(Boolean).join(" ") || "-";
-      tr.innerHTML = `
-        <td>${name}</td>
-        <td>${u.email || "-"}</td>
-        <td>${u.phone || "-"}</td>
-        <td>${u.account_status || "pending"}</td>
-        <td>${u.tier || "member"}</td>
-        <td>${u.points_balance || 0}</td>
-        <td>${fmtDate(u.created_at)}</td>
-        <td><button type="button">Open</button></td>
-      `;
-      tr.querySelector("button").addEventListener("click", () => openCustomerDetail(u.id));
-      customersBody.appendChild(tr);
-    }
-  }
-
-  function setKv(el, rows) {
-    el.innerHTML = "";
-    for (const [k, v] of rows) {
-      const dt = document.createElement("dt"); dt.textContent = k;
-      const dd = document.createElement("dd");
-      if (v && typeof v === "object" && v.type === "link") {
-        const a = document.createElement("a");
-        a.href = v.href;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = v.text || v.href;
-        dd.appendChild(a);
-      } else {
-        dd.textContent = v == null || v === "" ? "-" : String(v);
-      }
-      el.appendChild(dt); el.appendChild(dd);
-    }
-  }
-
-  async function openCustomerDetail(userId) {
-    currentUserId = userId;
-    detailModal.style.display = "flex";
-    detailContent.style.display = "none";
-    detailLoading.style.display = "block";
-    setMsg("");
-
-    try {
-      const [userData, orderData] = await Promise.all([
-        api(`/api/admin/users/${encodeURIComponent(userId)}`),
-        api(`/api/admin/users/${encodeURIComponent(userId)}/orders`)
-      ]);
-
-      const u = userData.user || {};
-      const v = userData.verification || null;
-
-      setKv(profileKv, [
-        ["Name", [u.first_name, u.last_name].filter(Boolean).join(" ") || "-"],
-        ["Email", u.email],
-        ["Phone", u.phone],
-        ["DOB", u.dob],
-        ["Created", fmtDate(u.created_at)],
-        ["Updated", fmtDate(u.updated_at)],
-        ["Status", u.account_status || "pending"],
-        ["Verified At", fmtDate(u.verified_at)],
-        ["Verified By", u.verified_by_admin_id],
-        ["Status Reason", u.status_reason],
-        ["Tier", u.tier || "member"],
-        ["Points", u.points_balance || 0],
-        ["Lifetime Spend", cents(u.lifetime_spend_cents || 0)]
-      ]);
-
-      setKv(verificationKv, [
-        ["Verification Status", v ? (v.status || "-") : "No record"],
-        ["ID Expiration", v ? (v.id_expiration || "-") : "-"],
-        ["Updated", v ? fmtDate(v.updated_at) : "-"],
-        ["ID Asset", v && v.id_key ? { type: "link", href: `/api/admin/verification-file?key=${encodeURIComponent(v.id_key)}`, text: v.id_key } : "-"],
-        ["Selfie Asset", v && v.selfie_key ? { type: "link", href: `/api/admin/verification-file?key=${encodeURIComponent(v.selfie_key)}`, text: v.selfie_key } : "-"]
-      ]);
-
-      const orders = orderData.orders || [];
-      ordersBody.innerHTML = "";
-      ordersWrap.style.display = "none";
-      ordersEmpty.style.display = "none";
-      if (!orders.length) {
-        ordersEmpty.style.display = "block";
-      } else {
-        ordersWrap.style.display = "block";
-        for (const o of orders) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${o.id}</td>
-            <td>${fmtDate(o.created_at)}</td>
-            <td>${o.status || "-"}</td>
-            <td>${cents(o.subtotal_cents)}</td>
-            <td>${cents(o.total_cents)}</td>
-            <td>${o.points_earned || 0}</td>
-            <td>${o.points_redeemed || 0}</td>
-            <td>${cents(o.credit_cents_used)}</td>
-          `;
-          ordersBody.appendChild(tr);
-        }
-      }
-
-      detailLoading.style.display = "none";
-      detailContent.style.display = "block";
-    } catch (e) {
-      detailLoading.style.display = "none";
-      setMsg(e.message || String(e));
-    }
-  }
-
-  async function updateStatus(newStatus) {
-    if (!currentUserId) return;
-    let status_reason = "";
-    if (newStatus === "denied") {
-      status_reason = prompt("Deny reason (optional):") || "";
-    }
-
-    await api(`/api/admin/users/${encodeURIComponent(currentUserId)}/status`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ account_status: newStatus, status_reason })
-    });
-
-    await openCustomerDetail(currentUserId);
-    await loadQueue();
-    if (customersSection.classList.contains("active")) await loadCustomers();
-  }
-
-  function closeDetailModal() {
-    detailModal.style.display = "none";
-    currentUserId = null;
-  }
-
-  tabQueue.addEventListener("click", () => setTab("queue"));
-  tabCustomers.addEventListener("click", async () => {
-    setTab("customers");
-    if (getSecret()) await loadCustomers().catch(e => setMsg(e.message || String(e)));
-  });
-
-  searchBtn.addEventListener("click", async () => {
-    if (!getSecret()) return setMsg("Enter ADMIN_SECRET and click Unlock.");
-    await loadCustomers().catch(e => setMsg(e.message || String(e)));
-  });
-
-  customerQuery.addEventListener("keydown", async (e) => {
-    if (e.key === "Enter") await searchBtn.click();
-  });
-
-  approveBtn.addEventListener("click", async () => updateStatus("approved").catch(e => setMsg(e.message || String(e))));
-  denyBtn.addEventListener("click", async () => updateStatus("denied").catch(e => setMsg(e.message || String(e))));
-  pendingBtn.addEventListener("click", async () => updateStatus("pending").catch(e => setMsg(e.message || String(e))));
-
-  closeDetail.addEventListener("click", closeDetailModal);
-  detailModal.addEventListener("click", (e) => { if (e.target === detailModal) closeDetailModal(); });
-
-  unlockBtn.addEventListener("click", async () => {
-    const s = secretInput.value.trim();
-    if (!s) { setMsg("Enter ADMIN_SECRET."); return; }
-    setSecret(s);
-    setMsg("");
-    await loadQueue().catch(e => setMsg(e.message || String(e)));
-  });
-
-  refreshBtn.addEventListener("click", async () => {
-    if (!getSecret()) { setMsg("Enter ADMIN_SECRET and click Unlock."); return; }
-    setMsg("");
-    if (queueSection.classList.contains("active")) {
-      await loadQueue().catch(e => setMsg(e.message || String(e)));
-    } else {
-      await loadCustomers().catch(e => setMsg(e.message || String(e)));
-    }
-  });
-
-  window.addEventListener("DOMContentLoaded", () => {
-    const s = getSecret();
-    if (s) {
-      secretInput.value = s;
-      loadQueue().catch(() => {});
-    }
-  });
+$('#unlockBtn').onclick=async()=>{try{setSecret($('#secret').value.trim()); msg.textContent=''; await refresh();}catch(e){msg.textContent=e.message}};
+$('#refreshBtn').onclick=()=>refresh().catch(e=>msg.textContent=e.message);
+$('#cSearch').onclick=()=>loadCustomers().catch(e=>msg.textContent=e.message); $('#oSearch').onclick=()=>loadOrders().catch(e=>msg.textContent=e.message);
+$('#tabDashboard').onclick=()=>{showTab('dashboard');loadDashboard().catch(e=>msg.textContent=e.message)};
+$('#tabCustomers').onclick=()=>{showTab('customers');loadCustomers().catch(e=>msg.textContent=e.message)};
+$('#tabOrders').onclick=()=>{showTab('orders');loadOrders().catch(e=>msg.textContent=e.message)};
+$('#tabVerification').onclick=()=>{showTab('verification');loadVerification().catch(e=>msg.textContent=e.message)};
+async function refresh(){if(!getSecret()) throw new Error('Enter ADMIN_SECRET and unlock.'); const active=document.querySelector('.section.active').id; if(active==='dashboard') await loadDashboard(); if(active==='customers') await loadCustomers(); if(active==='orders') await loadOrders(); if(active==='verification') await loadVerification();}
+window.addEventListener('DOMContentLoaded',()=>{const s=getSecret(); if(s){$('#secret').value=s; refresh().catch(()=>{});}});
 </script>
-</body>
-</html>
+</body></html>
