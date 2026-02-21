@@ -29,6 +29,22 @@ Run with Wrangler Pages dev (example):
 npx wrangler pages dev .
 ```
 
+## D1 migrations
+
+Apply migrations with Wrangler:
+
+```bash
+wrangler d1 migrations apply <db_name> --local
+wrangler d1 migrations apply <db_name> --remote
+```
+
+If migrations tooling is not configured yet, execute the SQL file directly instead:
+
+```bash
+wrangler d1 execute <db_name> --local --file=./migrations/0001_rewards.sql
+wrangler d1 execute <db_name> --remote --file=./migrations/0001_rewards.sql
+```
+
 ## Endpoint test examples (curl)
 
 ### Suggestions endpoint
