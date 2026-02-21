@@ -580,8 +580,11 @@
         let data = {};
         try { data = await response.json(); } catch {}
 
-        if(response.ok && data.ok){
-          const orderId = data.id ? ` (${data.id})` : "";
+        const isSuccess = data?.ok === true || data?.success === true;
+
+        if(response.ok || isSuccess){
+          const responseOrderId = data.orderId || data.order_id || data.id;
+          const orderId = responseOrderId ? ` (${responseOrderId})` : "";
           setCheckoutStatus(`Order request sent successfully${orderId}. We'll contact you shortly.`, "success");
           BBE_CART.saveCart([]);
           render();
