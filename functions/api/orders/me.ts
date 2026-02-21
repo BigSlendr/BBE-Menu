@@ -13,7 +13,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: En
   try {
     const result = await env.DB
       .prepare(
-        `SELECT id, created_at, status, total_cents, subtotal_cents
+        `SELECT id, created_at, status, subtotal_cents, total_cents, points_earned, points_redeemed, credit_cents_used
          FROM orders
          WHERE user_id = ?
          ORDER BY created_at DESC

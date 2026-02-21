@@ -4,460 +4,182 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Bobby Black — Account</title>
-
   <style>
-    body { background:#000; color:#fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; }
-    .bb-header{
-      width:100%;
-      background:#000;
-      color:#fff;
-      border-bottom:1px solid rgba(255,255,255,0.16);
-      position:sticky;
-      top:0;
-      z-index:1000;
-    }
-    .bb-header-row1{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      padding:10px 14px;
-    }
-    .bb-logo img,.brand-logo{
-      height:42px;
-      width:auto;
-      display:block;
-    }
-    .bb-cart-btn{
-      position:absolute;
-      right:14px;
-      top:50%;
-      transform:translateY(-50%);
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(255,255,255,0.18);
-      color:#fff;
-      text-decoration:none;
-      white-space:nowrap;
-      font-size:12px;
-      font-weight:700;
-      letter-spacing:.04em;
-      text-transform:uppercase;
-    }
-    .bb-cart-count{
-      display:none;
-      margin-left:2px;
-      background:#fff;
-      color:#111;
-      border-radius:999px;
-      padding:2px 7px;
-      font-size:11px;
-      font-weight:900;
-      min-width:20px;
-      text-align:center;
-    }
-    .bb-nav{
-      display:flex;
-      gap:18px;
-      justify-content:center;
-      align-items:center;
-      padding:8px 12px 10px;
-      border-top:1px solid rgba(255,255,255,0.10);
-    }
-    .bb-nav a{
-      color:#fff;
-      text-decoration:none;
-      font-size:13px;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-      opacity:0.9;
-    }
-    .bb-nav a:hover,.bb-nav a:focus-visible{
-      opacity:1;
-      text-decoration:underline;
-    }
-    .header-search{
-      width:min(1200px,100%);
-      margin:0 auto;
-      padding:0 16px 10px;
-    }
-    .header-search input[type="search"],
-    .header-search input{
-      width:min(520px, 100%);
-      height:38px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.28);
-      background:rgba(255,255,255,0.06);
-      color:#fff;
-      padding:0 14px;
-      font-size:12px;
-      letter-spacing:0.02em;
-      outline:none;
-      text-transform:uppercase;
-      margin:0 auto;
-      display:block;
-    }
-    @media (max-width: 520px) {
-      .bb-header-row1{padding:10px 12px;}
-      .bb-cart-btn{right:10px;padding:8px 10px;}
-      .bb-cart-text{display:none;}
-      .bb-nav{flex-wrap:wrap;gap:14px;padding:10px 12px 12px;}
-    }
-    .wrap { max-width:900px; margin:24px auto 64px; padding:18px; }
-    .card { background:#0b0b0b; border:1px solid #222; border-radius:14px; padding:18px; margin-top:14px; }
-    h1 { font-size:26px; margin:0 0 6px; }
-    h2 { font-size:16px; margin:0 0 10px; letter-spacing:0.04em; }
-    p { color:#bdbdbd; margin:0; }
-    .row { display:flex; gap:14px; flex-wrap:wrap; }
-    .pill { padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#070707; }
-    .label { font-size:12px; color:#9a9a9a; }
-    .value { font-size:20px; margin-top:4px; }
-    button { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; }
-    button:hover { background:#151515; }
-    a { color:#fff; text-decoration:underline; }
-    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-    .muted { color:#9a9a9a; }
-    .list { margin-top:10px; }
-    .order { padding:12px; border-radius:12px; border:1px solid #222; background:#060606; margin-top:10px; }
-    .status-line { margin-top:8px; color:#c9c9c9; }
-    .status-badge { font-weight:700; text-transform:capitalize; }
-    .verify-grid { display:grid; gap:10px; max-width:460px; }
-    .verify-grid label { display:grid; gap:6px; font-size:13px; color:#d3d3d3; }
-    .verify-grid input { padding:10px 12px; border-radius:10px; border:1px solid #2a2a2a; background:#111; color:#fff; }
-    .verify-grid button[disabled] { opacity:.55; cursor:not-allowed; }
-    .verify-message { margin-top:10px; font-size:13px; }
+    body { margin:0; background:#000; color:#fff; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+    .bb-header{width:100%;background:#000;border-bottom:1px solid rgba(255,255,255,.16);position:sticky;top:0;z-index:1000}
+    .bb-header-row1{display:flex;align-items:center;justify-content:center;position:relative;padding:10px 14px}
+    .bb-logo img{height:42px;display:block}
+    .bb-cart-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .bb-cart-count{display:none;background:#fff;color:#111;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:900;min-width:20px;text-align:center}
+    .bb-nav{display:flex;gap:18px;justify-content:center;align-items:center;padding:8px 12px 10px;border-top:1px solid rgba(255,255,255,.10)}
+    .bb-nav a{color:#fff;text-decoration:none;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+    .bb-nav a:hover{opacity:1;text-decoration:underline}
+
+    .container{max-width:980px;margin:22px auto 44px;padding:0 16px}
+    .title{font-size:30px;letter-spacing:.03em;margin:0 0 6px}
+    .muted{color:#b7b7b7}
+    .gold{color:#c5a46d}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:14px}
+    .card{background:#0a0a0a;border:1px solid #252525;border-radius:14px;padding:14px}
+    .card h2{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#c5a46d;margin:0 0 10px}
+    .value{font-size:28px;font-weight:800}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+    .status-approved{background:rgba(50,155,99,.18);border:1px solid #329b63;color:#9ff2bf}
+    .status-pending{background:rgba(197,164,109,.15);border:1px solid #c5a46d;color:#f4d49b}
+    .status-denied{background:rgba(155,63,63,.2);border:1px solid #b55656;color:#ffb6b6}
+    .orders{margin-top:12px}
+    table{width:100%;border-collapse:collapse;background:#090909;border:1px solid #252525;border-radius:12px;overflow:hidden}
+    th,td{padding:10px;border-bottom:1px solid #1d1d1d;text-align:left;font-size:14px}
+    th{font-size:12px;color:#c5a46d;text-transform:uppercase;letter-spacing:.08em}
+    tr:last-child td{border-bottom:none}
+    #logoutBtn{margin-top:10px;background:#151515;border:1px solid #323232;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
   </style>
 </head>
 <body>
-
-  <header class="bb-header">
-    <div class="bb-header-row1">
-      <a class="bb-logo" href="/index.html" aria-label="Bobby Black Home">
-        <img class="brand-logo" src="images/Bobbyb.png" alt="Bobby Black" />
-      </a>
-
-      <a class="bb-cart-btn" href="/cart.html" aria-label="Cart">
-        <span class="bb-cart-icon" aria-hidden="true">🛒</span>
-        <span class="bb-cart-text">Cart</span>
-        <span class="bb-cart-count" data-bbe-cart-count>0</span>
-      </a>
-    </div>
-
-    <nav class="bb-nav" aria-label="Primary">
-      <a href="/brands.html">Brands</a>
-      <a href="/categories.html">Categories</a>
-      <a href="/about.html">About</a>
-      <a href="/member-signin.html" class="bb-signin-link" id="bbMemberLink">SIGN IN</a>
-    </nav>
-  <form class="header-search" role="search" action="#" method="GET">
-          <input
-            type="search"
-            name="q"
-            placeholder="WHAT CAN WE HELP YOU FIND?"
-            aria-label="Search"
-          />
-        </form>
+<header class="bb-header">
+  <div class="bb-header-row1">
+    <a href="index.html" class="bb-logo" aria-label="Bobby Black Home">
+      <img src="images/Bobbyblack.png" alt="Bobby Black" />
+    </a>
+    <a href="cart.html" class="bb-cart-btn" aria-label="Open cart">
+      <span>Cart</span>
+      <span id="bbCartCount" class="bb-cart-count">0</span>
+    </a>
+  </div>
+  <nav class="bb-nav">
+    <a href="categories.html">Shop</a>
+    <a href="about.html">About</a>
+    <a href="member-signin.html" id="bbMemberLink">Sign In</a>
+  </nav>
 </header>
 
-  <div class="wrap">
-    <div class="top">
-      <div>
-        <h1>Account</h1>
-        <p id="userLine" class="muted">Loading...</p>
-        <p class="status-line">Verification Status: <span id="verificationStatus" class="status-badge">unverified</span></p>
-      </div>
-      <div>
-        <button id="logoutBtn" type="button">Log out</button>
-      </div>
-    </div>
+<main class="container">
+  <h1 class="title">My Account</h1>
+  <p id="emailLine" class="muted">Loading account…</p>
+  <button id="logoutBtn" type="button">Log out</button>
 
-    <div id="verifyCard" class="card">
-      <h2>Verify Your Account</h2>
-      <p id="verifyStatusText" class="muted">Upload your documents to start verification.</p>
-      <form id="verifyForm" class="verify-grid" style="margin-top:12px;" enctype="multipart/form-data">
-        <label>
-          Government ID
-          <input id="idImage" type="file" name="id_image" accept="image/*" required />
-        </label>
-        <label>
-          Selfie
-          <input id="selfieImage" type="file" name="selfie_image" accept="image/*" required />
-        </label>
-        <label>
-          ID Expiration (optional)
-          <input id="idExpiration" type="date" name="id_expiration" />
-        </label>
-        <button id="verifySubmit" type="submit">Submit for Review</button>
-      </form>
-      <p id="verifyMessage" class="verify-message muted"></p>
-    </div>
+  <section class="grid">
+    <article class="card">
+      <h2>Verification</h2>
+      <p><span id="statusBadge" class="badge status-pending">Pending Verification</span></p>
+      <p id="verifiedAt" class="muted" style="margin-top:10px;"></p>
+      <p id="statusReason" class="muted" style="margin-top:6px;"></p>
+    </article>
 
+    <article class="card">
+      <h2>Rewards</h2>
+      <div class="muted">Points Balance</div>
+      <div class="value" id="pointsBalance">0</div>
+      <div class="muted" style="margin-top:10px;">Tier: <span id="tier" class="gold">member</span></div>
+      <div class="muted">Lifetime Spend: <span id="lifetimeSpend">$0.00</span></div>
+    </article>
+  </section>
+
+  <section class="orders">
     <div class="card">
-      <h2>Points Balance</h2>
-      <div class="row">
-        <div class="pill" style="min-width:220px;">
-          <div class="label">Current Points</div>
-          <div class="value" id="pointsValue">0</div>
-        </div>
-        <div class="pill" style="min-width:220px;">
-          <div class="label">Lifetime Points</div>
-          <div class="value" id="lifetimePointsValue">0</div>
-        </div>
-        <div class="pill" style="min-width:220px;">
-          <div class="label">Estimated Value</div>
-          <div class="value" id="pointsValueDollars">$0.00</div>
-        </div>
-      </div>
-      <p style="margin-top:12px;">
-        Earn <b>10 points per $1</b> spent (subtotal before tax). Default redemption: <b>100 points = $1 off</b>.
-      </p>
+      <h2>Order History</h2>
+      <div id="ordersWrap" class="muted">Loading orders…</div>
     </div>
+  </section>
+</main>
 
-    <div class="card">
-      <h2>Rewards Options</h2>
-      <div class="list">
-        <div class="order">
-          <div><b>100 points</b> → $1 off</div>
-          <div class="muted" style="margin-top:6px;">(Default conversion. Tier bonuses can be added later.)</div>
-        </div>
-        <div class="order"><div><b>500 points</b> → $5 off</div></div>
-        <div class="order"><div><b>1,000 points</b> → $10 off</div></div>
-      </div>
-      <p class="muted" style="margin-top:12px;">
-        Redemption during checkout will be added after orders are saved in the database.
-      </p>
-    </div>
+<script defer src="/auth.js?v=7"></script>
+<script defer src="/header-auth.js?v=7"></script>
+<script>
+  const asMoney = (cents) => `$${(Number(cents || 0) / 100).toFixed(2)}`;
 
-    <div class="card">
-      <h2>Recent Rewards Activity</h2>
-      <div id="rewardsList" class="list">
-        <div class="order">
-          <div><b>No rewards activity yet</b></div>
-          <div class="muted" style="margin-top:6px;">Points earned and adjustments will appear here.</div>
-        </div>
-      </div>
-    </div>
+  function formatDate(iso) {
+    const d = new Date(iso || "");
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleString();
+  }
 
-    <div class="card">
-      <h2>Past Orders</h2>
-      <div id="ordersList" class="list">
-        <div class="order">
-          <div><b>No orders yet</b></div>
-          <div class="muted" style="margin-top:6px;">Your order history will appear here once orders are stored.</div>
-        </div>
-      </div>
-    </div>
+  function renderStatus(user) {
+    const badge = document.getElementById("statusBadge");
+    const verifiedAt = document.getElementById("verifiedAt");
+    const statusReason = document.getElementById("statusReason");
 
-  </div>
+    const status = String(user.account_status || "pending").toLowerCase();
+    badge.className = "badge";
 
-  <script defer src="/auth.js?v=6"></script>
-  <script defer src="/header-auth.js?v=6"></script>
-
-  <script>
-    const userLine = document.getElementById("userLine");
-    const pointsValue = document.getElementById("pointsValue");
-    const lifetimePointsValue = document.getElementById("lifetimePointsValue");
-    const pointsValueDollars = document.getElementById("pointsValueDollars");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const verificationStatus = document.getElementById("verificationStatus");
-    const verifyStatusText = document.getElementById("verifyStatusText");
-    const verifyCard = document.getElementById("verifyCard");
-    const verifyForm = document.getElementById("verifyForm");
-    const verifySubmit = document.getElementById("verifySubmit");
-    const verifyMessage = document.getElementById("verifyMessage");
-    const idImage = document.getElementById("idImage");
-    const selfieImage = document.getElementById("selfieImage");
-    const idExpiration = document.getElementById("idExpiration");
-    const ordersList = document.getElementById("ordersList");
-    const rewardsList = document.getElementById("rewardsList");
-
-    function formatMoney(n) {
-      return "$" + (Math.round(n * 100) / 100).toFixed(2);
+    if (status === "approved") {
+      badge.textContent = "Verified";
+      badge.classList.add("status-approved");
+    } else if (status === "denied") {
+      badge.textContent = "Not Approved";
+      badge.classList.add("status-denied");
+    } else {
+      badge.textContent = "Pending Verification";
+      badge.classList.add("status-pending");
     }
 
-    function renderVerification(status) {
-      const current = status || "unverified";
-      verificationStatus.textContent = current;
+    verifiedAt.textContent = user.verified_at ? `Verified at: ${formatDate(user.verified_at)}` : "";
+    statusReason.textContent = status === "denied" && user.status_reason ? `Reason: ${user.status_reason}` : "";
+  }
 
-      if (current === "approved") {
-        verifyCard.style.display = "none";
-        verifyMessage.textContent = "";
-        return;
-      }
-
-      verifyCard.style.display = "block";
-      verifyForm.style.display = "grid";
-
-      if (current === "pending") {
-        verifyStatusText.textContent = "Pending review. Your upload is under admin review.";
-        verifySubmit.disabled = true;
-        idImage.required = false;
-        selfieImage.required = false;
-      } else if (current === "rejected") {
-        verifyStatusText.textContent = "Rejected — please re-upload clear images to continue.";
-        verifySubmit.disabled = false;
-        idImage.required = true;
-        selfieImage.required = true;
-      } else {
-        verifyStatusText.textContent = "Upload your documents to start verification.";
-        verifySubmit.disabled = false;
-        idImage.required = true;
-        selfieImage.required = true;
-      }
+  function renderOrders(orders) {
+    const wrap = document.getElementById("ordersWrap");
+    if (!Array.isArray(orders) || orders.length === 0) {
+      wrap.textContent = "No orders yet.";
+      return;
     }
 
-    function renderOrders(orders) {
-      if (!Array.isArray(orders) || orders.length === 0) {
-        ordersList.innerHTML = `
-          <div class="order">
-            <div><b>No orders yet</b></div>
-            <div class="muted" style="margin-top:6px;">Your order history will appear here once orders are stored.</div>
-          </div>
-        `;
-        return;
-      }
+    wrap.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Status</th><th>Total</th><th>Points Earned</th><th>Redeemed</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orders.map((o) => `
+            <tr>
+              <td>${formatDate(o.created_at)}</td>
+              <td>${o.status || "placed"}</td>
+              <td>${asMoney(o.total_cents)}</td>
+              <td>${Number(o.points_earned || 0)}</td>
+              <td>${Number(o.points_redeemed || 0)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
 
-      ordersList.innerHTML = orders.map((order) => {
-        let items = [];
-        try {
-          const parsed = JSON.parse(order.items_json || "[]");
-          if (Array.isArray(parsed)) items = parsed;
-        } catch {}
-
-        const shortId = String(order.id || "").slice(-6) || "------";
-        const created = order.created_at ? new Date(order.created_at) : null;
-        const createdLabel = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : "Unknown date";
-        const subtotal = Number(order.subtotal_cents || 0) / 100;
-
-        return `
-          <div class="order">
-            <div><b>Order #${shortId}</b></div>
-            <div class="muted" style="margin-top:6px;">${createdLabel}</div>
-            <div class="muted" style="margin-top:6px;">Status: <span class="status-badge">${String(order.status || "pending")}</span></div>
-            <div class="muted" style="margin-top:6px;">Subtotal: ${formatMoney(subtotal)}</div>
-            <div class="muted" style="margin-top:6px;">Items: ${items.length}</div>
-          </div>
-        `;
-      }).join("");
+  async function loadAccount() {
+    const meRes = await fetch("/api/me");
+    if (meRes.status === 401) {
+      window.location.href = "/member-signin.html";
+      return;
     }
+    const mePayload = await meRes.json();
+    const user = mePayload?.user;
+    if (!meRes.ok || !user) throw new Error("Failed to load account");
 
-    function renderRewards(ledger) {
-      if (!Array.isArray(ledger) || ledger.length === 0) {
-        rewardsList.innerHTML = `
-          <div class="order">
-            <div><b>No rewards activity yet</b></div>
-            <div class="muted" style="margin-top:6px;">Points earned and adjustments will appear here.</div>
-          </div>
-        `;
-        return;
-      }
+    document.getElementById("emailLine").textContent = user.email || "Signed in";
+    document.getElementById("pointsBalance").textContent = String(Number(user.points_balance || 0));
+    document.getElementById("tier").textContent = String(user.tier || "member");
+    document.getElementById("lifetimeSpend").textContent = asMoney(user.lifetime_spend_cents || 0);
+    renderStatus(user);
 
-      rewardsList.innerHTML = ledger.slice(0, 10).map((entry) => {
-        const created = entry.created_at ? new Date(entry.created_at) : null;
-        const createdLabel = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : "Unknown date";
-        const points = Number(entry.points || 0);
-        const pointsLabel = `${points >= 0 ? "+" : ""}${points}`;
-        const orderShort = entry.order_id ? String(entry.order_id).slice(-6) : null;
-
-        return `
-          <div class="order">
-            <div><b>${String(entry.type || "adjust")}</b> <span class="status-badge">${pointsLabel} pts</span></div>
-            <div class="muted" style="margin-top:6px;">${createdLabel}</div>
-            <div class="muted" style="margin-top:6px;">${entry.note || ""}${orderShort ? ` • Order #${orderShort}` : ""}</div>
-          </div>
-        `;
-      }).join("");
+    const ordersRes = await fetch("/api/orders/me");
+    if (ordersRes.status === 401) {
+      window.location.href = "/member-signin.html";
+      return;
     }
+    const ordersPayload = await ordersRes.json();
+    renderOrders(ordersPayload?.orders || []);
+  }
 
-    async function loadSummary() {
-      const res = await fetch("/api/account/summary", { method: "GET" });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Unable to load account summary");
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    window.location.href = "/index.html";
+  });
 
-      const pts = Number(payload?.points_balance || 0);
-      pointsValue.textContent = String(pts);
-      lifetimePointsValue.textContent = String(Number(payload?.lifetime_points || 0));
-      pointsValueDollars.textContent = formatMoney(pts / 100);
-      renderOrders(payload?.orders || []);
-      renderRewards(payload?.ledger || []);
-    }
-
-    async function loadMe() {
-      const me = await window.bbGetMe();
-      const name = [me.user?.first_name, me.user?.last_name].filter(Boolean).join(" ").trim();
-      userLine.textContent = name ? `${name} • ${me.user?.email}` : (me.user?.email || "Signed in");
-
-      renderVerification(me.verificationStatus);
-      return me;
-    }
-
-    async function init() {
-      if (!window.bbGetMe) {
-        userLine.textContent = "Auth helper missing (auth.js not loaded).";
-        return;
-      }
-
-      try {
-        const me = await loadMe();
-        if (!me || !me.loggedIn) {
-          window.location.href = "/member-signin.html";
-          return;
-        }
-        await loadSummary();
-      } catch {
-        userLine.textContent = "Unable to load account.";
-        return;
-      }
-    }
-
-    verifyForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      verifyMessage.textContent = "";
-
-      const formData = new FormData();
-      if (idImage.files?.[0]) formData.append("id_image", idImage.files[0]);
-      if (selfieImage.files?.[0]) formData.append("selfie_image", selfieImage.files[0]);
-      if (idExpiration.value) formData.append("id_expiration", idExpiration.value);
-
-      verifySubmit.disabled = true;
-      try {
-        const res = await fetch("/api/verify/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(payload?.error || "Upload failed");
-
-        verifyMessage.textContent = "Submitted for review";
-        verifyMessage.classList.remove("muted");
-
-        const me = await loadMe();
-        if (me?.verificationStatus === "pending") {
-          verifyForm.reset();
-        }
-      } catch (err) {
-        verifyMessage.textContent = err?.message || "Upload failed. Please try again.";
-        verifyMessage.classList.add("muted");
-        renderVerification(verificationStatus.textContent || "unverified");
-      }
-    });
-
-    logoutBtn.addEventListener("click", async () => {
-      if (window.bbLogout) {
-        await window.bbLogout().catch(() => ({}));
-      } else {
-        await fetch("/api/auth/logout", { method: "POST" }).catch(() => ({}));
-      }
-      window.location.href = "/index.html";
-    });
-
-    init().catch(() => {
-      userLine.textContent = "Unable to load account.";
-    });
-  </script>
+  loadAccount().catch(() => {
+    document.getElementById("emailLine").textContent = "Unable to load account.";
+    document.getElementById("ordersWrap").textContent = "Unable to load orders.";
+  });
+</script>
 </body>
 </html>
