@@ -15,6 +15,8 @@ export const onRequestPost: PagesFunction = async (context) => {
     "X-BB-Reset-EmailSent": "0",
   });
 
+  const setHeader = (key: string, value: string) => responseHeaders.set(key, value);
+
   const setErr = (code: string) => {
     if (!responseHeaders.get("X-BB-Reset-Err")) responseHeaders.set("X-BB-Reset-Err", code);
   };
@@ -30,7 +32,7 @@ export const onRequestPost: PagesFunction = async (context) => {
       body = {};
     }
 
-    const emailNorm = String(body?.email ?? body?.Email ?? "").trim().toLowerCase();
+    const emailNorm = String(body.email || "").trim().toLowerCase();
     const ip = getIpAddress(request);
     const userAgent = (request.headers.get("user-agent") || "").slice(0, 512);
     const emailMasked = maskEmail(emailNorm);
@@ -39,7 +41,7 @@ export const onRequestPost: PagesFunction = async (context) => {
 
     const cRow = await db.prepare("SELECT COUNT(*) AS c FROM users").first<{ c: number | string }>();
     const usersCount = Number(cRow?.c ?? 0);
-    responseHeaders.set("X-BB-UsersCount", String(usersCount));
+    setHeader("X-BB-UsersCount", String(usersCount));
 
     if (!emailNorm || !emailNorm.includes("@")) return okResponse(responseHeaders);
 
@@ -51,16 +53,26 @@ export const onRequestPost: PagesFunction = async (context) => {
       return okResponse(responseHeaders);
     }
 
-    const user = await db
-      .prepare("SELECT id, email FROM users WHERE lower(trim(email)) = ? LIMIT 1")
-      .bind(emailNorm)
-      .first<{ id: string; email: string }>();
+    let u: { id: string; email: string } | null = null;
+    try {
+      const result = await env.DB
+        .prepare("SELECT id, email FROM users WHERE email = ? COLLATE NOCASE LIMIT 1")
+        .bind(emailNorm)
+        .all();
 
-    const userFound = Boolean(user?.id);
+      if (result && result.results && result.results.length > 0) {
+        u = result.results[0] as { id: string; email: string };
+      }
+    } catch (err) {
+      console.error("lookup error:", err);
+      setHeader("X-BB-Reset-Err", "lookup_sql_error");
+    }
+
+    const userFound = u ? 1 : 0;
     console.log("reset: userFound", userFound);
 
+    setHeader("X-BB-Reset-UserFound", String(userFound));
     if (!userFound) return okResponse(responseHeaders);
-    responseHeaders.set("X-BB-Reset-UserFound", "1");
 
     const token = randomToken(32);
     const tokenHash = await sha256Hex(token);
@@ -74,9 +86,9 @@ export const onRequestPost: PagesFunction = async (context) => {
           `INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, created_at, request_ip, user_agent)
            VALUES (?, ?, ?, ?, ?, ?, ?)`
         )
-        .bind(uuid(), user.id, tokenHash, expiresAt, createdAt, ip, userAgent)
+        .bind(uuid(), u.id, tokenHash, expiresAt, createdAt, ip, userAgent)
         .run();
-      responseHeaders.set("X-BB-Reset-Inserted", "1");
+      setHeader("X-BB-Reset-Inserted", "1");
       inserted = true;
     } catch (error) {
       console.error("reset insert failed", error);
@@ -86,7 +98,7 @@ export const onRequestPost: PagesFunction = async (context) => {
       } else {
         setErr("db_error");
       }
-      responseHeaders.set("X-BB-Reset-Inserted", "0");
+      setHeader("X-BB-Reset-Inserted", "0");
     }
     console.log("reset: inserted", inserted);
 
@@ -95,7 +107,7 @@ export const onRequestPost: PagesFunction = async (context) => {
       const { sent, errorCode } = await sendPasswordResetEmail(env, emailNorm, resetUrl);
       if (errorCode) setErr(errorCode);
       const emailSent = sent;
-      responseHeaders.set("X-BB-Reset-EmailSent", emailSent ? "1" : "0");
+      setHeader("X-BB-Reset-EmailSent", emailSent ? "1" : "0");
       console.log("reset: emailSent", emailSent);
     } else {
       console.log("reset: emailSent", false);
@@ -104,10 +116,10 @@ export const onRequestPost: PagesFunction = async (context) => {
     return okResponse(responseHeaders);
   } catch (err) {
     console.error("password/forgot error", err);
-    responseHeaders.set("X-BB-Reset-Err", "db_error");
-    responseHeaders.set("X-BB-Reset-UserFound", "0");
-    responseHeaders.set("X-BB-Reset-Inserted", "0");
-    responseHeaders.set("X-BB-Reset-EmailSent", "0");
+    setHeader("X-BB-Reset-Err", "db_error");
+    setHeader("X-BB-Reset-UserFound", "0");
+    setHeader("X-BB-Reset-Inserted", "0");
+    setHeader("X-BB-Reset-EmailSent", "0");
     return okResponse(responseHeaders);
   }
 };
