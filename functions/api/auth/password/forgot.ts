@@ -7,22 +7,27 @@ const THROTTLE_LIMIT_PER_EMAIL = 3;
 
 export const onRequestPost: PagesFunction = async (context) => {
   const { request, env } = context;
+  const debugEnabled = new URL(request.url).searchParams.get("debug") === "1";
   let phase = "start";
   let errMsg = "";
-  const responseHeaders = new Headers({
-    "X-BB-UsersCount": "0",
-    "X-BB-Reset-Phase": phase,
-    "X-BB-Reset-Err": "",
-    "X-BB-Reset-ErrMsg": "",
-    "X-BB-Reset-UserFound": "0",
-    "X-BB-Reset-Inserted": "0",
-    "X-BB-Reset-EmailSent": "0",
-  });
+  const responseHeaders = new Headers();
 
-  const setHeader = (key: string, value: string) => responseHeaders.set(key, value);
+  if (debugEnabled) {
+    responseHeaders.set("X-BB-UsersCount", "0");
+    responseHeaders.set("X-BB-Reset-Phase", phase);
+    responseHeaders.set("X-BB-Reset-Err", "");
+    responseHeaders.set("X-BB-Reset-ErrMsg", "");
+    responseHeaders.set("X-BB-Reset-UserFound", "0");
+    responseHeaders.set("X-BB-Reset-Inserted", "0");
+    responseHeaders.set("X-BB-Reset-EmailSent", "0");
+  }
+
+  const setHeader = (key: string, value: string) => {
+    if (debugEnabled) responseHeaders.set(key, value);
+  };
 
   const setErr = (code: string) => {
-    if (!responseHeaders.get("X-BB-Reset-Err")) responseHeaders.set("X-BB-Reset-Err", code);
+    if (debugEnabled && !responseHeaders.get("X-BB-Reset-Err")) responseHeaders.set("X-BB-Reset-Err", code);
   };
 
   const normalizeHeaderValue = (value: unknown) =>
@@ -107,6 +112,15 @@ export const onRequestPost: PagesFunction = async (context) => {
     setPhase("insert_token");
     await db.prepare("SELECT 1 FROM password_reset_tokens LIMIT 1").first();
     try {
+      await db
+        .prepare("DELETE FROM password_reset_tokens WHERE created_at < datetime('now','-7 days')")
+        .run();
+
+      await db
+        .prepare("DELETE FROM password_reset_tokens WHERE user_id = ? AND expires_at < datetime('now')")
+        .bind(u.id)
+        .run();
+
       await db
         .prepare(
           `INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, created_at, request_ip, user_agent)

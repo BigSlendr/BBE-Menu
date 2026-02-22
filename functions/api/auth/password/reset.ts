@@ -24,18 +24,18 @@ export const onRequestPost: PagesFunction = async (context) => {
     const tokenHash = await sha256Hex(token);
     const tokenRow = await db
       .prepare(
-        `SELECT id, user_id, expires_at, used_at
+        `SELECT id, user_id
          FROM password_reset_tokens
          WHERE token_hash = ?
+           AND used_at IS NULL
+           AND expires_at >= datetime('now')
          ORDER BY created_at DESC
          LIMIT 1`
       )
       .bind(tokenHash)
-      .first<{ id: string; user_id: string; expires_at: string; used_at: string | null }>();
+      .first<{ id: string; user_id: string }>();
 
     if (!tokenRow) return json({ ok: false, error: "invalid_or_expired" }, 400);
-    if (tokenRow.used_at) return json({ ok: false, error: "invalid_or_expired" }, 400);
-    if (Date.parse(tokenRow.expires_at) <= Date.now()) return json({ ok: false, error: "invalid_or_expired" }, 400);
 
     const newHash = await hashPassword(newPassword);
     const now = new Date().toISOString();
