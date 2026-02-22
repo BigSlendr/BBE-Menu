@@ -584,7 +584,7 @@
           return r.json();
         })
         .then(data=>{
-          const items=data.products||[];
+          const items=Array.isArray(data) ? data : (data.products || []);
           if(!items.length){
             console.log('[storefront-fallback] D1 Concentrates catalog is empty. Falling back to legacy static catalog.');
             renderStaticMenu();

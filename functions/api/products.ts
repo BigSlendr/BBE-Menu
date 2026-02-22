@@ -10,8 +10,26 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const brand = (url.searchParams.get("brand") || "").trim();
   const q = (url.searchParams.get("q") || "").trim();
 
-  const where = ["p.is_published = 1"];
+  const featuredParam = (url.searchParams.get("featured") || "").trim();
+  const publishedParam = (url.searchParams.get("published") || url.searchParams.get("is_published") || "").trim();
+  const rawLimit = Number.parseInt((url.searchParams.get("limit") || "").trim(), 10);
+  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 100) : 100;
+
+  const where: string[] = [];
   const binds: unknown[] = [];
+
+  if (featuredParam === "1") {
+    where.push("p.is_featured = ?");
+    binds.push(1);
+  }
+
+  if (publishedParam === "0" || publishedParam === "1") {
+    where.push("p.is_published = ?");
+    binds.push(Number(publishedParam));
+  } else {
+    where.push("p.is_published = ?");
+    binds.push(1);
+  }
 
   if (category) {
     where.push("LOWER(p.category) = LOWER(?)");
@@ -47,9 +65,10 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
       LEFT JOIN product_variants v ON v.product_id = p.id
       WHERE ${where.join(" AND ")}
       GROUP BY p.id
-      ORDER BY p.is_featured DESC, p.updated_at DESC`
+      ORDER BY p.updated_at DESC
+      LIMIT ?`
     )
-    .bind(...binds)
+    .bind(...binds, limit)
     .all();
 
   const products = (results || []).map((row: any) => ({
@@ -64,5 +83,5 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
     from_price_cents: row.from_price_cents === null ? null : Number(row.from_price_cents),
   }));
 
-  return json({ ok: true, products });
+  return json(products);
 };
