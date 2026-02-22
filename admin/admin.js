@@ -1,25 +1,31 @@
 const $ = (s) => document.querySelector(s);
-const EFFECTS = ["Relaxed", "Creative", "Euphoric", "Focused", "Sleepy", "Hungry", "Uplifted"];
+const state = { admin: null, needsBootstrap: false, panel: "dashboard" };
 
-const state = { admin: null, products: [], editing: null, needsBootstrap: false };
+const navItems = [
+  ["dashboard", "Dashboard"],
+  ["orders", "Orders"],
+  ["customers", "Customers"],
+  ["products", "Products"],
+  ["verification", "Verification"],
+];
 
 const toast = (message, type = "ok") => {
   const el = document.createElement("div");
   el.className = `toast ${type === "error" ? "error" : ""}`;
   el.textContent = message;
   $("#toastRoot").appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  setTimeout(() => el.remove(), 3000);
 };
 
 async function api(path, opts = {}) {
   const res = await fetch(path, { credentials: "include", ...opts });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const message = data.msg || data.error || `Request failed (${res.status})`;
-    throw new Error(message);
-  }
+  if (!res.ok) throw new Error(data.error || data.msg || `Request failed (${res.status})`);
   return data;
 }
+
+function money(cents) { return `$${(Number(cents || 0) / 100).toFixed(2)}`; }
+function esc(v) { return String(v ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
 
 function setWorkspaceVisible(visible) {
   $(".sidebar").hidden = !visible;
@@ -32,186 +38,164 @@ function renderAuth() {
   if (state.admin) {
     root.hidden = true;
     setWorkspaceVisible(true);
-    $("#adminIdentity").textContent = `${state.admin.name || state.admin.email} (${state.admin.role})`;
-    return;
+    $("#adminIdentity").textContent = `${state.admin.name || state.admin.email}${state.admin.is_super_admin ? " (Super Admin)" : ""}`;
+    return renderApp();
   }
 
   setWorkspaceVisible(false);
   root.hidden = false;
-  root.innerHTML = `
-    <div class="card">
-      <h3>Admin Login</h3>
-      <input id="loginEmail" placeholder="Email" />
-      <input id="loginPassword" placeholder="Password" type="password" />
-      <button id="loginBtn" class="btn btn-gold">Login</button>
-    </div>
-    <div class="card" ${state.needsBootstrap ? "" : "hidden"}>
-      <h3>Bootstrap Owner</h3>
-      <input id="bootSecret" placeholder="Bootstrap secret" type="password" />
-      <input id="bootEmail" placeholder="Owner email" />
-      <input id="bootName" placeholder="Owner name" />
-      <input id="bootPassword" placeholder="Password" type="password" />
-      <button id="bootBtn" class="btn btn-gold">Create Owner</button>
-    </div>
-  `;
+  root.innerHTML = `<div class="card"><h3>Admin Login</h3><input id="loginEmail" placeholder="Email" /><input id="loginPassword" placeholder="Password" type="password" /><button id="loginBtn" class="btn btn-gold">Login</button></div>
+  <div class="card" ${state.needsBootstrap ? "" : "hidden"}><h3>Bootstrap Super Admin</h3><input id="bootSecret" placeholder="Bootstrap secret" type="password" /><input id="bootEmail" placeholder="Owner email" /><input id="bootName" placeholder="Owner name" /><input id="bootPassword" placeholder="Password" type="password" /><button id="bootBtn" class="btn btn-gold">Bootstrap</button></div>`;
 
   $("#loginBtn").onclick = async () => {
     try {
-      const d = await api("/api/admin/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: $("#loginEmail").value, password: $("#loginPassword").value }),
-      });
-      state.admin = d.admin;
-      renderAuth();
-      await loadProducts();
-    } catch (e) {
-      toast(`Login failed: ${e.message}`, "error");
-    }
+      const d = await api("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: $("#loginEmail").value, password: $("#loginPassword").value }) });
+      state.admin = d.admin; renderAuth();
+    } catch (e) { toast(e.message, "error"); }
   };
 
   if (state.needsBootstrap) {
     $("#bootBtn").onclick = async () => {
       try {
-        await api("/api/admin/auth/bootstrap-create", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            secret: $("#bootSecret").value,
-            email: $("#bootEmail").value,
-            password: $("#bootPassword").value,
-            name: $("#bootName").value,
-          }),
-        });
-        toast("Owner created. Please sign in.");
-        await init();
-      } catch (e) {
-        toast(`Bootstrap failed: ${e.message}`, "error");
-      }
+        await api("/api/admin/bootstrap", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ secret: $("#bootSecret").value, email: $("#bootEmail").value, name: $("#bootName").value, password: $("#bootPassword").value }) });
+        toast("Super admin bootstrapped.");
+      } catch (e) { toast(e.message, "error"); }
     };
   }
 }
 
-function productForm(p = {}) {
-  const effects = new Set(p.effects || []);
-  return `
-    <div class="card">
-      <input id="fName" placeholder="Name" value="${p.name || ""}" />
-      <input id="fSlug" placeholder="Slug" value="${p.slug || ""}" />
-      <input id="fBrand" placeholder="Brand" value="${p.brand || ""}" />
-      <input id="fCategory" placeholder="Category" value="${p.category || ""}" />
-      <input id="fSubcategory" placeholder="Subcategory" value="${p.subcategory || ""}" />
-      <textarea id="fDescription" placeholder="Description">${p.description || ""}</textarea>
-      <label><input id="fPublished" type="checkbox" ${Number(p.is_published ?? 1) ? "checked" : ""}/> Published</label>
-      <input id="fImageUrl" placeholder="Image URL fallback" value="${p.image_url || ""}" />
-      <input id="fImageFile" type="file" accept="image/*" />
-      <div>${EFFECTS.map((e) => `<label><input class='fx' type='checkbox' value='${e}' ${effects.has(e) ? "checked" : ""}/> ${e}</label>`).join(" ")}</div>
-      <h4>Variants</h4>
-      <div id="variants">${(p.variants || []).map((v, i) => `<div class='vrow'><input class='vlabel' value='${v.label || ""}' placeholder='label'/><input class='vprice' type='number' value='${v.price_cents || 0}' placeholder='price_cents'/><input class='vsort' type='number' value='${v.sort_order ?? i}'/><label><input class='vactive' type='checkbox' ${Number(v.is_active ?? 1) ? "checked" : ""}/>active</label></div>`).join("")}</div>
-      <button id="addVariant" class="btn">Add Variant</button>
-      <button id="saveProduct" class="btn btn-gold">Save</button>
-    </div>`;
+function renderNav() {
+  const items = [...navItems];
+  if (state.admin?.is_super_admin) items.push(["admin-users", "Admin Users"]);
+  $("#sideNav").innerHTML = items.map(([k, label]) => `<button class="btn nav-btn ${state.panel === k ? "active" : ""}" data-panel="${k}">${label}</button>`).join("");
+  document.querySelectorAll(".nav-btn").forEach((b) => b.onclick = () => { state.panel = b.dataset.panel; renderApp(); });
 }
 
-function collectForm(id = null) {
-  return {
-    id,
-    name: $("#fName").value,
-    slug: $("#fSlug").value,
-    brand: $("#fBrand").value,
-    category: $("#fCategory").value,
-    subcategory: $("#fSubcategory").value,
-    description: $("#fDescription").value,
-    image_url: $("#fImageUrl").value,
-    is_published: $("#fPublished").checked ? 1 : 0,
-    effects: [...document.querySelectorAll(".fx:checked")].map((x) => x.value),
-    variants: [...document.querySelectorAll("#variants .vrow")].map((row, i) => ({ label: row.querySelector(".vlabel").value, price_cents: Number(row.querySelector(".vprice").value || 0), sort_order: Number(row.querySelector(".vsort").value || i), is_active: row.querySelector(".vactive").checked ? 1 : 0 })),
-  };
+function openDrawer(title, obj) {
+  $("#drawerTitle").textContent = title;
+  $("#drawerBody").innerHTML = `<pre>${esc(JSON.stringify(obj, null, 2))}</pre>`;
+  $("#detailDrawer").classList.add("open");
 }
 
-async function maybeUploadImage(productId) {
-  const file = $("#fImageFile")?.files?.[0];
-  if (!file) return {};
-  const fd = new FormData();
-  fd.append("image", file);
-  fd.append("productId", productId || crypto.randomUUID());
+async function panelDashboard() {
+  const range = $("#globalRange").value;
+  const q = new URLSearchParams({ range });
+  if (range === "custom") {
+    q.set("start", $("#customStart").value);
+    q.set("end", $("#customEnd").value);
+  }
+  const d = await api(`/api/admin/dashboard?${q.toString()}`);
+  const m = d.metrics || {};
+  return `<div class="dashboard-controls"><h2>Dashboard</h2><span class="muted">${esc(d.range.start)} → ${esc(d.range.end)}</span></div>
+  <div class="cards">
+  <div class="card"><div class="muted">Revenue (Completed)</div><h3>${money(m.revenue_completed_cents)}</h3></div>
+  <div class="card"><div class="muted">Pending</div><h3>${money(m.pending_cents)}</h3></div>
+  <div class="card"><div class="muted">Cancelled</div><h3>${money(m.cancelled_cents)}</h3></div>
+  <div class="card"><div class="muted">AOV (Completed)</div><h3>${money(m.aov_completed_cents)}</h3></div>
+  </div>
+  <div class="cards">
+  <div class="card">Orders: completed ${m.orders_completed_count}, pending ${m.orders_pending_count}, cancelled ${m.orders_cancelled_count}</div>
+  <div class="card">Customers: total ${m.customers_total}, active ${m.customers_active}, new ${m.new_customers_count}</div>
+  <div class="card">Points: issued ${m.points_issued}, redeemed ${m.points_redeemed}, outstanding ${m.points_outstanding}</div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Top customers</th><th>Completed lifetime spend</th><th>Points</th></tr></thead><tbody>
+  ${(d.top_customers || []).map((c) => `<tr><td>${esc(c.email)} (${esc([c.first_name, c.last_name].filter(Boolean).join(" "))})</td><td>${money(c.lifetime_spend_completed_cents)}</td><td>${Number(c.points_balance || 0)}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+async function panelOrders() {
+  const q = encodeURIComponent($("#globalSearch").value || "");
+  const d = await api(`/api/admin/orders?query=${q}`);
+  return `<h2>Orders</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Status</th><th>Total</th><th>Created</th></tr></thead><tbody>
+  ${(d.orders || []).map((o) => `<tr class='clickable-row order-row' data-id='${o.id}'><td>${esc(o.id)}</td><td>${esc(o.status)}</td><td>${money(o.total_cents)}</td><td>${esc(o.created_at)}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+async function panelCustomers() {
+  const q = encodeURIComponent($("#globalSearch").value || "");
+  const d = await api(`/api/admin/customers?query=${q}`);
+  return `<h2>Customers</h2><div class='table-wrap'><table><thead><tr><th>Email</th><th>Status</th><th>Lifetime Spend</th></tr></thead><tbody>
+  ${(d.customers || []).map((c) => `<tr class='clickable-row customer-row' data-id='${c.id}'><td>${esc(c.email)}</td><td>${esc(c.account_status)}</td><td>${money(c.lifetime_spend_cents)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+async function panelProducts() {
+  const q = encodeURIComponent($("#globalSearch").value || "");
+  const d = await api(`/api/admin/products?query=${q}`);
+  return `<h2>Products</h2><div class='table-wrap'><table><thead><tr><th>Name</th><th>Category</th><th>Published</th></tr></thead><tbody>
+  ${(d.products || []).map((p) => `<tr class='clickable-row product-row' data-id='${p.id}'><td>${esc(p.name)}</td><td>${esc(p.category || "")}</td><td>${Number(p.is_published) ? "Yes" : "No"}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+async function panelVerification() {
+  const d = await api(`/api/admin/verification/pending`);
+  return `<h2>Verification</h2><div class='table-wrap'><table><thead><tr><th>User</th><th>Status</th><th>Updated</th></tr></thead><tbody>
+  ${(d.users || []).map((u) => `<tr><td>${esc(u.email)}</td><td>${esc(u.account_status || "pending")}</td><td>${esc(u.updated_at || "")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+async function panelAdminUsers() {
+  const d = await api("/api/admin/users");
+  return `<div style='display:flex;justify-content:space-between;align-items:center;'><h2>Admin Users</h2><button id='newAdminBtn' class='btn btn-gold'>Create Admin</button></div>
+  <div class='table-wrap'><table><thead><tr><th>Email</th><th>Name</th><th>Active</th><th>Super</th><th>Actions</th></tr></thead><tbody>
+  ${(d.admins || []).map((a) => `<tr><td>${esc(a.email)}</td><td>${esc(a.name || "")}</td><td>${Number(a.is_active) ? "Yes" : "No"}</td><td>${Number(a.is_super_admin) ? "Yes" : "No"}</td><td>
+  <button class='btn btn-small t-active' data-id='${a.id}'>Toggle Active</button>
+  <button class='btn btn-small t-super' data-id='${a.id}'>Toggle Super</button>
+  <button class='btn btn-small t-del' data-id='${a.id}'>Delete</button>
+  </td></tr>`).join("")}</tbody></table></div>`;
+}
+
+async function renderApp() {
+  renderNav();
+  const root = $("#workspace");
+  const panels = { dashboard: panelDashboard, orders: panelOrders, customers: panelCustomers, products: panelProducts, verification: panelVerification, "admin-users": panelAdminUsers };
+  const fn = panels[state.panel] || panelDashboard;
+  root.innerHTML = `<div class='skeleton'></div><div class='skeleton'></div>`;
   try {
-    return await api("/api/admin/uploads/product-image", { method: "POST", body: fd });
+    root.innerHTML = await fn();
+    bindPanelEvents();
   } catch (e) {
-    toast(`Upload unavailable (${e.message}), using URL fallback`, "error");
-    return {};
+    root.innerHTML = `<div class='card error-card'>${esc(e.message)}</div>`;
   }
 }
 
-async function editProduct(id = null) {
-  let p = { variants: [], effects: [] };
-  if (id) {
-    const d = await api(`/api/admin/products/${id}`);
-    p = { ...d.product, variants: d.variants || [] };
-  }
-  const root = $("#authView");
-  root.hidden = false;
-  $("#workspace").hidden = true;
-  $("#workspaceTopbar").hidden = true;
-  root.innerHTML = productForm(p);
-  $("#addVariant").onclick = () => {
-    const row = document.createElement("div");
-    row.className = "vrow";
-    row.innerHTML = "<input class='vlabel' placeholder='label'/><input class='vprice' type='number' value='0'/><input class='vsort' type='number' value='0'/><label><input class='vactive' type='checkbox' checked/>active</label>";
-    $("#variants").appendChild(row);
+function bindPanelEvents() {
+  document.querySelectorAll(".order-row").forEach((r) => r.onclick = async () => openDrawer("Order", await api(`/api/admin/orders/${r.dataset.id}`)));
+  document.querySelectorAll(".customer-row").forEach((r) => r.onclick = async () => openDrawer("Customer", await api(`/api/admin/customers/${r.dataset.id}`)));
+  document.querySelectorAll(".product-row").forEach((r) => r.onclick = async () => openDrawer("Product", await api(`/api/admin/products/${r.dataset.id}`)));
+  document.querySelectorAll(".t-active").forEach((b) => b.onclick = async () => { if (confirm("Toggle active?")) { await api(`/api/admin/users/${b.dataset.id}/toggle-active`, { method: "POST" }); renderApp(); } });
+  document.querySelectorAll(".t-super").forEach((b) => b.onclick = async () => { if (confirm("Toggle super admin?")) { await api(`/api/admin/users/${b.dataset.id}/toggle-super`, { method: "POST" }); renderApp(); } });
+  document.querySelectorAll(".t-del").forEach((b) => b.onclick = async () => { if (prompt("Type DELETE to confirm") === "DELETE") { await api(`/api/admin/users/${b.dataset.id}`, { method: "DELETE" }); renderApp(); } });
+  const n = $("#newAdminBtn");
+  if (n) n.onclick = async () => {
+    const email = prompt("Admin email"); if (!email) return;
+    const name = prompt("Name") || "";
+    const password = prompt("Temp password (min 8 chars)"); if (!password) return;
+    await api("/api/admin/users", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, name, password }) });
+    renderApp();
   };
-  $("#saveProduct").onclick = async () => {
-    try {
-      const upload = await maybeUploadImage(id);
-      const payload = collectForm(id);
-      if (upload.image_key) payload.image_key = upload.image_key;
-      if (upload.public_url) payload.image_path = upload.public_url;
-      if (id) await api(`/api/admin/products/${id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-      else await api("/api/admin/products", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-      toast("Saved");
-      renderAuth();
-      await loadProducts();
-    } catch (e) {
-      toast(e.message, "error");
-    }
-  };
-}
-
-async function loadProducts() {
-  const q = encodeURIComponent($("#search").value || "");
-  const category = encodeURIComponent($("#categoryFilter").value || "");
-  const published = encodeURIComponent($("#publishedFilter").value || "");
-  const d = await api(`/api/admin/products?query=${q}&category=${category}&published=${published}`);
-  state.products = d.products || [];
-  $("#productsList").innerHTML = state.products.map((p) => `<div class='card'><div><strong>${p.name}</strong> <span class='muted'>${p.category || ""}/${p.subcategory || ""}</span></div><div><img src='${p.image_url || (p.image_key ? `/api/images/${encodeURIComponent(p.image_key)}` : p.image_path || "")}' style='max-width:80px;max-height:80px'/></div><div>${p.effects.map((e) => `<span class='badge'>${e}</span>`).join(" ")}</div><div><button class='btn edit' data-id='${p.id}'>Edit</button><button class='btn del' data-id='${p.id}'>Delete</button><button class='btn unpub' data-id='${p.id}'>Unpublish</button></div></div>`).join("");
-  document.querySelectorAll(".edit").forEach((b) => (b.onclick = () => editProduct(b.dataset.id)));
-  document.querySelectorAll(".del").forEach((b) => (b.onclick = async () => { await api(`/api/admin/products/${b.dataset.id}`, { method: "DELETE" }); await loadProducts(); }));
-  document.querySelectorAll(".unpub").forEach((b) => (b.onclick = async () => { await api(`/api/admin/products/${b.dataset.id}?mode=unpublish`, { method: "DELETE" }); await loadProducts(); }));
 }
 
 async function init() {
-  $("#logoutBtn").onclick = async () => {
-    await api("/api/admin/auth/logout", { method: "POST" });
-    state.admin = null;
-    await init();
+  $("#logoutBtn").onclick = async () => { await api("/api/admin/logout", { method: "POST" }); state.admin = null; $("#detailDrawer").classList.remove("open"); renderAuth(); };
+  $("#drawerClose").onclick = () => $("#detailDrawer").classList.remove("open");
+  $("#refreshBtn").onclick = () => renderApp();
+  $("#globalSearch").onchange = () => renderApp();
+  $("#globalRange").onchange = () => {
+    const custom = $("#globalRange").value === "custom";
+    $("#customStart").hidden = !custom;
+    $("#customEnd").hidden = !custom;
+    renderApp();
   };
-  $("#newProductBtn").onclick = () => editProduct(null);
-  ["#search", "#categoryFilter", "#publishedFilter"].forEach((sel) => {
-    $(sel).onchange = () => loadProducts().catch((e) => toast(e.message, "error"));
-  });
+  $("#customStart").onchange = () => renderApp();
+  $("#customEnd").onchange = () => renderApp();
 
-  const boot = await api("/api/admin/auth/bootstrap-create");
+  const boot = await api("/api/admin/auth/bootstrap-create").catch(() => ({ needs_bootstrap: false }));
   state.needsBootstrap = !!boot.needs_bootstrap;
 
   try {
-    const me = await api("/api/admin/auth/me");
-    state.admin = me.ok ? me.admin : null;
-  } catch {
-    state.admin = null;
-  }
+    const me = await api("/api/admin/me");
+    state.admin = me.admin;
+  } catch { state.admin = null; }
 
   renderAuth();
-  if (state.admin) await loadProducts();
 }
 
 document.addEventListener("DOMContentLoaded", () => init().catch((e) => toast(e.message, "error")));

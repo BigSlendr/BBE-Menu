@@ -1,4 +1,4 @@
-import { requireAdminSession } from "../_helpers";
+import { requireAdmin } from "../../_auth";
 import { adminAuthJson, ensureAdminSessionSchema, getErrorMessage } from "./_helpers";
 
 export const onRequestGet: PagesFunction = async ({ request, env }) => {
@@ -6,16 +6,14 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
     const db = env.DB as D1Database;
     await ensureAdminSessionSchema(db);
 
-    const admin = await requireAdminSession(request, env);
-    if (!admin) {
-      return adminAuthJson({ ok: false, error: "not_authenticated" }, 401, "require_session", "not_authenticated", "No active admin session");
+    const auth = await requireAdmin(request, env);
+    if (auth instanceof Response) {
+      return adminAuthJson({ ok: false, error: "not_authenticated" }, 401);
     }
+
     return adminAuthJson(
-      { ok: true, admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role } },
-      200,
-      "done",
-      "none",
-      ""
+      { ok: true, admin: { id: auth.admin.id, email: auth.admin.email, name: auth.admin.name, is_super_admin: Number(auth.admin.is_super_admin) } },
+      200
     );
   } catch (err) {
     return adminAuthJson({ ok: false, error: "server_error", msg: getErrorMessage(err) }, 500, "exception", "server_error", "Unhandled me error");

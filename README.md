@@ -92,3 +92,53 @@ curl -i -X POST http://localhost:8788/api/order \
     }
   }'
 ```
+
+## Admin dashboard + super admin management
+
+### Run latest migrations
+
+This release adds migration `migrations/0010_admin_dashboard_super_admin.sql` to guarantee `admin_users`/`sessions` schema compatibility for admin sessions and dashboard features.
+
+```bash
+wrangler d1 migrations apply <db_name> --local
+wrangler d1 migrations apply <db_name> --remote
+```
+
+### Bootstrap first super admin
+
+Set these environment variables in Cloudflare Pages:
+
+- `ADMIN_BOOTSTRAP_SECRET`
+- `OWNER_EMAIL` (optional fallback)
+- `OWNER_NAME` (optional fallback)
+- `OWNER_PASSWORD` (optional fallback)
+
+Then call:
+
+```bash
+curl -X POST /api/admin/bootstrap \
+  -H 'content-type: application/json' \
+  -d '{"secret":"<ADMIN_BOOTSTRAP_SECRET>","email":"owner@example.com","name":"Owner","password":"strong-password"}'
+```
+
+You can also continue using `/api/admin/auth/bootstrap-create` for compatibility.
+
+### Manage admin users (super admin only)
+
+- `GET /api/admin/users` list admins.
+- `POST /api/admin/users` create admin (`email`, `name`, `password`).
+- `POST /api/admin/users/:id/toggle-active` deactivate/reactivate.
+- `POST /api/admin/users/:id/toggle-super` promote/demote super admin.
+- `DELETE /api/admin/users/:id` hard delete (blocked for self and last super admin).
+
+### Dashboard metrics definitions
+
+`GET /api/admin/dashboard` returns metrics where revenue and lifetime spend logic are based on order status:
+
+- `revenue_completed_cents`: **completed orders only**.
+- `pending_cents`: pending/placed orders.
+- `cancelled_cents`: cancelled orders.
+- `aov_completed_cents`: completed revenue ÷ completed order count.
+- `top_customers`: ranked by **completed-only** lifetime spend plus points balance.
+
+This ensures cancelled orders are excluded from completed revenue/lifetime spend reporting.

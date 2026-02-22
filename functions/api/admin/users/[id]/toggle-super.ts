@@ -1,24 +1,22 @@
-import { json, requireSuperAdmin } from "../../_auth";
+import { json, requireSuperAdmin } from "../../../_auth";
 
-export const onRequestDelete: PagesFunction = async ({ request, env, params }) => {
+export const onRequestPost: PagesFunction = async ({ request, env, params }) => {
   const auth = await requireSuperAdmin(request, env);
   if (auth instanceof Response) return auth;
 
   const id = String(params?.id || "").trim();
   if (!id) return json({ ok: false, error: "id_required" }, 400);
-  if (id === auth.admin.id) return json({ ok: false, error: "cannot_delete_self" }, 400);
 
   const db = env.DB as D1Database;
   const target = await db.prepare("SELECT id, is_super_admin FROM admin_users WHERE id=?").bind(id).first<any>();
   if (!target) return json({ ok: false, error: "not_found" }, 404);
 
-  if (Number(target.is_super_admin || 0) === 1) {
+  const nextSuper = Number(target.is_super_admin || 0) === 1 ? 0 : 1;
+  if (nextSuper === 0) {
     const count = await db.prepare("SELECT COUNT(*) AS c FROM admin_users WHERE COALESCE(is_active,1)=1 AND COALESCE(is_super_admin,0)=1 AND id != ?").bind(id).first<any>();
-    if (Number(count?.c || 0) < 1) return json({ ok: false, error: "cannot_delete_last_super_admin" }, 400);
+    if (Number(count?.c || 0) < 1) return json({ ok: false, error: "cannot_demote_last_super_admin" }, 400);
   }
 
-  await db.prepare("DELETE FROM sessions WHERE admin_user_id = ?").bind(id).run();
-  await db.prepare("DELETE FROM admin_users WHERE id = ?").bind(id).run();
-
-  return json({ ok: true });
+  await db.prepare("UPDATE admin_users SET is_super_admin=?, updated_at=? WHERE id=?").bind(nextSuper, new Date().toISOString(), id).run();
+  return json({ ok: true, is_super_admin: nextSuper });
 };
