@@ -1003,108 +1003,12 @@
     });
 
 
-    // ===== Featured Strains Carousel (random 5 Flower items) =====
-    const PRODUCT_JSON_PATH = "content/products.json";
+    // ===== Featured Strains Carousel (D1-backed Featured 5) =====
     const ROTATE_MS = 4500;
 
-    function normalizeKey(s){
-      return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
-    }
-
-    function shuffle(arr){
-      const a = arr.slice();
-      for(let i=a.length-1;i>0;i--){
-        const j = Math.floor(Math.random() * (i+1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    function money(n){
-      if(n===null || n===undefined || n==="" || isNaN(Number(n))) return "N/A";
-      return "$" + Number(n).toFixed(0);
-    }
-
-    function getBestPrice(item){
-      // Prefer 8th then Q then Half then OZ (or whatever exists)
-      const keys = ["g3_5","g7","g14","g28"];
-      for(const k of keys){
-        const a = item.availability ? item.availability[k] !== false : true;
-        const p = item.prices ? item.prices[k] : null;
-        if(a && p !== null && p !== undefined && p !== "") return { key:k, price:p };
-      }
-      return { key:null, price:null };
-    }
-
-    function hasInStockPrice(item){
-      const best = getBestPrice(item);
-      return best.price !== null && best.price !== undefined && best.price !== "";
-    }
-
-    function isCasshRules(item){
-      const sub = (item.subcategory || "").trim();
-      const norm = sub.toLowerCase().replace(/[^a-z0-9]/g,"");
-      return sub === "CA$$H RULE$" || sub === "CA$H RULE$" || norm === "casshrules";
-    }
-
-    // Minimal fallback maps (uses item.image first; these are only backups)
-    const IMAGE_MAP = {
-      "zaamatic": "Zaamatic.png",
-      "double-bubble": "Double-bubble.png",
-      "pink-certz": "Pink-Certz.png",
-      "space-candy": "Space-Candy.png",
-      "fruit-snacks": "Fruit-Stripes.png",
-      "sherbert": "Sherbert.png",
-      "silver-back-gorilla": "SilverBackGorilla.jpg",
-      "bubblegum-poppers": "BubbleGumPoppers.jpg",
-      "pink-cadillac": "PinkCadillac.jpg",
-      "candy-fumez-shake": "CandyFumesShake.jpg",
-      "sherb-candy-shake": "SherbCandyShake.jpg",
-      "sugar-shock": "Sugar-Shock.png",
-      "ready-to-trap": "Ready-To-Trap.png",
-      "rainbow-belts": "Rainbow-Belts.png",
-      "frosted-peaches": "Frosted-Peaches.png",
-      "crazzy": "Crazzy.png",
-      "adl": "ADL.png",
-      "gumbo": "gumbo.png",
-      "verzace-by-bobby-black-exclusive": "verzace.png",
-      "peachtree": "peachtree.png"
-    };
-
-    const NAME_MAP = {
-      "zaamatic": "Zaamatic.png",
-      "doublebubble": "Double-bubble.png",
-      "pinkcertz": "Pink-Certz.png",
-      "spacecandy": "Space-Candy.png",
-      "fruitsnacks": "Fruit-Stripes.png",
-      "sherbert": "Sherbert.png",
-      "silverbackgorilla": "SilverBackGorilla.jpg",
-      "bubblegumpoppers": "BubbleGumPoppers.jpg",
-      "pinkcadillac": "PinkCadillac.jpg",
-      "candyfumezexoticshake": "CandyFumesShake.jpg",
-      "candyfumezshake": "CandyFumesShake.jpg",
-      "sherbcandyshake": "SherbCandyShake.jpg",
-      "sugarshock": "Sugar-Shock.png",
-      "readytotrap": "Ready-To-Trap.png",
-      "rainbowbelts": "Rainbow-Belts.png",
-      "frostedpeaches": "Frosted-Peaches.png",
-      "crazzy": "Crazzy.png",
-      "adl": "ADL.png",
-      "gumbo": "gumbo.png",
-      "verzacebybobbyblackexclusive": "verzace.png",
-      "peachtree": "peachtree.png"
-    };
-
-    function resolveImage(item){
-      if(item && item.image && String(item.image).trim()) return String(item.image).trim();
-
-      const byId = IMAGE_MAP[item.id];
-      if(byId) return "images/" + byId;
-
-      const byName = NAME_MAP[normalizeKey(item.name)];
-      if(byName) return "images/" + byName;
-
-      return "";
+    function moneyFromCents(cents){
+      if(cents===null || cents===undefined || Number.isNaN(Number(cents))) return "N/A";
+      return "$" + (Number(cents) / 100).toFixed(2);
     }
 
     const carouselEl = document.getElementById("carousel");
@@ -1116,42 +1020,46 @@
     let idx = 0;
     let timer = null;
 
+    async function fetchProducts(params){
+      const qs = new URLSearchParams(params);
+      const res = await fetch('/api/products?' + qs.toString(), { cache: 'no-store' });
+      if(!res.ok) throw new Error('Products request failed: ' + res.status);
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.products || []);
+    }
+
     function renderSlide(i){
       if(!featured.length) return;
       idx = (i + featured.length) % featured.length;
 
       const item = featured[idx];
-      const brand = isCasshRules(item) ? "CA$H RULE$" : "Bobby Black Exclusive";
-      const imgPath = resolveImage(item);
-      const best = getBestPrice(item);
+      const imgPath = item.image_path || "";
 
       carouselEl.innerHTML = `
         <div class="feature-card" role="button" tabindex="0" aria-label="Open ${item.name}">
           <div class="feature-img">
             ${imgPath
-              ? `<img src="${imgPath}" alt="${item.name}" loading="lazy" onerror="this.remove(); this.parentElement.innerHTML='<div class=\\'feature-noimg\\'>No Image</div>';">`
+              ? `<img src="${imgPath}" alt="${item.name}" loading="lazy" onerror="this.remove(); this.parentElement.innerHTML='<div class=\'feature-noimg\'>No Image</div>';">`
               : `<div class="feature-noimg">No Image</div>`
             }
           </div>
           <div class="feature-info">
-            <div class="feature-brand">${brand}</div>
+            <div class="feature-brand">${item.brand || 'Bobby Black Exclusive'}</div>
             <div class="feature-title">${String(item.name||"").toUpperCase()}</div>
             <div class="feature-meta">
-              <span class="meta-pill">Flower</span>
-              <span class="meta-pill">${best.price!=null ? (money(best.price) + " • " + (best.key==="g3_5"?"8TH":best.key==="g7"?"Q":best.key==="g14"?"HALF":"OZ")) : "PRICE N/A"}</span>
+              <span class="meta-pill">${item.category || 'Product'}</span>
+              <span class="meta-pill">From: ${moneyFromCents(item.from_price_cents)}</span>
               <span class="meta-pill">Tap to view</span>
             </div>
           </div>
         </div>
       `;
 
-      // click + keyboard support
       const card = carouselEl.querySelector(".feature-card");
-      const go = ()=>{ window.location.href = "product.html?id=" + encodeURIComponent(item.id); };
+      const go = ()=>{ window.location.href = "product.html?slug=" + encodeURIComponent(item.slug); };
       card.addEventListener("click", go);
       card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
 
-      // dots
       dotsEl.innerHTML = featured.map((_,di)=>(
         `<div class="dot ${di===idx ? "active":""}" data-i="${di}" aria-label="Go to slide ${di+1}"></div>`
       )).join("");
@@ -1172,36 +1080,41 @@
     prevBtn.onclick = ()=>{ stopTimer(); renderSlide(idx-1); startTimer(); };
     nextBtn.onclick = ()=>{ stopTimer(); renderSlide(idx+1); startTimer(); };
 
-    // Load products and pick 5 random Flower strains
-    fetch(PRODUCT_JSON_PATH, { cache:"no-store" })
-      .then(r=>r.json())
-      .then(data=>{
-        const items = Array.isArray(data.items) ? data.items : [];
-        const flower = items.filter(x => x.category === "Flower");
+    async function loadFeatured(){
+      try {
+        const selected = await fetchProducts({ featured: '1', published: '1', limit: '5' });
+        if(selected.length < 5){
+          const fallback = await fetchProducts({ published: '1', limit: '5' });
+          const seen = new Set(selected.map(item => item.id));
+          for(const item of fallback){
+            if(seen.has(item.id)) continue;
+            selected.push(item);
+            seen.add(item.id);
+            if(selected.length >= 5) break;
+          }
+        }
 
-        // Only show in-stock items (must have at least 1 available price)
-        const usable = flower.filter(x => x && x.id && x.name && hasInStockPrice(x));
-
-        featured = shuffle(usable).slice(0,5);
+        featured = selected.slice(0,5);
 
         if(!featured.length){
-          carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">No featured strains available.</div>`;
+          carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">No featured products available.</div>`;
           return;
         }
 
         renderSlide(0);
         startTimer();
 
-        // Pause rotation if tab hidden
         document.addEventListener("visibilitychange", ()=>{
           if(document.hidden) stopTimer();
           else startTimer();
         });
-      })
-      .catch(err=>{
+      } catch (err) {
         console.error(err);
-        carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">Error loading featured strains.</div>`;
-      });
+        carouselEl.innerHTML = `<div style="color:#b00000;font-weight:900">Error loading featured products.</div>`;
+      }
+    }
+
+    loadFeatured();
   </script>
 
   <script defer src="/auth.js?v=6"></script>
