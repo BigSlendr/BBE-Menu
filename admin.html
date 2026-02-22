@@ -9,20 +9,30 @@
 </head>
 <body>
   <div class="admin-app">
-    <aside class="sidebar" hidden><div><div class="logo">BBE</div><h1>Admin Workspace</h1></div><div id="adminIdentity" class="sidebar-footer">Not signed in</div></aside>
+    <aside class="sidebar" hidden>
+      <div>
+        <div class="logo">BBE</div>
+        <h1>Admin Workspace</h1>
+        <nav id="sideNav" class="nav"></nav>
+      </div>
+      <div id="adminIdentity" class="sidebar-footer">Not signed in</div>
+    </aside>
     <main class="main">
       <header id="workspaceTopbar" class="topbar panel" hidden>
-        <input id="search" type="search" placeholder="Search products" />
-        <select id="categoryFilter"><option value="">All categories</option><option>Flower</option><option>Concentrates</option><option>Accessories</option></select>
-        <select id="publishedFilter"><option value="">All status</option><option value="1">Published</option><option value="0">Unpublished</option></select>
-        <button id="newProductBtn" class="btn btn-gold">New Product</button>
+        <input id="globalSearch" type="search" placeholder="Search" />
+        <select id="globalRange"><option value="today">Today</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="custom">Custom</option></select>
+        <input id="customStart" type="date" hidden />
+        <input id="customEnd" type="date" hidden />
+        <button id="refreshBtn" class="btn">Refresh</button>
         <button id="logoutBtn" class="btn">Logout</button>
       </header>
       <section id="authView" class="content panel"></section>
-      <section id="workspace" class="content panel" hidden>
-        <div id="productsList"></div>
-      </section>
+      <section id="workspace" class="content panel" hidden></section>
     </main>
+    <aside id="detailDrawer" class="drawer">
+      <div class="drawer-head"><strong id="drawerTitle">Details</strong><button id="drawerClose" class="btn btn-small">Close</button></div>
+      <div id="drawerBody" class="drawer-body"></div>
+    </aside>
   </div>
   <div id="toastRoot" class="toast-root"></div>
 </body>

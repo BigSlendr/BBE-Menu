@@ -54,3 +54,6 @@ tr.selected { background:#1c170d; outline:1px solid var(--gold); }
 
 .dashboard-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
 .unlock-wrap { display:grid; grid-template-columns:160px 1fr auto auto; gap:8px; align-items:center; }
+
+.nav-btn { width: 100%; text-align: left; }
+pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
