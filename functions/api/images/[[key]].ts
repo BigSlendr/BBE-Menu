@@ -1,8 +1,10 @@
 import { json } from "../_auth";
 
 export const onRequestGet: PagesFunction = async ({ params, env }) => {
-  const bucket = (env.R2 || env.R2_IMAGES) as R2Bucket | undefined;
-  if (!bucket) return json({ error: "no_r2_configured" }, 404);
+  const bucket = env.BBE_IMAGES as R2Bucket | undefined;
+  if (!bucket) {
+    return json({ ok: false, error: "no_r2_configured", hint: "Bind R2 bucket as BBE_IMAGES in Pages settings" }, 404);
+  }
 
   const key = decodeURIComponent(String((params as any).key || "").trim());
   if (!key) return json({ error: "missing_key" }, 400);
