@@ -11,7 +11,7 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const db = env.DB as D1Database;
   await ensureAdminAuthSchema(db);
 
-  const adminUsersInfo = await db.prepare("PRAGMA table_info(admin_users)").all<any>();
+  const adminUsersInfo = await db.prepare("PRAGMA table_info(admins)").all<any>();
   const adminUserColumns = new Set((adminUsersInfo.results || []).map((r: any) => String(r?.name || "").toLowerCase()));
   const createdAtExpr = adminUserColumns.has("created_at") ? "created_at" : "'' AS created_at";
   const updatedAtExpr = adminUserColumns.has("updated_at") ? "updated_at" : "'' AS updated_at";
@@ -22,7 +22,7 @@ export const onRequestGet: PagesFunction = async ({ request, env }) => {
               COALESCE(is_active,1) AS is_active,
               COALESCE(force_password_change,0) AS force_password_change,
               ${createdAtExpr}, ${updatedAtExpr}
-       FROM admin_users
+       FROM admins
        ORDER BY ${adminUserColumns.has("created_at") ? "created_at DESC" : "email ASC"}`
     )
     .all<any>();
@@ -60,7 +60,7 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   try {
     await db
       .prepare(
-        `INSERT INTO admin_users
+        `INSERT INTO admins
          (id, email, password_hash, role, is_active, force_password_change, created_at, updated_at)
          VALUES (?, ?, ?, ?, 1, 1, datetime('now'), datetime('now'))`
       )
@@ -81,7 +81,7 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   };
 
   if (debug) {
-    const countRow = await db.prepare("SELECT COUNT(*) AS count FROM admin_users").first<any>();
+    const countRow = await db.prepare("SELECT COUNT(*) AS count FROM admins").first<any>();
     payload.admin_users_count_after = Number(countRow?.count || 0);
     payload.normalized_email = normalizedEmail;
     payload.inserted_id = insertedId;

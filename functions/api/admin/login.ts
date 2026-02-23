@@ -7,7 +7,7 @@ type LoginErrorCode =
   | "account_deactivated"
   | "login_failed";
 
-type ErrorStep = "parse_json" | "query_admin_users" | "verify_password" | "insert_session";
+type ErrorStep = "parse_json" | "query_admins" | "verify_password" | "insert_session";
 
 function jsonResponse(payload: unknown, status = 200, headers?: HeadersInit) {
   const baseHeaders = new Headers({
@@ -69,14 +69,14 @@ export const onRequestPost: PagesFunction = async ({ request, env, params }) => 
       return errorResponse(request, 400, "invalid_request", step);
     }
 
-    step = "query_admin_users";
+    step = "query_admins";
     const admin = await db
       .prepare(
         `SELECT id, email, password_hash,
                 COALESCE(is_active,1) AS is_active,
                 COALESCE(role,'admin') AS role,
                 COALESCE(force_password_change,0) AS force_password_change
-         FROM admin_users
+         FROM admins
          WHERE lower(email)=lower(?)
          LIMIT 1`
       )
@@ -109,39 +109,30 @@ export const onRequestPost: PagesFunction = async ({ request, env, params }) => 
     const createdAt = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const sessionInfo = await db.prepare("PRAGMA table_info(sessions)").all<any>();
-    const sessionColumns = new Set((sessionInfo.results || []).map((r: any) => String(r?.name || "").toLowerCase()));
+    await db
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS admin_sessions (
+          id TEXT PRIMARY KEY,
+          admin_id TEXT NOT NULL,
+          expires_at TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )`
+      )
+      .run();
 
-    const insertColumns = ["id", "expires_at", "created_at"];
-    const insertValues: Array<string | number> = [sessionId, expiresAt, createdAt];
-
-    if (sessionColumns.has("admin_user_id")) {
-      insertColumns.push("admin_user_id");
-      insertValues.push(String(admin.id));
-    } else if (sessionColumns.has("user_id")) {
-      insertColumns.push("user_id");
-      insertValues.push(String(admin.id));
-    } else {
-      throw new Error("sessions table is missing both admin_user_id and user_id columns");
-    }
-
-    if (sessionColumns.has("session_type")) {
-      insertColumns.push("session_type");
-      insertValues.push("admin");
-    } else if (sessionColumns.has("type")) {
-      insertColumns.push("type");
-      insertValues.push("admin");
-    }
-
-    const placeholders = insertColumns.map(() => "?").join(", ");
-    const insertSql = `INSERT INTO sessions (${insertColumns.join(", ")}) VALUES (${placeholders})`;
-
-    await db.prepare(insertSql).bind(...insertValues).run();
+    await db
+      .prepare(`INSERT INTO admin_sessions (id, admin_id, expires_at, created_at) VALUES (?, ?, ?, ?)`)
+      .bind(sessionId, String(admin.id), expiresAt, createdAt)
+      .run();
 
     return jsonResponse(
       {
         ok: true,
-        role: String(admin.role || "admin"),
+        admin: {
+          id: String(admin.id),
+          email: String(admin.email),
+          role: String(admin.role || "admin"),
+        },
         must_change_password: Number(admin.force_password_change) === 1,
       },
       200,
