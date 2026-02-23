@@ -1,9 +1,10 @@
 import { hashPassword, json, verifyPassword } from "../../auth/_utils";
-import { ensureAdminAuthSchema, requireAdmin } from "../_auth";
+import { ensureAdminAuthSchema } from "../_auth";
+import { requireAdminRequest } from "../_helpers";
 
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
-  const auth = await requireAdmin(request, env);
-  if (auth instanceof Response) return auth;
+  const auth = await requireAdminRequest(request, env, { allowPasswordChangeRequired: true });
+  if (!auth.ok) return auth.response;
 
   const body = await request.json<any>().catch(() => null);
   const currentPassword = String(body?.current_password ?? body?.currentPassword ?? "");
@@ -17,8 +18,8 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   await ensureAdminAuthSchema(db);
 
   const admin = await db
-    .prepare("SELECT id, password_hash FROM admin_users WHERE id = ? LIMIT 1")
-    .bind(auth.id)
+    .prepare("SELECT id, password_hash FROM admins WHERE id = ? LIMIT 1")
+    .bind(auth.admin.id)
     .first<any>();
 
   if (!admin) return json({ ok: false, error: "unauthorized" }, 401);
@@ -29,8 +30,8 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   }
 
   await db
-    .prepare("UPDATE admin_users SET password_hash = ?, force_password_change = 0, updated_at = datetime('now') WHERE id = ?")
-    .bind(await hashPassword(newPassword), auth.id)
+    .prepare("UPDATE admins SET password_hash = ?, must_change_password = 0, password_updated_at = datetime('now'), updated_at = datetime('now') WHERE id = ?")
+    .bind(await hashPassword(newPassword), auth.admin.id)
     .run();
 
   return json({ ok: true });

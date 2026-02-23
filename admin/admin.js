@@ -53,6 +53,12 @@ async function api(path, opts = {}) {
   if (!res.ok) {
     const raw = String(data.error || data.msg || data.code || `Request failed (${res.status})`);
     const detail = data.detail ? `: ${String(data.detail)}` : "";
+    if (/password_change_required/i.test(raw)) {
+      state.admin = state.admin || {};
+      state.admin.mustChangePassword = true;
+      renderAuth();
+      throw new Error("Password change required. Please set a new password to continue.");
+    }
     if (/forbidden/i.test(raw)) throw new Error("You do not have access to this admin resource.");
     throw new Error(`${raw}${detail}`);
   }
@@ -346,6 +352,7 @@ function renderSetPassword() { /* unchanged auth views */
       await api("/api/admin/users/change-password", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ current_password: current, new_password: next }) });
       const me = await api("/api/admin/me");
       state.admin = me.data?.admin || me.admin;
+      state.admin.mustChangePassword = !!(me.must_change_password || me.data?.must_change_password || state.admin?.must_change_password);
       renderAuth();
     } catch (e) { status.textContent = e.message; toast(e.message, "error"); }
   };
@@ -353,7 +360,7 @@ function renderSetPassword() { /* unchanged auth views */
 
 function renderAuth() {
   const root = $("#authView");
-  if (state.admin && state.admin.mustChangePassword) return renderSetPassword();
+  if (state.admin && (state.admin.mustChangePassword || state.admin.must_change_password)) return renderSetPassword();
   if (state.admin) { root.hidden = true; setWorkspaceVisible(true); $("#adminIdentity").textContent = `${state.admin.name || state.admin.email || state.admin.username} (${state.admin.role})`; return renderApp(); }
 
   setWorkspaceVisible(false);
@@ -365,7 +372,11 @@ function renderAuth() {
     status.textContent = "";
     try {
       const d = await api("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: $("#loginUsername").value, password: $("#loginSecret").value }) });
-      state.admin = d.data?.admin || d.admin;
+      state.admin = d.data?.admin || d.admin || {};
+      const me = await api("/api/admin/me");
+      const meAdmin = me.data?.admin || me.admin || state.admin;
+      const mustChange = !!(me.must_change_password || me.data?.must_change_password || meAdmin?.must_change_password);
+      state.admin = { ...meAdmin, mustChangePassword: mustChange };
       renderAuth();
     } catch (e) { status.textContent = e.message; toast(e.message, "error"); }
   };
@@ -655,7 +666,27 @@ async function init() {
   const boot = await api("/api/admin/auth/bootstrap-create").catch(() => ({ needs_bootstrap: false }));
   state.needsBootstrap = !!boot.needs_bootstrap;
 
-  try { const me = await api("/api/admin/me"); state.admin = me.data?.admin || me.admin; } catch { state.admin = null; }
+  try {
+    const me = await api("/api/admin/me");
+    const admin = me.data?.admin || me.admin || {};
+    state.admin = {
+      ...admin,
+      mustChangePassword: !!(me.must_change_password || me.data?.must_change_password || admin.must_change_password),
+    };
+    if (state.admin.mustChangePassword) {
+      renderAuth();
+      return;
+    }
+  } catch (e) {
+    const msg = String(e?.message || "");
+    if (/password change required/i.test(msg) || /password_change_required/i.test(msg)) {
+      state.admin = state.admin || {};
+      state.admin.mustChangePassword = true;
+      renderAuth();
+      return;
+    }
+    state.admin = null;
+  }
   renderAuth();
 }
 
