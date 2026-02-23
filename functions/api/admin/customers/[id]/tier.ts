@@ -1,56 +1,34 @@
 import { json } from "../../../_auth";
-import { nowIso, requireAdminRequest, TIERS } from "../../_helpers";
+import { nowIso, requireAdminRequest } from "../../_helpers";
+import { ensureRewardsAdminSchema } from "../../_rewards-admin";
 
-export const onRequestPost: PagesFunction = async ({ request, env, params }) => {
+export const onRequestPut: PagesFunction = async ({ request, env, params }) => {
   const auth = await requireAdminRequest(request, env);
   if (!auth.ok) return auth.response;
+  if (auth.admin.role !== "superadmin") return json({ ok: false, error: "forbidden" }, 403);
 
   const id = String(params?.id || "").trim();
   if (!id) return json({ error: "customer id required" }, 400);
 
-  let body: any = null;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Invalid JSON" }, 400);
+  const body = await request.json<any>().catch(() => null);
+  if (!body) return json({ error: "Invalid JSON" }, 400);
+
+  const tier_override_code = body?.tier_override_code == null ? null : String(body.tier_override_code).trim().toLowerCase();
+  const notes = body?.notes == null ? null : String(body.notes).trim() || null;
+
+  const db = env.DB as D1Database;
+  await ensureRewardsAdminSchema(db);
+
+  if (tier_override_code) {
+    const found = await db.prepare("SELECT code FROM reward_tiers WHERE LOWER(code)=LOWER(?) LIMIT 1").bind(tier_override_code).first();
+    if (!found) return json({ error: "invalid_tier_override_code" }, 400);
   }
 
   const now = nowIso();
-  const tier_override = body?.tier_override == null ? null : String(body.tier_override).trim().toLowerCase();
-  const reason = body?.reason == null ? null : String(body.reason).trim() || null;
+  await db.prepare("INSERT INTO customer_rewards (user_id, tier_override_code, updated_at, notes) VALUES (?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET tier_override_code=excluded.tier_override_code, updated_at=excluded.updated_at, notes=excluded.notes")
+    .bind(id, tier_override_code, now, notes).run();
 
-  const db = env.DB as D1Database;
-
-  if (tier_override === null || tier_override === "") {
-    await db
-      .prepare(
-        `UPDATE users
-         SET tier_override = NULL,
-             tier_override_reason = NULL,
-             tier_override_at = NULL,
-             tier_override_by_admin_id = NULL,
-             updated_at = ?
-         WHERE id = ?`
-      )
-      .bind(now, id)
-      .run();
-    return json({ ok: true, cleared: true });
-  }
-
-  if (!TIERS.has(tier_override)) return json({ error: "Invalid tier_override" }, 400);
-
-  await db
-    .prepare(
-      `UPDATE users
-       SET tier_override = ?,
-           tier_override_reason = ?,
-           tier_override_at = ?,
-           tier_override_by_admin_id = ?,
-           updated_at = ?
-       WHERE id = ?`
-    )
-    .bind(tier_override, reason, now, auth.adminId, now, id)
-    .run();
-
-  return json({ ok: true });
+  return json({ ok: true, tier_override_code: tier_override_code || null });
 };
+
+export const onRequestPost = onRequestPut;

@@ -1,78 +1,58 @@
 import { json } from "../_auth";
 import { requireAdminRequest } from "./_helpers";
+import { ensureRewardsAdminSchema, getAnnualSpendCents, getLifetimeSpendCents, getPointsBalance, resolveTier } from "./_rewards-admin";
 
 export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const auth = await requireAdminRequest(request, env);
   if (!auth.ok) return auth.response;
 
   const db = env.DB as D1Database;
+  await ensureRewardsAdminSchema(db);
   const url = new URL(request.url);
-
-  const query = (url.searchParams.get("query") || "").trim();
-  const status = (url.searchParams.get("status") || "").trim().toLowerCase();
-  const tier = (url.searchParams.get("tier") || "").trim().toLowerCase();
-  const active = (url.searchParams.get("active") || "").trim();
-  const tag = (url.searchParams.get("tag") || "").trim();
   const limit = Math.max(1, Math.min(200, Number(url.searchParams.get("limit") || 50) || 50));
+  const query = (url.searchParams.get("query") || "").trim().toLowerCase();
 
-  const where: string[] = [];
-  const binds: unknown[] = [];
+  const { results } = await db.prepare(`SELECT u.id AS user_id, u.email, u.first_name, u.last_name, u.phone, u.created_at,
+      COALESCE(u.is_active,1) AS is_active, COALESCE(u.account_status,'pending') AS account_status
+    FROM users u
+    ORDER BY u.created_at DESC
+    LIMIT ?`).bind(limit).all<any>();
 
-  if (query) {
-    where.push(`(u.email LIKE ? COLLATE NOCASE OR u.first_name LIKE ? COLLATE NOCASE OR u.last_name LIKE ? COLLATE NOCASE OR u.phone LIKE ? COLLATE NOCASE)`);
-    const like = `%${query}%`;
-    binds.push(like, like, like, like);
+  const rows = results || [];
+  const customers = [] as any[];
+  for (const row of rows) {
+    const fullName = [row.first_name, row.last_name].filter(Boolean).join(" ").trim();
+    if (query && !String(row.email || "").toLowerCase().includes(query) && !fullName.toLowerCase().includes(query)) continue;
+    const userId = String(row.user_id || row.id || "");
+    const [annual, lifetime, points, ordersCount, tags, tier] = await Promise.all([
+      getAnnualSpendCents(db, userId),
+      getLifetimeSpendCents(db, userId),
+      getPointsBalance(db, userId),
+      db.prepare("SELECT COUNT(1) AS c FROM orders WHERE user_id = ?").bind(userId).first<{ c: number }>(),
+      db.prepare("SELECT tag FROM customer_tags WHERE user_id = ? ORDER BY tag ASC").bind(userId).all<{ tag: string }>(),
+      (async () => resolveTier(db, userId, await getAnnualSpendCents(db, userId)))(),
+    ]);
+
+    customers.push({
+      user_id: userId,
+      id: userId,
+      email: row.email,
+      name: fullName,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      phone: row.phone,
+      created_at: row.created_at,
+      is_active: Number(row.is_active || 1),
+      account_status: row.account_status,
+      lifetime_spend_cents: lifetime,
+      annual_spend_cents: annual,
+      points_balance: points,
+      orders_count: Number(ordersCount?.c || 0),
+      tier_code: tier.code,
+      effectiveTier: tier.code,
+      tags: (tags.results || []).map((t) => t.tag),
+    });
   }
 
-  if (status && status !== "all") {
-    where.push("COALESCE(u.account_status, 'pending') = ?");
-    binds.push(status);
-  }
-
-  if (tier && tier !== "all") {
-    where.push("LOWER(COALESCE(u.tier_override, u.tier, 'member')) = ?");
-    binds.push(tier);
-  }
-
-  if (active === "0" || active === "1") {
-    where.push("COALESCE(u.is_active, 1) = ?");
-    binds.push(Number(active));
-  }
-
-  let join = "";
-  if (tag) {
-    join = "INNER JOIN customer_tags ct ON ct.user_id = u.id";
-    where.push("ct.tag = ?");
-    binds.push(tag);
-  }
-
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-
-  const { results } = await db
-    .prepare(
-      `SELECT DISTINCT
-        u.id,
-        u.email,
-        u.first_name,
-        u.last_name,
-        u.phone,
-        COALESCE(u.is_active, 1) AS is_active,
-        u.deactivated_at,
-        COALESCE(u.account_status, 'pending') AS account_status,
-        u.verified_at,
-        COALESCE(u.tier_override, u.tier, 'member') AS effectiveTier,
-        COALESCE(u.points_balance, 0) AS points_balance,
-        COALESCE(u.lifetime_spend_cents, 0) AS lifetime_spend_cents,
-        COALESCE((SELECT COUNT(1) FROM orders o WHERE o.user_id = u.id), 0) AS orders_count,
-        u.created_at
-      FROM users u
-      ${join}
-      ${whereSql}
-      ORDER BY u.created_at DESC
-      LIMIT ?`
-    )
-    .bind(...binds, limit)
-    .all();
-
-  return json({ ok: true, customers: results || [] });
+  return json({ ok: true, customers });
 };

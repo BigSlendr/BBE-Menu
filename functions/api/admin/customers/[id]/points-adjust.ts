@@ -15,10 +15,10 @@ export const onRequestPost: PagesFunction = async ({ request, env, params }) => 
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  const pointsDelta = Number(body?.points_delta);
+  const pointsDelta = Number(body?.delta_points ?? body?.points_delta);
   const reason = String(body?.reason || "").trim();
 
-  if (!Number.isInteger(pointsDelta)) return json({ error: "points_delta must be an integer" }, 400);
+  if (!Number.isInteger(pointsDelta)) return json({ error: "delta_points must be an integer" }, 400);
   if (!reason) return json({ error: "reason is required" }, 400);
 
   const db = env.DB as D1Database;
