@@ -3,7 +3,7 @@ import { sanitizeFilename } from "../../_products";
 import { requireAdminRequest } from "../_helpers";
 
 const resolveBucket = (env: Env): R2Bucket | undefined => {
-  return (env.BBE_IMAGES || env.R2 || env.R2_IMAGES) as R2Bucket | undefined;
+  return env.BBE_IMAGES as R2Bucket | undefined;
 };
 
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
@@ -11,7 +11,16 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   if (!auth.ok) return auth.response;
 
   const bucket = resolveBucket(env as Env);
-  if (!bucket) return json({ ok: false, error: "no_r2_configured" }, 400);
+  if (!bucket) {
+    return json(
+      {
+        ok: false,
+        error: "no_r2_configured",
+        hint: "Bind R2 bucket as BBE_IMAGES in Pages settings",
+      },
+      400,
+    );
+  }
 
   const form = await request.formData();
   const fileEntry = form.get("file") || form.get("image");
