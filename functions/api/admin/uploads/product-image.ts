@@ -6,13 +6,13 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
   const auth = await requireAdminRequest(request, env);
   if (!auth.ok) return auth.response;
 
-  const bucket = env.BBE_IMAGES as R2Bucket | undefined;
+  const bucket = env.BBE_Images as R2Bucket | undefined;
   if (!bucket) {
     return json(
       {
         ok: false,
         error: "no_r2_configured",
-        hint: "Bind R2 bucket as BBE_IMAGES in Pages settings",
+        hint: "Bind R2 bucket as BBE_Images in Pages settings",
       },
       400,
     );

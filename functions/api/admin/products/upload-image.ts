@@ -1,7 +1,7 @@
 import { nowIso } from "../../_products";
 import { requireAdminRequest } from "../_helpers";
 
-const resolveBucket = (env: Env): R2Bucket | undefined => env.BBE_IMAGES as R2Bucket | undefined;
+const resolveBucket = (env: Env): R2Bucket | undefined => env.BBE_Images as R2Bucket | undefined;
 
 const sanitizeUploadFilename = (name: string) =>
   String(name || "file")
