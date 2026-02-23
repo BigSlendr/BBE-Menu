@@ -255,14 +255,14 @@ async function uploadProductImage() {
 
   const fd = new FormData();
   fd.set("file", fileInput.files[0]);
-  fd.set("productId", form.id);
+  fd.set("product_id", form.id);
 
   state.products.uploading = true;
   try {
     const d = await api("/api/admin/products/upload-image", { method: "POST", body: fd });
-    state.products.form.image_key = d.key || d.image_key || "";
-    state.products.form.image_url = d.url || d.public_url || "";
-    state.products.form.image_path = d.url || d.public_url || "";
+    state.products.form.image_key = d.key || "";
+    state.products.form.image_url = d.url || "";
+    state.products.form.image_path = d.url || "";
     toast("Image uploaded. Click Save to persist.");
     $("#workspace").innerHTML = renderProductsPanelHtml();
     bindProductsEvents();
@@ -378,11 +378,12 @@ function renderOrderDetail(order) {
   const parsed = parseCartItems(order.cart_json);
   return `<div class="detail-head"><h3>Order ${esc(order.id)}</h3>${statusBadge(order.status)}</div>
     <section class="detail-section"><h4>Summary</h4><div class="kv-grid"><div><span class="muted">Order ID</span><strong>${esc(order.id)}</strong></div><div><span class="muted">Created</span><strong>${esc(fmtDate(order.created_at))}</strong></div></div></section>
-    <section class="detail-section"><h4>Financials</h4><div class="kv-grid"><div><span class="muted">Subtotal</span><strong>${money(order.subtotal_cents)}</strong></div><div><span class="muted">Tax</span><strong>${money(order.tax_cents)}</strong></div><div><span class="muted">Total</span><strong>${money(order.total_cents)}</strong></div><div><span class="muted">Points earned</span><strong>${Number(order.points_earned || 0)}</strong></div><div><span class="muted">Points redeemed</span><strong>${Number(order.points_redeemed || 0)}</strong></div><div><span class="muted">Credit used</span><strong>${money(order.credit_used_cents)}</strong></div></div></section>
+    <section class="detail-section"><h4>Financials</h4><div class="kv-grid"><div><span class="muted">Subtotal</span><strong>${money(order.subtotal_cents)}</strong></div><div><span class="muted">Tax</span><strong>${money(order.tax_cents)}</strong></div><div><span class="muted">Total</span><strong>${money(order.total_cents)}</strong></div><div><span class="muted">Points earned</span><strong>${Number(order.points_earned || 0)}</strong></div><div><span class="muted">Points redeemed</span><strong>${Number(order.points_redeemed || 0)}</strong></div><div><span class="muted">Credit used</span><strong>${money(order.credit_cents_used)}</strong></div></div></section>
     <section class="detail-section"><h4>Customer</h4><div class="kv-grid"><div><span class="muted">Name</span><strong>${esc(customerName || "-")}</strong></div><div><span class="muted">Email</span><strong>${esc(order.customer_email || "-")}</strong></div><div><span class="muted">Phone</span><strong>${esc(order.customer_phone || "-")}</strong></div></div></section>
     <section class="detail-section"><h4>Delivery</h4><div class="kv-grid"><div><span class="muted">Method</span><strong>${esc(order.delivery_method || "-")}</strong></div><div><span class="muted">Address</span><strong>${esc(order.address_json || "-")}</strong></div></div></section>
     <section class="detail-section"><h4>Items</h4>${parsed.error ? `<div class="muted">${parsed.error}</div>` : `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Variant</th><th>Qty</th><th>Price</th></tr></thead><tbody>${(parsed.items || []).map((it) => `<tr><td>${esc(it.name || it.title || "-")}</td><td>${esc(it.variant || it.size || it.label || "-")}</td><td>${Number(it.qty || it.quantity || 0)}</td><td>${money(it.price_cents ?? Math.round(Number(it.price || 0) * 100))}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">No items found.</td></tr>`}</tbody></table></div>`}</section>
-    ${String(order.status || "").toLowerCase() !== "cancelled" ? `<div class="detail-actions"><button id="cancelOrderBtn" class="btn danger" data-order-id="${esc(order.id)}">Cancel Order</button></div>` : ""}`;
+    <section class="detail-section"><h4>Status</h4><div class="kv-grid"><select id="orderStatusSelect"><option value="pending" ${String(order.status).toLowerCase()==='pending'?'selected':''}>pending</option><option value="placed" ${String(order.status).toLowerCase()==='placed'?'selected':''}>placed</option><option value="processing" ${String(order.status).toLowerCase()==='processing'?'selected':''}>processing</option><option value="completed" ${String(order.status).toLowerCase()==='completed'?'selected':''}>completed</option><option value="cancelled" ${String(order.status).toLowerCase()==='cancelled'?'selected':''}>cancelled</option></select></div><div class="detail-actions"><button id="saveOrderStatusBtn" class="btn btn-gold" data-order-id="${esc(order.id)}">Save status</button></div></section>
+    ${isSuperAdminRole(state.admin?.role) ? `<section class="detail-section"><h4>Rewards override</h4><div class="kv-grid"><label><span class="muted">Points earned</span><input id="orderPointsEarned" type="number" value="${Number(order.points_earned || 0)}" /></label><label><span class="muted">Points redeemed</span><input id="orderPointsRedeemed" type="number" value="${Number(order.points_redeemed || 0)}" /></label><label><span class="muted">Credit cents used</span><input id="orderCreditUsed" type="number" value="${Number(order.credit_cents_used || 0)}" /></label></div><label><span class="muted">Notes</span><input id="orderRewardsNotes" value="" /></label><div class="detail-actions"><button id="saveOrderRewardsOverrideBtn" class="btn" data-order-id="${esc(order.id)}">Save rewards override</button></div></section>` : ""}`;
 }
 async function panelOrders() {
   await loadOrders();
@@ -419,9 +420,15 @@ async function panelCustomers() {
   if (selected) {
     const data = await api(`/api/admin/customers/${selected.id}`).catch(() => null);
     const c = data?.customer || selected;
+    const tags = Array.isArray(data?.tags) ? data.tags : (Array.isArray(c.tags) ? c.tags : []);
     detail = `<div class="detail-head"><h3>${esc(c.email || "Customer")}</h3>${statusBadge(c.account_status)}</div>
-      <section class="detail-section"><h4>Profile</h4><div class="kv-grid"><div><span class="muted">Email</span><strong>${esc(c.email || "-")}</strong></div><div><span class="muted">Name</span><strong>${esc(`${c.first_name || ""} ${c.last_name || ""}`.trim() || "-")}</strong></div><div><span class="muted">Phone</span><strong>${esc(c.phone || "-")}</strong></div><div><span class="muted">Created</span><strong>${esc(fmtDate(c.created_at))}</strong></div></div></section>
-      <section class="detail-section"><h4>Spend & loyalty</h4><div class="kv-grid"><div><span class="muted">Lifetime spend</span><strong>${money(c.lifetime_spend_cents)}</strong></div><div><span class="muted">Orders</span><strong>${Number(c.orders_count || 0)}</strong></div><div><span class="muted">Points balance</span><strong>${Number(c.points_balance || 0)}</strong></div></div></section>`;
+      <section class="detail-section"><h4>Profile</h4>
+        <div class="kv-grid"><label><span class="muted">Email</span><input id="customerEmail" value="${esc(c.email || "")}" /></label><label><span class="muted">First name</span><input id="customerFirstName" value="${esc(c.first_name || "")}" /></label><label><span class="muted">Last name</span><input id="customerLastName" value="${esc(c.last_name || "")}" /></label><label><span class="muted">Phone</span><input id="customerPhone" value="${esc(c.phone || "")}" /></label></div>
+        <div class="detail-actions"><button id="saveCustomerProfileBtn" class="btn btn-gold" data-id="${esc(c.id)}">Save profile</button></div>
+      </section>
+      <section class="detail-section"><h4>Spend & loyalty</h4><div class="kv-grid"><div><span class="muted">Lifetime spend</span><strong>${money(c.lifetime_spend_cents)}</strong></div><div><span class="muted">Annual spend</span><strong>${money(c.annual_spend_cents || 0)}</strong></div><div><span class="muted">Orders</span><strong>${Number(c.orders_count || 0)}</strong></div><div><span class="muted">Points balance</span><strong>${Number(c.points_balance || 0)}</strong></div><div><span class="muted">Tier</span><strong>${esc(c.tier_code || c.effectiveTier || "member")}</strong></div></div></section>
+      <section class="detail-section"><h4>Tags & points</h4><label><span class="muted">Tags (comma separated)</span><input id="customerTagsInput" value="${esc(tags.join(", "))}" /></label><div class="kv-grid"><label><span class="muted">Adjust points</span><input id="customerDeltaPoints" type="number" step="1" value="0" /></label><label><span class="muted">Reason</span><input id="customerPointsReason" value="Manual adjustment" /></label></div><div class="detail-actions"><button id="saveCustomerTagsBtn" class="btn" data-id="${esc(c.id)}">Save tags</button><button id="adjustCustomerPointsBtn" class="btn" data-id="${esc(c.id)}">Adjust points</button></div></section>
+      ${isSuperAdminRole(state.admin?.role) ? `<section class="detail-section"><h4>Tier override</h4><div class="kv-grid"><select id="customerTierOverride"><option value="">Auto</option><option value="member">member</option><option value="insider">insider</option><option value="elite">elite</option><option value="black_reserve">black_reserve</option></select></div><div class="detail-actions"><button id="saveTierOverrideBtn" class="btn" data-id="${esc(c.id)}">Save tier override</button><button id="deleteCustomerBtn" class="btn danger" data-id="${esc(c.id)}">Delete account</button></div></section>` : ""}`;
   }
   return `<div class="split-shell">${splitToolbar({ searchId: "customersSearch", searchValue: state.customers.filters.query, searchPlaceholder: "Search by email or name", controls: `<select id="customersSort"><option value="newest" ${state.customers.filters.sort === "newest" ? "selected" : ""}>Newest</option><option value="lifetime" ${state.customers.filters.sort === "lifetime" ? "selected" : ""}>Lifetime spend</option></select>`, refreshId: "customersRefreshBtn" })}${stateBanner(state.customers.loading, state.customers.error, !state.customers.items.length, "customersRetryBtn")}<div class="split-content"><aside class="split-list panel">${state.customers.items.map((c) => `<button class="split-row customer-row ${state.customers.selectedId === c.id ? "active" : ""}" data-id="${c.id}"><strong>${esc(c.email || "-")}</strong><div class="muted">Spend ${money(c.lifetime_spend_cents)} · Orders ${Number(c.orders_count || 0)}</div><div>Points ${Number(c.points_balance || 0)}</div></button>`).join("")}</aside><section class="split-detail panel">${detail}</section></div></div>`;
 }
@@ -482,10 +489,67 @@ function bindPanelEvents() {
     if (el) el.onclick = () => renderApp();
   });
 
-  const cancel = $("#cancelOrderBtn");
-  if (cancel) cancel.onclick = async () => {
-    await api(`/api/admin/orders/${cancel.dataset.orderId}/status`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: "cancelled" }) });
-    toast("Order cancelled.");
+  const saveOrderStatus = $("#saveOrderStatusBtn");
+  if (saveOrderStatus) saveOrderStatus.onclick = async () => {
+    const status = $("#orderStatusSelect")?.value;
+    await api(`/api/admin/orders/${saveOrderStatus.dataset.orderId}/status`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ status }) });
+    toast("Order status updated.");
+    await renderApp();
+  };
+
+  const saveOrderRewardsOverrideBtn = $("#saveOrderRewardsOverrideBtn");
+  if (saveOrderRewardsOverrideBtn) saveOrderRewardsOverrideBtn.onclick = async () => {
+    await api(`/api/admin/orders/${saveOrderRewardsOverrideBtn.dataset.orderId}/rewards-override`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        points_earned: Number($("#orderPointsEarned")?.value || 0),
+        points_redeemed: Number($("#orderPointsRedeemed")?.value || 0),
+        credit_cents_used: Number($("#orderCreditUsed")?.value || 0),
+        notes: $("#orderRewardsNotes")?.value || "",
+      }),
+    });
+    toast("Order rewards overridden.");
+    await renderApp();
+  };
+
+  const saveCustomerProfileBtn = $("#saveCustomerProfileBtn");
+  if (saveCustomerProfileBtn) saveCustomerProfileBtn.onclick = async () => {
+    const id = saveCustomerProfileBtn.dataset.id;
+    await api(`/api/admin/customers/${id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: $("#customerEmail")?.value || "", first_name: $("#customerFirstName")?.value || "", last_name: $("#customerLastName")?.value || "", phone: $("#customerPhone")?.value || "" }) });
+    toast("Customer profile saved.");
+    await renderApp();
+  };
+
+  const saveCustomerTagsBtn = $("#saveCustomerTagsBtn");
+  if (saveCustomerTagsBtn) saveCustomerTagsBtn.onclick = async () => {
+    const id = saveCustomerTagsBtn.dataset.id;
+    await api(`/api/admin/customers/${id}/tags`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ tags: $("#customerTagsInput")?.value || "" }) });
+    toast("Tags updated.");
+    await renderApp();
+  };
+
+  const adjustCustomerPointsBtn = $("#adjustCustomerPointsBtn");
+  if (adjustCustomerPointsBtn) adjustCustomerPointsBtn.onclick = async () => {
+    const id = adjustCustomerPointsBtn.dataset.id;
+    await api(`/api/admin/customers/${id}/points-adjust`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ delta_points: Number($("#customerDeltaPoints")?.value || 0), reason: $("#customerPointsReason")?.value || "Manual adjustment" }) });
+    toast("Points adjusted.");
+    await renderApp();
+  };
+
+  const saveTierOverrideBtn = $("#saveTierOverrideBtn");
+  if (saveTierOverrideBtn) saveTierOverrideBtn.onclick = async () => {
+    const id = saveTierOverrideBtn.dataset.id;
+    await api(`/api/admin/customers/${id}/tier-override`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ tier_override_code: $("#customerTierOverride")?.value || null }) });
+    toast("Tier override saved.");
+    await renderApp();
+  };
+
+  const deleteCustomerBtn = $("#deleteCustomerBtn");
+  if (deleteCustomerBtn) deleteCustomerBtn.onclick = async () => {
+    if (!confirm("Soft delete this customer account?")) return;
+    await api(`/api/admin/customers/${deleteCustomerBtn.dataset.id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({}) });
+    toast("Customer deleted.");
     await renderApp();
   };
 
