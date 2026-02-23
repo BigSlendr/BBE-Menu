@@ -1,46 +1,67 @@
-import { hashPassword, uuid } from "../auth/_utils";
-import { json, requireOwner } from "../_auth";
-
-const normalizeRole = (value: unknown) => {
-  const v = String(value || "admin").toLowerCase();
-  return v === "owner" || v === "super_admin" || v === "staff" ? v : "admin";
-};
+import { hashPassword, json, uuid } from "../auth/_utils";
+import { ensureAdminAuthSchema, requirePasswordReady, requireSuperAdmin } from "./_auth";
 
 export const onRequestGet: PagesFunction = async ({ request, env }) => {
-  const auth = await requireOwner(request, env);
+  const auth = await requireSuperAdmin(request, env);
   if (auth instanceof Response) return auth;
 
-  const db = env.DB as D1Database;
-  const { results } = await db
-    .prepare("SELECT id, email, name, COALESCE(role, CASE WHEN COALESCE(is_owner,0)=1 THEN 'owner' WHEN COALESCE(is_super_admin,0)=1 THEN 'super_admin' ELSE 'admin' END) AS role, COALESCE(is_active,1) AS is_active, created_at FROM admin_users ORDER BY created_at DESC")
-    .all();
+  const passwordGate = requirePasswordReady(auth);
+  if (passwordGate) return passwordGate;
 
-  return json({ ok: true, data: { admins: results || [] } });
+  const db = env.DB as D1Database;
+  await ensureAdminAuthSchema(db);
+
+  const { results } = await db
+    .prepare(
+      "SELECT id, email, role, COALESCE(is_active,1) AS is_active, created_at, COALESCE(must_change_password,0) AS must_change_password, password_updated_at FROM admins ORDER BY created_at DESC"
+    )
+    .all<any>();
+
+  return json({ ok: true, admins: results || [] });
 };
 
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
-  const auth = await requireOwner(request, env);
+  const auth = await requireSuperAdmin(request, env);
   if (auth instanceof Response) return auth;
+
+  const passwordGate = requirePasswordReady(auth);
+  if (passwordGate) return passwordGate;
 
   const body = await request.json<any>().catch(() => null);
   const email = String(body?.email || "").trim().toLowerCase();
-  const name = String(body?.name || "").trim();
-  const password = String(body?.password || "");
-  const role = normalizeRole(body?.role);
+  const tempPassword = String(body?.tempPassword || "");
+  const role = String(body?.role || "admin").toLowerCase() === "superadmin" ? "superadmin" : "admin";
 
-  if (!email || !password || password.length < 8) {
+  if (!email || !tempPassword || tempPassword.length < 8) {
     return json({ ok: false, error: "invalid_payload" }, 400);
   }
 
   const db = env.DB as D1Database;
-  const existing = await db.prepare("SELECT id FROM admin_users WHERE lower(email)=lower(?)").bind(email).first();
+  await ensureAdminAuthSchema(db);
+
+  const existing = await db.prepare("SELECT id FROM admins WHERE lower(email)=lower(?)").bind(email).first<any>();
   if (existing) return json({ ok: false, error: "email_in_use" }, 409);
 
-  const now = new Date().toISOString();
+  const id = uuid();
   await db
-    .prepare("INSERT INTO admin_users (id, email, name, password_hash, role, is_active, is_super_admin, is_owner, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?)")
-    .bind(uuid(), email, name || "", await hashPassword(password), role, role === "super_admin" ? 1 : 0, role === "owner" ? 1 : 0, now, now)
+    .prepare(
+      "INSERT INTO admins (id, email, password_hash, role, is_active, must_change_password, created_at) VALUES (?, ?, ?, ?, 1, 1, datetime('now'))"
+    )
+    .bind(id, email, await hashPassword(tempPassword), role)
     .run();
 
-  return json({ ok: true });
+  const inserted = await db
+    .prepare("SELECT id, email, role, COALESCE(must_change_password,0) AS must_change_password FROM admins WHERE id = ?")
+    .bind(id)
+    .first<any>();
+
+  return json({
+    ok: true,
+    admin: {
+      id: inserted?.id ?? id,
+      email: inserted?.email ?? email,
+      role: inserted?.role ?? role,
+      mustChangePassword: true,
+    },
+  });
 };

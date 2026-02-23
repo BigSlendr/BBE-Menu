@@ -38,8 +38,46 @@ function setWorkspaceVisible(visible) {
   $("#workspaceTopbar").hidden = !visible;
 }
 
+
+
+function isSuperAdminRole(role) {
+  return role === "superadmin" || role === "super_admin" || role === "owner";
+}
+
+function renderSetPassword() {
+  const root = $("#authView");
+  setWorkspaceVisible(false);
+  root.hidden = false;
+  root.innerHTML = `<div class="card"><h3>Set New Password</h3><p class="muted">You must change your temporary password before continuing.</p><input id="newAdminPassword" placeholder="New password" type="password" /><input id="confirmAdminPassword" placeholder="Confirm new password" type="password" /><div id="passwordStatus" class="muted" style="min-height:18px;margin:8px 0 0;"></div><button id="setPasswordBtn" class="btn btn-gold">Update Password</button></div>`;
+  $("#setPasswordBtn").onclick = async () => {
+    const status = $("#passwordStatus");
+    status.textContent = "";
+    const next = $("#newAdminPassword").value || "";
+    const confirm = $("#confirmAdminPassword").value || "";
+    if (next.length < 8) { status.textContent = "Password must be at least 8 characters."; return; }
+    if (next !== confirm) { status.textContent = "Passwords do not match."; return; }
+    try {
+      await api("/api/admin/change-password", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ newPassword: next })
+      });
+      const me = await api("/api/admin/me");
+      state.admin = me.data?.admin || me.admin;
+      renderAuth();
+    } catch (e) {
+      status.textContent = e.message;
+      toast(e.message, "error");
+    }
+  };
+}
+
 function renderAuth() {
   const root = $("#authView");
+  if (state.admin && state.admin.mustChangePassword) {
+    return renderSetPassword();
+  }
+
   if (state.admin) {
     root.hidden = true;
     setWorkspaceVisible(true);
@@ -49,7 +87,7 @@ function renderAuth() {
 
   setWorkspaceVisible(false);
   root.hidden = false;
-  root.innerHTML = `<div class="card"><h3>Admin Login</h3><input id="loginUsername" placeholder="Username" /><input id="loginSecret" placeholder="Secret" type="password" /><div id="loginStatus" class="muted" style="min-height:18px;margin:8px 0 0;"></div><button id="loginBtn" class="btn btn-gold">Login</button></div>
+  root.innerHTML = `<div class="card"><h3>Admin Login</h3><input id="loginUsername" placeholder="Email" /><input id="loginSecret" placeholder="Secret" type="password" /><div id="loginStatus" class="muted" style="min-height:18px;margin:8px 0 0;"></div><button id="loginBtn" class="btn btn-gold">Login</button></div>
   <div class="card" ${state.needsBootstrap ? "" : "hidden"}><h3>Bootstrap Super Admin</h3><input id="bootSecret" placeholder="Bootstrap secret" type="password" /><input id="bootEmail" placeholder="Owner email" /><input id="bootName" placeholder="Owner name" /><input id="bootPassword" placeholder="Password" type="password" /><button id="bootBtn" class="btn btn-gold">Bootstrap</button></div>`;
 
   $("#loginBtn").onclick = async () => {
@@ -59,7 +97,7 @@ function renderAuth() {
       const d = await api("/api/admin/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ username: $("#loginUsername").value, secret: $("#loginSecret").value })
+        body: JSON.stringify({ email: $("#loginUsername").value, password: $("#loginSecret").value })
       });
       state.admin = d.data?.admin || d.admin;
       renderAuth();
@@ -81,7 +119,7 @@ function renderAuth() {
 
 function renderNav() {
   const items = [...navItems];
-  if (["owner","super_admin"].includes(state.admin?.role)) items.push(["admin-users", "Admin Users"]);
+  if (isSuperAdminRole(state.admin?.role)) items.push(["admin-users", "Admin Users"]);
   $("#sideNav").innerHTML = items.map(([k, label]) => `<button class="btn nav-btn ${state.panel === k ? "active" : ""}" data-panel="${k}">${label}</button>`).join("");
   document.querySelectorAll(".nav-btn").forEach((b) => b.onclick = () => { state.panel = b.dataset.panel; renderApp(); });
 }
@@ -165,14 +203,10 @@ async function panelVerification() {
 
 async function panelAdminUsers() {
   const d = await api("/api/admin/users");
-  const admins = d.data?.admins || d.admins || [];
+  const admins = d.admins || [];
   return `<div style='display:flex;justify-content:space-between;align-items:center;'><h2>Admin Users</h2><button id='newAdminBtn' class='btn btn-gold'>Create Admin</button></div>
-  <div class='table-wrap'><table><thead><tr><th>Email</th><th>Name</th><th>Active</th><th>Role</th><th>Actions</th></tr></thead><tbody>
-  ${admins.map((a) => `<tr><td>${esc(a.email)}</td><td>${esc(a.name || "")}</td><td>${Number(a.is_active) ? "Yes" : "No"}</td><td>${esc(a.role || "admin")}</td><td>
-  <button class='btn btn-small t-active' data-id='${a.id}'>Toggle Active</button>
-  <button class='btn btn-small t-super' data-id='${a.id}'>Toggle Super</button>
-  <button class='btn btn-small t-del' data-id='${a.id}'>Delete</button>
-  </td></tr>`).join("")}</tbody></table></div>`;
+  <div class='table-wrap'><table><thead><tr><th>Email</th><th>Active</th><th>Role</th><th>Must Change Password</th><th>Password Updated</th></tr></thead><tbody>
+  ${admins.map((a) => `<tr><td>${esc(a.email)}</td><td>${Number(a.is_active) ? "Yes" : "No"}</td><td>${esc(a.role || "admin")}</td><td>${Number(a.must_change_password) ? "Yes" : "No"}</td><td>${esc(a.password_updated_at || "")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 async function renderApp() {
@@ -193,16 +227,12 @@ function bindPanelEvents() {
   document.querySelectorAll(".order-row").forEach((r) => r.onclick = async () => openDrawer("Order", await api(`/api/admin/orders/${r.dataset.id}`)));
   document.querySelectorAll(".customer-row").forEach((r) => r.onclick = async () => openDrawer("Customer", await api(`/api/admin/customers/${r.dataset.id}`)));
   document.querySelectorAll(".product-row").forEach((r) => r.onclick = async () => openDrawer("Product", await api(`/api/admin/products/${r.dataset.id}`)));
-  document.querySelectorAll(".t-active").forEach((b) => b.onclick = async () => { if (confirm("Toggle active?")) { await api(`/api/admin/users/${b.dataset.id}/toggle-active`, { method: "POST" }); renderApp(); } });
-  document.querySelectorAll(".t-super").forEach((b) => b.onclick = async () => { if (confirm("Toggle super admin?")) { await api(`/api/admin/users/${b.dataset.id}/toggle-super`, { method: "POST" }); renderApp(); } });
-  document.querySelectorAll(".t-del").forEach((b) => b.onclick = async () => { if (prompt("Type DELETE to confirm") === "DELETE") { await api(`/api/admin/users/${b.dataset.id}`, { method: "DELETE" }); renderApp(); } });
   const n = $("#newAdminBtn");
   if (n) n.onclick = async () => {
     const email = prompt("Admin email"); if (!email) return;
-    const name = prompt("Name") || "";
-    const password = prompt("Temp password (min 8 chars)"); if (!password) return;
-    const role = prompt("Role (super_admin/admin/staff)") || "admin";
-    await api("/api/admin/users", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, name, password, role }) });
+    const tempPassword = prompt("Temp password (min 8 chars)"); if (!tempPassword) return;
+    const role = prompt("Role (superadmin/admin)") || "admin";
+    await api("/api/admin/users", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, tempPassword, role }) });
     renderApp();
   };
 }
