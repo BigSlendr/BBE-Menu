@@ -105,13 +105,13 @@ async function getSessionAdminFromSessions(
       whereClauses.push("s.expires_at > datetime('now')");
     }
 
-    const sql = `SELECT COALESCE(a.id, CAST(a.rowid AS TEXT)) AS id,
+    const sql = `SELECT a.id,
                         a.email,
                         COALESCE(a.role,'admin') AS role,
                         COALESCE(a.is_active,1) AS is_active,
                         COALESCE(a.force_password_change,0) AS force_password_change
                  FROM sessions s
-                 JOIN admin_users a ON a.id = s.${joinColumn}
+                 JOIN admins a ON a.id = s.${joinColumn}
                  WHERE ${whereClauses.join(" AND ")}
                  LIMIT 1`;
 
@@ -124,15 +124,13 @@ async function getSessionAdminFromSessions(
 async function getSessionAdminFromLegacySessions(db: D1Database, sessionId: string): Promise<any | null> {
   return db.prepare(`
     SELECT
-      COALESCE(a.id, CAST(a.rowid AS TEXT)) AS id,
+      a.id,
       a.email,
       COALESCE(a.role,'admin') AS role,
       COALESCE(a.is_active,1) AS is_active,
       COALESCE(a.force_password_change,0) AS force_password_change
     FROM admin_sessions s
-    JOIN admin_users a
-      ON (a.rowid = CAST(s.admin_id AS INTEGER))
-      OR (a.id = s.admin_id)
+    JOIN admins a ON a.id = s.admin_id
     WHERE s.id = ? AND s.expires_at > datetime('now')
     LIMIT 1
   `).bind(sessionId).first<any>();
@@ -141,11 +139,6 @@ async function getSessionAdminFromLegacySessions(db: D1Database, sessionId: stri
 export async function getAdminFromRequest(request: Request, env: any): Promise<AdminAuth | null> {
   const db = env.DB as D1Database;
   if (!db) return null;
-  try {
-    await ensureAdminAuthSchema(db);
-  } catch {
-    return null;
-  }
 
   const adminCookieNames = ["bb_admin_session", "admin_session", "bbe_admin_session"] as const;
   let sessionId: string | null = null;

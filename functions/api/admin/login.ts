@@ -7,7 +7,7 @@ type LoginErrorCode =
   | "account_deactivated"
   | "login_failed";
 
-type ErrorStep = "parse_json" | "query_admin_users" | "verify_password" | "insert_session";
+type ErrorStep = "parse_json" | "query_admins" | "verify_password" | "insert_session";
 
 function jsonResponse(payload: unknown, status = 200, headers?: HeadersInit) {
   const baseHeaders = new Headers({
@@ -69,14 +69,14 @@ export const onRequestPost: PagesFunction = async ({ request, env, params }) => 
       return errorResponse(request, 400, "invalid_request", step);
     }
 
-    step = "query_admin_users";
+    step = "query_admins";
     const admin = await db
       .prepare(
         `SELECT id, email, password_hash,
                 COALESCE(is_active,1) AS is_active,
                 COALESCE(role,'admin') AS role,
                 COALESCE(force_password_change,0) AS force_password_change
-         FROM admin_users
+         FROM admins
          WHERE lower(email)=lower(?)
          LIMIT 1`
       )
