@@ -105,7 +105,10 @@ async function getSessionAdminFromSessions(
       whereClauses.push("s.expires_at > datetime('now')");
     }
 
-    const sql = `SELECT a.id, a.email, a.role, COALESCE(a.is_active,1) AS is_active,
+    const sql = `SELECT COALESCE(a.id, CAST(a.rowid AS TEXT)) AS id,
+                        a.email,
+                        COALESCE(a.role,'admin') AS role,
+                        COALESCE(a.is_active,1) AS is_active,
                         COALESCE(a.force_password_change,0) AS force_password_change
                  FROM sessions s
                  JOIN admin_users a ON a.id = s.${joinColumn}
@@ -119,17 +122,20 @@ async function getSessionAdminFromSessions(
 }
 
 async function getSessionAdminFromLegacySessions(db: D1Database, sessionId: string): Promise<any | null> {
-  return db
-    .prepare(
-      `SELECT a.id, a.email, a.role, COALESCE(a.is_active,1) AS is_active,
-              COALESCE(a.force_password_change,0) AS force_password_change
-       FROM admin_sessions s
-       JOIN admin_users a ON a.id = s.admin_id
-       WHERE s.id = ? AND s.expires_at > datetime('now')
-       LIMIT 1`
-    )
-    .bind(sessionId)
-    .first<any>();
+  return db.prepare(`
+    SELECT
+      COALESCE(a.id, CAST(a.rowid AS TEXT)) AS id,
+      a.email,
+      COALESCE(a.role,'admin') AS role,
+      COALESCE(a.is_active,1) AS is_active,
+      COALESCE(a.force_password_change,0) AS force_password_change
+    FROM admin_sessions s
+    JOIN admin_users a
+      ON (a.rowid = CAST(s.admin_id AS INTEGER))
+      OR (a.id = s.admin_id)
+    WHERE s.id = ? AND s.expires_at > datetime('now')
+    LIMIT 1
+  `).bind(sessionId).first<any>();
 }
 
 export async function getAdminFromRequest(request: Request, env: any): Promise<AdminAuth | null> {
