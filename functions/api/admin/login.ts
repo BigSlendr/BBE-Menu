@@ -1,8 +1,10 @@
 import { json, setCookie, uuid, verifyPassword } from "../auth/_utils";
+import { ensureAdminAuthSchema } from "./_auth";
 
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
   const db = env.DB as D1Database;
   if (!db) return json({ ok: false, error: "DB binding missing" }, 500);
+  await ensureAdminAuthSchema(db);
 
   let body: any;
   try {
@@ -17,7 +19,7 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
 
   const admin = await db
     .prepare(
-      "SELECT id, email, password_hash, role, COALESCE(is_active,1) AS is_active FROM admins WHERE lower(email)=lower(?) LIMIT 1"
+      "SELECT id,email,password_hash,role,COALESCE(is_active,1) AS is_active,COALESCE(must_change_password,0) AS must_change_password FROM admins WHERE lower(email)=lower(?) LIMIT 1"
     )
     .bind(email)
     .first<any>();
@@ -37,7 +39,17 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
     .bind(sessionId, admin.id, expiresAt, createdAt)
     .run();
 
-  const response = json({ ok: true, admin: { email: String(admin.email || email), role: String(admin.role || "admin") } }, 200);
+  const response = json(
+    {
+      ok: true,
+      admin: {
+        email: String(admin.email || email),
+        role: String(admin.role || "admin"),
+        mustChangePassword: Number(admin.must_change_password || 0) === 1,
+      },
+    },
+    200
+  );
   response.headers.append("set-cookie", setCookie("bb_admin_session", sessionId, 7));
   return response;
 };
