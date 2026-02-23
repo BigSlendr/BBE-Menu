@@ -40,3 +40,30 @@ export const uniqueSlug = async (db: D1Database, desired: string) => {
     n += 1;
   }
 };
+
+const tableColumnsCache = new Map<string, Promise<Set<string>>>();
+
+export const getTableColumns = async (db: D1Database, table: string): Promise<Set<string>> => {
+  const cacheKey = table.toLowerCase();
+  if (!tableColumnsCache.has(cacheKey)) {
+    tableColumnsCache.set(
+      cacheKey,
+      (async () => {
+        try {
+          const pragma = await db.prepare(`PRAGMA table_info(${table})`).all<any>();
+          return new Set((pragma.results || []).map((column: any) => String(column?.name || "").toLowerCase()).filter(Boolean));
+        } catch {
+          return new Set<string>();
+        }
+      })()
+    );
+  }
+  return tableColumnsCache.get(cacheKey)!;
+};
+
+export const sanitizeFilename = (name: string) =>
+  String(name || "file")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/(^-|-$)/g, "") || "file";
